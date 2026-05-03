@@ -1,0 +1,50 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker-configs/php/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: sitepulse-php:latest
+    container_name: sitepulse-php
+    restart: unless-stopped
+    environment:
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+    volumes:
+      - ./:/var/www/html:cached
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  web:
+    image: caddy:2-alpine
+    container_name: sitepulse-caddy
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-6080}:80"
+    volumes:
+      - ./docker-configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./:/var/www/html:cached
+    depends_on:
+      - php
+
+  mysql:
+    image: mysql:8.0
+    container_name: sitepulse-mysql
+    restart: unless-stopped
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_DATABASE:-sitepulse}
+      MYSQL_USER: ${DB_USERNAME:-sitepulse}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - ./db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s

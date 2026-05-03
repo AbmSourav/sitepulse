@@ -1,0 +1,68 @@
+import { Link, usePage } from '@inertiajs/react';
+import { LayoutGrid, Globe } from 'lucide-react';
+import AppLogo from '@/components/app-logo';
+import { NavMain } from '@/components/nav-main';
+import { NavUser } from '@/components/nav-user';
+import { TeamSwitcher } from '@/components/team-switcher';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from '@/components/ui/sidebar';
+import { dashboard } from '@/routes';
+import type { NavItem } from '@/types';
+import { index } from '@/routes/websites';
+
+export function AppSidebar() {
+    const page = usePage();
+    const slug = page.props.currentTeam ? page.props.currentTeam.slug : '';
+
+    const dashboardUrl = slug ? dashboard(slug) : '/';
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboardUrl,
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Websites',
+            href: slug ? index(slug) : '/websites',
+            icon: Globe,
+        },
+    ];
+
+    return (
+        <Sidebar collapsible="icon" variant="inset">
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton size="lg" asChild>
+                            <Link href={dashboardUrl} prefetch>
+                                <AppLogo />
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <TeamSwitcher />
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
+
+            <SidebarContent>
+                <NavMain items={mainNavItems} />
+            </SidebarContent>
+
+            <SidebarFooter>
+                {/* <NavFooter items={footerNavItems} className="mt-auto" /> */}
+                <NavUser />
+            </SidebarFooter>
+        </Sidebar>
+    );
+}
