@@ -15,7 +15,6 @@ class WebsiteController extends Controller
     public function index()
     {
         $websites = Website::where('team_id', request()->user()->currentTeam->id)->get();
-        // dump(request()->user()->currentTeam->id);
 
         if (!$websites->isEmpty()) {
             $websites->transform(function ($website) {
@@ -63,6 +62,7 @@ class WebsiteController extends Controller
 
         try {
             Website::create([
+                'user_id'   => $request->user()->id,
                 'team_id'   => $data['teamId'],
                 'url'       => $data['siteUrl'],
                 'api_key'   => Str::random(32),
