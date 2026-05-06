@@ -2,6 +2,7 @@
 
 namespace Sitepulse\SitepulseMonitor\Services;
 
+use Sitepulse\SitepulseMonitor\Lib\AppData;
 use Sitepulse\SitepulseMonitor\Lib\BaseService;
 
 if (! defined('ABSPATH')) exit;
@@ -52,7 +53,8 @@ class AssetsManager implements BaseService
                 'ajaxUrl'   => admin_url('admin-ajax.php'),
                 'nonce'     => wp_create_nonce('spm_admin_nonce'),
                 'appUrl'    => SPM_APP_URL,
-                'connected' => get_option('spm_api_key', false) ? true : false,
+                'hasApiKey'    => AppData::get('api_key') ? true : false,
+                'connected' => AppData::get('status') === 'connected' ? true : false,
             ]
         );
     }

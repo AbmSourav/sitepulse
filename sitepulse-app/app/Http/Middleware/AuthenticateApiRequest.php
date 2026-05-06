@@ -23,15 +23,13 @@ class AuthenticateApiRequest
             return response()->json(['error' => 'Invalid API key.'], 401);
         }
 
-        if ($website->status !== 'active') {
-            return response()->json(['error' => 'Site is disabled.'], 403);
-        }
-
         $requestHost = parse_url($request->header('Origin') ?? $request->header('Referer') ?? '', PHP_URL_HOST);
         $websiteHost = parse_url($website->url, PHP_URL_HOST);
 
         if (! $requestHost || ! $websiteHost || $requestHost !== $websiteHost) {
-            return response()->json(['error' => 'Request origin does not match registered site.'], 403);
+            return response()->json([
+                'error' => 'Request origin does not match registered site.'
+            ], 403);
         }
 
         $request->attributes->set('website', $website);

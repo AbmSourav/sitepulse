@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Website;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class SiteController extends Controller
 {
@@ -15,10 +14,28 @@ class SiteController extends Controller
         /** @var Website $website */
         $website = $request->attributes->get('website');
 
-        $website->update(['status' => 'disabled']);
+        $website->update(['status' => 'disconnected']);
 
         return response()->json([
             'message'   => 'Site disconnected successfully',
+        ], 200);
+    }
+
+    public function reconnect(Request $request): JsonResponse
+    {
+        /** @var Website $website */
+        $website = $request->attributes->get('website');
+
+        if (! $website) {
+            return response()->json([
+                'message'   => 'Site not found',
+            ], 404);
+        }
+
+        $website->update(['status' => 'connected']);
+
+        return response()->json([
+            'message'   => 'Site reconnected successfully',
         ], 200);
     }
 }

@@ -13,4 +13,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/websites/disconnect', [SiteController::class, 'disconnect'])
         ->middleware(AuthenticateApiRequest::class)
         ->name('api.site.disconnect');
+
+    Route::post('/websites/reconnect', [SiteController::class, 'reconnect'])
+        ->middleware(AuthenticateApiRequest::class)
+        ->name('api.site.reconnect');
 });

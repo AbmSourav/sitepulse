@@ -66,7 +66,7 @@ class WebsiteController extends Controller
                 'team_id'   => $data['teamId'],
                 'url'       => $data['siteUrl'],
                 'api_key'   => Str::random(32),
-                'status'    => 'active',
+                'status'    => 'connected',
             ]);
         } catch (\Exception $e) {
             return response()->json([

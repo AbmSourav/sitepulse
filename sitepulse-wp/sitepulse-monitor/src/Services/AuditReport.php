@@ -9,21 +9,7 @@ class AuditReport implements BaseService
 {
     public function register()
     {
-        add_action('admin_init', [$this, 'connectWebsite']);
-    }
 
-    public function connectWebsite()
-    {
-        $apiKey = $_GET['spmApiKey'] ?? '';
-        if (get_option('spm_api_key') || ! isset($_GET['spmApiKey'])) {
-            return;
-        }
-
-        update_option('spm_api_key', sanitize_text_field($apiKey));
-
-        $cleanUrl = remove_query_arg('spmApiKey');
-        wp_safe_redirect($cleanUrl);
-        exit;
     }
 
     private function sendReport()

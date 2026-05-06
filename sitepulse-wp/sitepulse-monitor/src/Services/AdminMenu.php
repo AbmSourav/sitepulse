@@ -2,6 +2,7 @@
 
 namespace Sitepulse\SitepulseMonitor\Services;
 
+use Sitepulse\SitepulseMonitor\Lib\AppData;
 use Sitepulse\SitepulseMonitor\Lib\BaseService;
 
 class AdminMenu implements BaseService
@@ -9,6 +10,7 @@ class AdminMenu implements BaseService
     public function register()
     {
         add_action('admin_menu', [$this, 'addMenu']);
+        add_action('admin_init', [$this, 'connectWebsite']);
     }
 
     public function addMenu()
@@ -27,5 +29,23 @@ class AdminMenu implements BaseService
     public function renderAdminPage()
     {
         require_once SPM_DIR . 'resources/view.php';
+    }
+
+    public function connectWebsite()
+    {
+        $apiKey = $_GET['spmApiKey'] ?? '';
+        if (AppData::get('api_key') || ! isset($_GET['spmApiKey'])) {
+            return;
+        }
+
+        $data = [
+            'api_key' => sanitize_text_field($apiKey),
+            'status'  => 'connected',
+        ];
+        AppData::set($data);
+
+        $cleanUrl = remove_query_arg('spmApiKey');
+        wp_safe_redirect($cleanUrl);
+        exit;
     }
 }
