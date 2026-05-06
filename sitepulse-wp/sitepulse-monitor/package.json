@@ -1,0 +1,24 @@
+{
+    "name": "sitepulse-monitor",
+    "version": "1.0.0",
+    "description": "A WordPress plugin that audits site health metrics and reports to a Laravel app.",
+    "main": "index.js",
+    "scripts": {
+        "format": "wp-scripts format resources/",
+        "dev:admin": "wp-scripts start resources/src/app.js --output-path=resources/build",
+        "build:admin": "wp-scripts build resources/src/app.js --output-path=resources/build"
+    },
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@wordpress/scripts": "^32.1.0"
+    },
+    "prettier": {
+        "printWidth": 80,
+        "tabWidth": 4,
+        "useTabs": false,
+        "singleQuote": true,
+        "semi": false,
+        "trailingComma": "es5"
+    }
+}

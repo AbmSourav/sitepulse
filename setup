@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# Commands to set up the project. Run with `./setup <command>`.
+# Available commands:
+# sync-plugin: Sync plugin from WP install to git-tracked folder
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_SRC="$REPO_ROOT/sitepulse-wp/wordpress/wp-content/plugins/sitepulse-monitor"
+PLUGIN_DEST="$REPO_ROOT/sitepulse-wp/sitepulse-monitor"
+
+cmd_sync_plugin() {
+    if [ ! -d "$PLUGIN_SRC" ]; then
+        echo "Error: source not found at $PLUGIN_SRC" >&2
+        exit 1
+    fi
+
+    echo "Cleaning $PLUGIN_DEST ..."
+    rm -rf "${PLUGIN_DEST:?}/"*
+
+    echo "Copying plugin files ..."
+    rsync -a \
+        --exclude='node_modules/' \
+        --exclude='vendor/' \
+        --exclude='resources/build/' \
+        --exclude='prod' \
+        "$PLUGIN_SRC/" "$PLUGIN_DEST/"
+
+    echo "Done."
+}
+
+case "${1:-}" in
+    sync-plugin) cmd_sync_plugin ;;
+    *)
+        echo "Usage: setup <command>"
+        echo ""
+        echo "Commands:"
+        echo "  sync-plugin   Sync plugin from WP install to git-tracked folder"
+        exit 1
+        ;;
+esac

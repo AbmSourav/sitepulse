@@ -2,6 +2,10 @@
 
 namespace Sitepulse\SitepulseMonitor;
 
+use Sitepulse\SitepulseMonitor\Services\AdminMenu;
+use Sitepulse\SitepulseMonitor\Services\AssetsManager;
+use Sitepulse\SitepulseMonitor\Services\AuditReport;
+
 if (! defined('ABSPATH')) exit;
 
 final class Core
@@ -21,7 +25,9 @@ final class Core
     protected function services(): array
     {
         return [
-
+            AssetsManager::class,
+            AdminMenu::class,
+            AuditReport::class,
         ];
     }
 }

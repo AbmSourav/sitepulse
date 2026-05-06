@@ -44,17 +44,17 @@ class Http
         ];
     }
 
-    private static function request(string $route, array $args, array $get_params = [])
+    private static function request(string $method, string $route, array $args, array $get_params = [])
     {
         $default = static::getDefaultArguments();
         $args = is_array($args) ? $args : [];
-        $arguments = array_merge($default, $args);
+        $arguments = array_merge($default, $args, ['method' => strtoupper($method)]);
         $url = static::get_url($route, $get_params);
 
-        if (\SPM_DEV_MODE === 'true') {
-            return \wp_remote_post($url, $arguments);
+        if (\SPM_DEV_MODE === true) {
+            return \wp_remote_request($url, $arguments);
         }
-        return \wp_safe_remote_post($url, $arguments);
+        return \wp_safe_remote_request($url, $arguments);
     }
 
     /**
@@ -67,7 +67,7 @@ class Http
      */
     public static function post($route, $args = [], $get_params = [])
     {
-        $res = static::request($route, $args, $get_params);
+        $res = static::request('POST', $route, $args, $get_params);
 
         return new Response($res);
     }
@@ -81,7 +81,7 @@ class Http
      */
     public static function get($route, $args = [], $get_params = [])
     {
-        $res = static::request($route, $args, $get_params);
+        $res = static::request('GET', $route, $args, $get_params);
 
         return new Response($res);
     }
@@ -96,7 +96,7 @@ class Http
      */
     public static function put($route, $args = [], $get_params = [])
     {
-        $res = static::request($route, $args, $get_params);
+        $res = static::request('PUT', $route, $args, $get_params);
 
         return new Response($res);
     }
@@ -110,7 +110,7 @@ class Http
      */
     public static function delete($route, $args = [], $get_params = [])
     {
-        $res = static::request($route, $args, $get_params);
+        $res = static::request('DELETE', $route, $args, $get_params);
 
         return new Response($res);
     }

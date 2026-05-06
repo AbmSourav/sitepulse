@@ -61,7 +61,7 @@ class WebsiteController extends Controller
         ]);
 
         try {
-            Website::create([
+            $website = Website::create([
                 'user_id'   => $request->user()->id,
                 'team_id'   => $data['teamId'],
                 'url'       => $data['siteUrl'],
@@ -74,7 +74,11 @@ class WebsiteController extends Controller
             ], 500);
         }
 
-        return Inertia::location($data['siteUrl']);
+        $redirectUrl = rtrim($data['siteUrl'], '/') . '&' . http_build_query([
+            'spmApiKey' => $website->api_key,
+        ]);
+
+        return Inertia::location($redirectUrl);
     }
 
     /**
