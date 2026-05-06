@@ -1,0 +1,24 @@
+{
+    "name": "abmsourav/sitepulse-monitor",
+    "license": "MIT",
+    "scripts": {
+		"format:check": "pint --config pint.json --verbose --test",
+		"format": "pint --config pint.json --verbose"
+	},
+    "autoload": {
+        "psr-4": {
+            "Sitepulse\\SitepulseMonitor\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Keramot UL Islam",
+            "email": "keramotulislam@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require-dev": {
+        "codesvault/wp-bundler": "^1.2",
+        "laravel/pint": "1.20"
+    }
+}

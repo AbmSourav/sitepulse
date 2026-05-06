@@ -1,0 +1,75 @@
+<?php
+
+namespace Sitepulse\SitepulseMonitor\Lib;
+
+if (!defined('ABSPATH')) exit;
+
+class Response
+{
+    private $response;
+
+    public function __construct($response)
+    {
+        $this->response = $response;
+        return $this;
+    }
+
+    public function dump($die = false)
+    {
+        $data = $this->response;
+        if (function_exists('dump')) {
+            if ($die) {
+                \dd($data);
+            } else {
+                \dump($data);
+            }
+        } else {
+            echo '<pre>';
+            print_r($data); // @phpcs:ignore
+            echo '</pre>';
+        }
+    }
+
+    public function body($decode = true)
+    {
+        if ($decode) {
+            return json_decode(\wp_remote_retrieve_body($this->response), true);
+        }
+        return \wp_remote_retrieve_body($this->response);
+    }
+
+    public function statusCode()
+    {
+        return (int)\wp_remote_retrieve_response_code($this->response);
+    }
+
+    public function message()
+    {
+        return \wp_remote_retrieve_response_message($this->response);
+    }
+
+    public function headers()
+    {
+        return \wp_remote_retrieve_headers($this->response);
+    }
+
+    public function successful()
+    {
+        return !is_wp_error($this->response) && $this->statusCode() >= 200 && $this->statusCode() < 300;
+    }
+
+    public function failed()
+    {
+        return is_wp_error($this->response) || $this->statusCode() >= 400;
+    }
+
+    public function clientError()
+    {
+        return $this->statusCode() >= 500;
+    }
+
+    public function serverError()
+    {
+        return $this->statusCode() === 500;
+    }
+}

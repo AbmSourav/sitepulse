@@ -146,3 +146,10 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+sitepulse-wp/db
+sitepulse-wp/wordpress
+sitepulse-wp/.env
+sitepulse-wp/docker-compose.yml
+sitepulse-wp/configs
+sitepulse-wp/sitepulse-monitor/vendor
