@@ -65,7 +65,7 @@ class Http
      * @param (array)  $get_params
      * @return Response
      */
-    public static function post($route, $args = [], $get_params = [])
+    public static function post(string $route, array $args = [], array $get_params = [])
     {
         $res = static::request('POST', $route, $args, $get_params);
 
@@ -79,7 +79,7 @@ class Http
      * @param (array)  $args
      * @return Response
      */
-    public static function get($route, $args = [], $get_params = [])
+    public static function get(string $route, array $args = [], array $get_params = [])
     {
         $res = static::request('GET', $route, $args, $get_params);
 
@@ -94,7 +94,7 @@ class Http
      * @param (array)  $get_params
      * @return Response
      */
-    public static function put($route, $args = [], $get_params = [])
+    public static function put(string $route, array $args = [], array $get_params = [])
     {
         $res = static::request('PUT', $route, $args, $get_params);
 
@@ -108,7 +108,7 @@ class Http
      * @param (array)  $args
      * @return Response
      */
-    public static function delete($route, $args = [], $get_params = [])
+    public static function delete(string $route, array $args = [], array $get_params = [])
     {
         $res = static::request('DELETE', $route, $args, $get_params);
 
