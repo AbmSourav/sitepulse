@@ -18,9 +18,16 @@ return new class extends Migration
             $table->string('url');
             $table->string('api_key')->unique();
             $table->string('status')->default('active');
+
+            $table->timestamp('last_checked_at')->nullable();
+            $table->timestamp('next_check_at')->nullable();
+            $table->unsignedTinyInteger('consecutive_failures')->default(0);
+            $table->string('uptime_status')->default('unknown');
+
             $table->timestamps();
 
             $table->index(['team_id', 'user_id']);
+            $table->index('next_check_at');
         });
     }
 
@@ -30,6 +37,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('audit_reports');
+        Schema::dropIfExists('site_incidents');
         Schema::dropIfExists('websites');
     }
 };

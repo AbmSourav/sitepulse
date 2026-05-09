@@ -148,9 +148,8 @@ vite.config.ts.timestamp-*
 .vite/
 
 sitepulse-wp/db
-sitepulse-wp/wordpress
+sitepulse-wp/wordpress/*
 sitepulse-wp/.env
-sitepulse-wp/docker-compose.yml
-sitepulse-wp/configs
-sitepulse-wp/sitepulse-monitor/vendor
 sitepulse-wp/sitepulse-monitor/resources/build
+
+.gityai

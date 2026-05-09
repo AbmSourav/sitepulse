@@ -14,11 +14,17 @@ class RestApi
 
     public function restApi()
     {
-        $this->registerRestApi('/disconnect', 'POST', [$this, 'disconnectWebsite']);
-        $this->registerRestApi('/reconnect', 'POST', [$this, 'reconnectWebsite']);
+        $this->registerPrivateRestApi('/disconnect', 'POST', [$this, 'disconnectWebsite']);
+        $this->registerPrivateRestApi('/reconnect', 'POST', [$this, 'reconnectWebsite']);
+
+        register_rest_route('sitepulse-monitor/v1', '/heartbeat', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'heartbeat'],
+            'permission_callback' => [$this, 'verifyApiKey'],
+        ]);
     }
 
-    public function registerRestApi(string $route, string $method, callable $callback)
+    public function registerPrivateRestApi(string $route, string $method, callable $callback)
     {
         register_rest_route('sitepulse-monitor/v1', $route, [
             'methods'             => $method,
@@ -27,6 +33,28 @@ class RestApi
                 return current_user_can('manage_options');
             },
         ]);
+    }
+
+    public function verifyApiKey(\WP_REST_Request $request): bool
+    {
+        $sentKey   = $request->get_header('x-spm-api-key');
+        $storedKey = AppData::get('api_key');
+
+        if (! $sentKey || ! $storedKey) {
+            return false;
+        }
+
+        return hash_equals((string) $storedKey, (string) $sentKey);
+    }
+
+    public function heartbeat(): \WP_REST_Response
+    {
+        update_option('spm_test', (get_option('spm_test') + 1));
+        return new \WP_REST_Response([
+            'ok'         => true,
+            'plugin'     => SPM_VERSION,
+            'time'       => current_time('Y-m-d H:i:s'),
+        ], 200);
     }
 
     public function disconnectWebsite()

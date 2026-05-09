@@ -21,9 +21,9 @@ class WebsiteSeeder extends Seeder
         }
 
         $websites = [
-            ['url' => 'https://abmsourav.com/welcome', 'status' => 'active'],
-            ['url' => 'https://myblog.com', 'status' => 'active'],
-            ['url' => 'https://shop.mystore.com', 'status' => 'disabled'],
+            ['url' => 'https://abmsourav.com/welcome', 'status' => 'connected'],
+            ['url' => 'https://myblog.com', 'status' => 'connected'],
+            ['url' => 'https://shop.mystore.com', 'status' => 'disconnected'],
         ];
 
         foreach ($websites as $site) {

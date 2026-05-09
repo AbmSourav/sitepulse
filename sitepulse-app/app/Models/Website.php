@@ -15,7 +15,19 @@ class Website extends Model
         'url',
         'api_key',
         'status',
+        'last_checked_at',
+        'next_check_at',
+        'consecutive_failures',
+        'uptime_status',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'last_checked_at' => 'datetime',
+            'next_check_at'   => 'datetime',
+        ];
+    }
 
     public function user(): BelongsTo
     {
@@ -35,5 +47,10 @@ class Website extends Model
     public function latestAudit(): HasOne
     {
         return $this->hasOne(AuditReport::class)->latestOfMany('audited_at');
+    }
+
+    public function incidents(): HasMany
+    {
+        return $this->hasMany(SiteIncident::class)->orderByDesc('started_at');
     }
 }
