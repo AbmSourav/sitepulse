@@ -30,22 +30,19 @@ class AuditReport implements BaseService
         ]);
     }
 
-    private function generateReport(): array
+    public function generateReport(): array
     {
-        global $wpdb;
-
         return [
             'audited_at'    => current_time('Y-m-d H:i:s'),
-            'mysql_version' => $wpdb->db_version(),
             'debug_mode'    => defined('WP_DEBUG') && WP_DEBUG,
             'cron_status'   => $this->getCronStatus(),
             'admin_email'   => get_option('admin_email'),
             'locale'        => get_locale(),
 
             'db_size_bytes'   => $this->getDbSizeBytes(),
-            'fatal_errors'    => $this->getFatalErrors(),
+            'php_errors'      => $this->getFatalErrors(),
 
-            'ssl_valid'      => is_ssl(),
+            'ssl_valid'    => is_ssl(),
             'site_health'  => $this->getSiteHealth(),
 
             'plugins'      => $this->getPlugins(),
@@ -55,6 +52,12 @@ class AuditReport implements BaseService
 
     private function getSiteHealth(): array
     {
+        if (! function_exists('get_core_updates')) {
+            require_once ABSPATH . 'wp-admin/includes/update.php';
+        }
+        if (! function_exists('wp_check_php_version')) {
+            require_once ABSPATH . 'wp-admin/includes/misc.php';
+        }
         require_once ABSPATH . 'wp-admin/includes/class-wp-site-health.php';
 
         $health = \WP_Site_Health::get_instance();
@@ -74,12 +77,22 @@ class AuditReport implements BaseService
             'php_extensions'     => $health->get_test_php_extensions(),
         ];
 
+        global $wpdb;
+
         $result = [];
         foreach ($tests as $key => $test) {
             $result[$key] = [
                 'label'  => $test['label'],
                 'status' => $test['status'],
             ];
+
+            if ($key === 'wordpress_version') {
+                $result[$key]['version'] = wp_get_wp_version();
+            } elseif ($key === 'php_version') {
+                $result[$key]['version'] = \PHP_VERSION;
+            } elseif ($key === 'sql_server') {
+                $result[$key]['version'] = $wpdb->db_version();
+            }
         }
 
         return $result;

@@ -4,6 +4,7 @@ namespace Sitepulse\SitepulseMonitor\Services;
 
 use Sitepulse\SitepulseMonitor\Lib\AppData;
 use Sitepulse\SitepulseMonitor\Lib\Http;
+use Sitepulse\SitepulseMonitor\Services\AuditReport as AuditReportService;
 
 class RestApi
 {
@@ -21,6 +22,12 @@ class RestApi
             'methods'             => 'GET',
             'callback'            => [$this, 'heartbeat'],
             'permission_callback' => [$this, 'verifyApiKey'],
+        ]);
+
+        register_rest_route('sitepulse-monitor/v1', '/audit', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'audit'],
+            'permission_callback' => [$this, 'verifyBodyApiKey'],
         ]);
     }
 
@@ -55,6 +62,25 @@ class RestApi
             'plugin'     => SPM_VERSION,
             'time'       => current_time('Y-m-d H:i:s'),
         ], 200);
+    }
+
+    public function verifyBodyApiKey(\WP_REST_Request $request): bool
+    {
+        $sentKey   = $request->get_param('api_key');
+        $storedKey = AppData::get('api_key');
+
+        if (! $sentKey || ! $storedKey) {
+            return false;
+        }
+
+        return hash_equals((string) $storedKey, (string) $sentKey);
+    }
+
+    public function audit(\WP_REST_Request $_request): \WP_REST_Response
+    {
+        $report = (new AuditReportService())->generateReport();
+
+        return new \WP_REST_Response($report, 200);
     }
 
     public function disconnectWebsite()

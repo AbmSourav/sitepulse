@@ -25,9 +25,9 @@ class StoreAuditReport
         $activeTheme = $sanitizeStrings($data['active_theme'] ?? []);
         $phpErrors   = array_map($sanitizeStrings, $data['php_errors'] ?? []);
 
-        $pluginsOutdated   = collect($plugins)->filter(fn ($p) => $p['version'] !== $p['latest_version'])->count();
-        $pluginsVulnerable = collect($plugins)->filter(fn ($p) => $p['has_vulnerability'])->count();
-        $themesOutdated    = collect($themes)->filter(fn ($t) => $t['version'] !== $t['latest_version'])->count();
+        $pluginsOutdated   = collect($plugins)->filter(fn ($p) => $p['require_update'] ?? false)->count();
+        $pluginsVulnerable = collect($plugins)->filter(fn ($p) => $p['has_vulnerability'] ?? false)->count();
+        $themesOutdated    = collect($themes)->filter(fn ($t) => $t['require_update'] ?? false)->count();
 
         $report = AuditReport::create([
             'website_id' => $website->id,
@@ -80,43 +80,29 @@ class StoreAuditReport
     {
         return Validator::make($data, [
             'audited_at'    => 'required|date',
-            'health_status' => 'string|in:up,down',
-            'wp_version'    => 'string|max:20',
-            'php_version'   => 'string|max:20',
-            'mysql_version' => 'string|max:30',
             'debug_mode'    => 'boolean',
             'cron_status'   => 'string|in:enabled,disabled,unknown',
             'admin_email'   => 'email',
             'locale'        => 'nullable|string|max:20',
 
             'db_size_bytes'   => 'integer|min:0',
-            'php_error_count' => 'integer|min:0',
-            'php_errors'      => 'nullable|array',
-            'php_errors.*.type'    => 'string',
-            'php_errors.*.message' => 'string',
-            'php_errors.*.file'    => 'string',
-            'php_errors.*.line'    => 'integer',
 
             'ssl_valid'      => 'boolean',
             'ssl_expires_at' => 'nullable|date_format:Y-m-d',
 
-            'plugins'                     => 'array',
-            'plugins.*.name'              => 'string',
-            'plugins.*.version'           => 'string',
-            'plugins.*.latest_version'    => 'string',
-            'plugins.*.is_active'         => 'boolean',
-            'plugins.*.has_vulnerability' => 'boolean',
+            'plugins'                       => 'array',
+            'plugins.*.name'                => 'string',
+            'plugins.*.installed_version'   => 'string',
+            'plugins.*.latest_version'      => 'string',
+            'plugins.*.is_active'           => 'boolean',
+            'plugins.*.require_update'      => 'boolean',
 
-            'active_theme'                => 'array',
-            'active_theme.name'           => 'string',
-            'active_theme.version'        => 'string',
-            'active_theme.latest_version' => 'string',
-
-            'themes'                  => 'array',
-            'themes.*.name'           => 'string',
-            'themes.*.version'        => 'string',
-            'themes.*.latest_version' => 'string',
-            'themes.*.is_active'      => 'boolean',
+            'themes'                        => 'array',
+            'themes.*.name'                 => 'string',
+            'themes.*.installed_version'    => 'string',
+            'themes.*.latest_version'       => 'string',
+            'themes.*.is_active'            => 'boolean',
+            'themes.*.require_update'       => 'boolean',
         ])->validate();
     }
 }
