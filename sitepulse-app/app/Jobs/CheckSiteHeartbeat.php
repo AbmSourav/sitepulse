@@ -63,13 +63,14 @@ class CheckSiteHeartbeat implements ShouldQueue
 
         $this->website->last_checked_at = now();
 
+        $intervalTime = 4;
         if ($isUp) {
             $this->handleSuccess();
         } else {
-            $this->handleFailure($reason, $httpStatus);
+            $this->handleFailure($reason, $httpStatus, $intervalTime);
         }
 
-        $this->website->next_check_at = now()->addMinutes(4);
+        $this->website->next_check_at = now()->addMinutes($intervalTime);
         $this->website->save();
     }
 
@@ -109,14 +110,21 @@ class CheckSiteHeartbeat implements ShouldQueue
         $this->website->uptime_status = UptimeStatus::Up->value;
     }
 
-    private function handleFailure(?string $reason, ?int $httpStatus): void
+    private function handleFailure(?string $reason, ?int $httpStatus, int &$intervalTime): void
     {
         $this->website->consecutive_failures++;
+
+        // after first downtime ditected, second request should be made after 3 minutes
+        if ($this->website->consecutive_failures === 1) {
+            $intervalTime = 2;
+        }
 
         if (
             $this->website->consecutive_failures >= 2
             && $this->website->uptime_status !== UptimeStatus::Down->value
         ) {
+            // after 2nd reqest the site is confirm down so give some time to recover make next request after 10 minutes
+            $intervalTime = 9;
             $this->website->uptime_status = UptimeStatus::Down->value;
 
             SiteIncident::create([

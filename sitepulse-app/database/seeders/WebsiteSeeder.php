@@ -22,7 +22,7 @@ class WebsiteSeeder extends Seeder
 
         $websites = [
             ['url' => 'https://abmsourav.com/welcome', 'status' => 'connected'],
-            ['url' => 'https://myblog.com', 'status' => 'connected'],
+            ['url' => 'http://sitepulse-wp.test:4103/wp-admin/admin.php?page=sitepulse-monitor', 'status' => 'connected'],
             ['url' => 'https://shop.mystore.com', 'status' => 'disconnected'],
         ];
 

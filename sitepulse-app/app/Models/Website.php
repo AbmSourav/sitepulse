@@ -19,6 +19,8 @@ class Website extends Model
         'next_check_at',
         'consecutive_failures',
         'uptime_status',
+        'last_audited_at',
+        'next_audit_at',
     ];
 
     protected function casts(): array
@@ -26,6 +28,8 @@ class Website extends Model
         return [
             'last_checked_at' => 'datetime',
             'next_check_at'   => 'datetime',
+            'last_audited_at' => 'datetime',
+            'next_audit_at'   => 'datetime',
         ];
     }
 

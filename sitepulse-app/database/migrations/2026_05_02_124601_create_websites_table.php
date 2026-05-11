@@ -24,10 +24,14 @@ return new class extends Migration
             $table->unsignedTinyInteger('consecutive_failures')->default(0);
             $table->string('uptime_status')->default('unknown');
 
+            $table->timestamp('last_audited_at')->nullable();
+            $table->timestamp('next_audit_at')->nullable();
+
             $table->timestamps();
 
             $table->index(['team_id', 'user_id']);
             $table->index('next_check_at');
+            $table->index('next_audit_at');
         });
     }
 

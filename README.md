@@ -23,7 +23,7 @@ sitepulse/
 
 [![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white)]()
 [![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)]()
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)]()
+[![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?logo=mysql&logoColor=white)]()
 [![Caddy](https://img.shields.io/badge/Caddy-2-1F88C0?logo=caddy&logoColor=white)]()
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)]()
 
@@ -36,6 +36,6 @@ sitepulse/
 
 [![PHP](https://img.shields.io/badge/PHP-8.1-777BB4?logo=php&logoColor=white)]()
 [![WordPress](https://img.shields.io/badge/WordPress-6.x-21759B?logo=wordpress&logoColor=white)]()
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)]()
+[![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?logo=mysql&logoColor=white)]()
 [![Nginx](https://img.shields.io/badge/Nginx-latest-009639?logo=nginx&logoColor=white)]()
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)]()
