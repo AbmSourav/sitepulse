@@ -17,7 +17,6 @@ class FetchSiteAudit implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 3;
     public int $backoff = 60;
     public int $timeout = 30;
 
@@ -60,6 +59,11 @@ class FetchSiteAudit implements ShouldQueue
 
         // store data in audit_reports
         $action->handle($this->website, $data);
+    }
+
+    public function tries(): int
+    {
+        return app()->isProduction() ? 3 : 1;
     }
 
     public function failed(Throwable $e): void

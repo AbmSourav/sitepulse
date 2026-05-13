@@ -6,6 +6,7 @@ use App\Models\AuditReport;
 use App\Models\Website;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class StoreAuditReport
 {
@@ -15,6 +16,7 @@ class StoreAuditReport
     public function handle(Website $website, array $data): AuditReport
     {
         $data = $this->validate($data);
+
         $sanitizeStrings = fn (array $item): array => array_map(
             fn ($value) => is_string($value) ? strip_tags($value) : $value,
             $item
@@ -22,46 +24,37 @@ class StoreAuditReport
 
         $plugins     = array_map($sanitizeStrings, $data['plugins'] ?? []);
         $themes      = array_map($sanitizeStrings, $data['themes'] ?? []);
-        $activeTheme = $sanitizeStrings($data['active_theme'] ?? []);
-        $phpErrors   = array_map($sanitizeStrings, $data['php_errors'] ?? []);
+        $phpErrors   = array_map($sanitizeStrings, $data['server']['php_errors'] ?? []);
+        unset($data['server']['php_errors']);
 
         $pluginsOutdated   = collect($plugins)->filter(fn ($p) => $p['require_update'] ?? false)->count();
-        $pluginsVulnerable = collect($plugins)->filter(fn ($p) => $p['has_vulnerability'] ?? false)->count();
         $themesOutdated    = collect($themes)->filter(fn ($t) => $t['require_update'] ?? false)->count();
 
         $report = AuditReport::create([
             'website_id' => $website->id,
             'audited_at' => $data['audited_at'],
             'health' => [
-                'status'        => $data['health_status'] ?? 'unknown',
-                'wp_version'    => $data['wp_version'] ?? null,
-                'php_version'   => $data['php_version'] ?? null,
-                'mysql_version' => $data['mysql_version'] ?? null,
-                'debug_mode'    => $data['debug_mode'] ?? null,
+                ...$data['site_health'] ?? '',
                 'cron_status'   => $data['cron_status'] ?? null,
                 'admin_email'   => $data['admin_email'] ?? null,
                 'locale'        => $data['locale'] ?? null,
             ],
             'server' => [
-                'db_size_bytes'   => $data['db_size_bytes'] ?? null,
-                'php_error_count' => $data['php_error_count'] ?? null,
+                ...$data['server'] ?? '',
                 'php_errors'      => $phpErrors ?: null,
             ],
             'security' => [
                 'ssl_valid'                => $data['ssl_valid'] ?? null,
                 'ssl_expires_at'           => $data['ssl_expires_at'] ?? null,
-                'vulnerable_plugins_count' => $pluginsVulnerable,
             ],
             'plugins' => [
                 'total'      => count($plugins),
                 'outdated'   => $pluginsOutdated,
-                'vulnerable' => $pluginsVulnerable,
                 'items'      => $plugins,
             ],
             'themes' => [
                 'total'    => count($themes),
                 'outdated' => $themesOutdated,
-                'active'   => $activeTheme,
                 'items'    => $themes,
             ],
         ]);
@@ -85,7 +78,22 @@ class StoreAuditReport
             'admin_email'   => 'email',
             'locale'        => 'nullable|string|max:20',
 
-            'db_size_bytes'   => 'integer|min:0',
+            'server'               => 'array',
+            'server.wp_version.*'  => 'string',
+            'server.php_version.*' => 'string',
+            'server.sql_server.*'  => 'string',
+            'server.php_extensions.*'  => 'string',
+            'server.db_size_bytes'   => 'integer|min:0',
+
+            'site_health'                    => 'array',
+            'site_health.https_status.*'     => 'string',
+            'site_health.scheduled_events.*' => 'string',
+            'site_health.background_updates.*' => 'string',
+            'site_health.loopback_requests.*' => 'string',
+            'site_health.rest_availability.*' => 'string',
+            'site_health.debug_mode.*' => 'string',
+            'site_health.file_uploads.*' => 'string',
+            'site_health.php_extensions.*' => 'string',
 
             'ssl_valid'      => 'boolean',
             'ssl_expires_at' => 'nullable|date_format:Y-m-d',

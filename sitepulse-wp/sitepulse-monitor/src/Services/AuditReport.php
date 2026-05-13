@@ -11,7 +11,7 @@ class AuditReport implements BaseService
     {
         add_action('admin_init', function () {
             // echo "<pre>";
-            // print_r($this->getFatalErrors());
+            // print_r($this->getSiteData());
             // echo "</pre>";
         });
     }
@@ -34,23 +34,20 @@ class AuditReport implements BaseService
     {
         return [
             'audited_at'    => current_time('Y-m-d H:i:s'),
-            'debug_mode'    => defined('WP_DEBUG') && WP_DEBUG,
             'cron_status'   => $this->getCronStatus(),
             'admin_email'   => get_option('admin_email'),
             'locale'        => get_locale(),
 
-            'db_size_bytes'   => $this->getDbSizeBytes(),
-            'php_errors'      => $this->getFatalErrors(),
-
             'ssl_valid'    => is_ssl(),
-            'site_health'  => $this->getSiteHealth(),
+
+            ...$this->getSiteData(),
 
             'plugins'      => $this->getPlugins(),
             'themes'       => $this->getThemes(),
         ];
     }
 
-    private function getSiteHealth(): array
+    private function getSiteData(): array
     {
         if (! function_exists('get_core_updates')) {
             require_once ABSPATH . 'wp-admin/includes/update.php';
@@ -62,36 +59,48 @@ class AuditReport implements BaseService
 
         $health = \WP_Site_Health::get_instance();
 
-        $tests = [
-            'wordpress_version'  => $health->get_test_wordpress_version(),
-            'php_version'        => $health->get_test_php_version(),
-            'sql_server'         => $health->get_test_sql_server(),
-            'https_status'       => $health->get_test_https_status(),
-            'ssl_support'        => $health->get_test_ssl_support(),
-            'scheduled_events'   => $health->get_test_scheduled_events(),
-            'background_updates' => $health->get_test_background_updates(),
-            'loopback_requests'  => $health->get_test_loopback_requests(),
-            'rest_availability'  => $health->get_test_rest_availability(),
-            'debug_mode'         => $health->get_test_is_in_debug_mode(),
-            'file_uploads'       => $health->get_test_file_uploads(),
-            'php_extensions'     => $health->get_test_php_extensions(),
+        $data = [
+            'site_health' => [
+                'https_status'       => $health->get_test_https_status(),
+                'ssl_support'        => $health->get_test_ssl_support(),
+                'scheduled_events'   => $health->get_test_scheduled_events(),
+                'background_updates' => $health->get_test_background_updates(),
+                'loopback_requests'  => $health->get_test_loopback_requests(),
+                'rest_availability'  => $health->get_test_rest_availability(),
+                'debug_mode'         => $health->get_test_is_in_debug_mode(),
+                'file_uploads'       => $health->get_test_file_uploads(),
+            ],
+            'server' => [
+                'wp_version'         => $health->get_test_wordpress_version(),
+                'sql_server'         => $health->get_test_sql_server(),
+                'php_version'        => $health->get_test_php_version(),
+                'php_extensions'     => $health->get_test_php_extensions(),
+                'db_size_bytes'   => $this->getDbSizeBytes(),
+                'php_errors'      => $this->getFatalErrors(),
+            ],
         ];
 
         global $wpdb;
 
         $result = [];
-        foreach ($tests as $key => $test) {
-            $result[$key] = [
-                'label'  => $test['label'],
-                'status' => $test['status'],
-            ];
+        foreach ($data as $type => $item) {
+            foreach ($item as $key => $test) {
+                if (is_array($test)) {
+                    $result[$type][$key] = [
+                        'label'  => $test['label'],
+                        'status' => $test['status'],
+                    ];
+                } else {
+                    $result[$type][$key] = $test;
+                }
 
-            if ($key === 'wordpress_version') {
-                $result[$key]['version'] = wp_get_wp_version();
-            } elseif ($key === 'php_version') {
-                $result[$key]['version'] = \PHP_VERSION;
-            } elseif ($key === 'sql_server') {
-                $result[$key]['version'] = $wpdb->db_version();
+                if ($key === 'wp_version') {
+                    $result[$type][$key]['version'] = wp_get_wp_version();
+                } elseif ($key === 'php_version') {
+                    $result[$type][$key]['version'] = \PHP_VERSION;
+                } elseif ($key === 'sql_server') {
+                    $result[$type][$key]['version'] = $wpdb->db_version();
+                }
             }
         }
 
