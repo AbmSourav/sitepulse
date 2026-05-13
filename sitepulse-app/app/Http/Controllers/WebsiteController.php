@@ -18,9 +18,12 @@ class WebsiteController extends Controller
 
         if (!$websites->isEmpty()) {
             $websites->transform(function ($website) {
+                $url = parse_url($website->url);
+                $domain = $url['host'] . (!empty($url['port']) ? ':' . $url['port'] :  '');
+
                 return [
                     'id'            => $website->id,
-                    'url'           => $website->url,
+                    'url'           => $domain,
                     'status'        => $website->status,
                     'created_at'    => $website->created_at->toDateTimeString(),
                 ];
@@ -51,6 +54,14 @@ class WebsiteController extends Controller
     }
 
     /**
+     * Abort with 403 if the given team ID does not belong to the authenticated user.
+     */
+    private function authorizeTeam(int $teamId): void
+    {
+        abort_if($teamId !== request()->user()->team_id, 403);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -59,6 +70,8 @@ class WebsiteController extends Controller
             'siteUrl'   => 'required|url|unique:websites,url',
             'teamId'    => 'required|exists:teams,id',
         ]);
+
+        $this->authorizeTeam($data['teamId']);
 
         try {
             $website = Website::create([
@@ -92,6 +105,8 @@ class WebsiteController extends Controller
         ]);
 
         $website = Website::find($data['websiteId']);
+        $this->authorizeTeam($website->team_id);
+
         $website->update(['status' => $data['status']]);
 
         $websites = Website::where('team_id', request()->user()->currentTeam->id)->get();
