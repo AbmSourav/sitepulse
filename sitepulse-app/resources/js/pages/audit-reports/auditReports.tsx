@@ -1,6 +1,8 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { AuditReportDetail } from '@/components/audit-report/audit-report-detail';
 import { CalendarDays, Globe } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 import {
     Select,
@@ -9,7 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import auditReports from '@/routes/audit-reports';
+import auditReports, { show as auditReportShow } from '@/routes/audit-reports';
 
 const auditReportsIndex = auditReports.index;
 const auditReportsFilter = auditReports.filter;
@@ -57,6 +59,8 @@ export default function AuditReports() {
     const [reports, setReports] = useState<AuditReport[]>(initialReports);
     const [filters, setFilters] = useState({ website_id: defaultWebsiteId, month: defaultMonth });
     const [loading, setLoading] = useState(false);
+    const [selectedReport, setSelectedReport] = useState<AuditReport | null>(null);
+    const [sheetOpen, setSheetOpen] = useState(false);
 
     const selectedWebsite = websiteList.find((w) => String(w.id) === filters.website_id);
 
@@ -137,17 +141,22 @@ export default function AuditReports() {
                             <thead className="bg-muted text-muted-foreground">
                                 <tr>
                                     <th className="px-4 py-3 text-left font-medium">Date</th>
+                                    <th className="px-4 py-3 text-left font-medium">Status</th>
                                     <th className="px-4 py-3 text-left font-medium">WP Version</th>
-                                    <th className="px-4 py-3 text-left font-medium">PHP Version</th>
                                     <th className="px-4 py-3 text-left font-medium">SSL</th>
                                     <th className="px-4 py-3 text-left font-medium">Plugins</th>
                                     <th className="px-4 py-3 text-left font-medium">Themes</th>
+                                    <th className="px-4 py-3"></th>
                                 </tr>
                             </thead>
 
                             <tbody className="divide-y divide-border">
                                 {reports.map((report: AuditReport) => (
-                                    <tr key={report.id} className="hover:bg-muted/50 transition-colors">
+                                    <tr
+                                        key={report.id}
+                                        className="hover:bg-muted/50 transition-colors cursor-pointer"
+                                        onClick={() => { setSelectedReport(report); setSheetOpen(true); }}
+                                    >
                                         <td className="px-4 py-3 text-foreground">
                                             {new Date(report.audited_at).toLocaleDateString(undefined, {
                                                 day: '2-digit',
@@ -156,10 +165,13 @@ export default function AuditReports() {
                                             })}
                                         </td>
                                         <td className="px-4 py-3 text-foreground">
-                                            {report.server?.wp_version?.version ?? '—'}
+                                            {report.server?.wp_version?.version
+                                                ? <span className="text-muted-foreground">UP</span>
+                                                : <span className="text-red-600 dark:text-red-400 font-bold">DOWN</span>
+                                            }
                                         </td>
                                         <td className="px-4 py-3 text-foreground">
-                                            {report.server?.php_version?.version ?? '—'}
+                                            {report.server?.wp_version?.version ?? '—'}
                                         </td>
                                         <td className="px-4 py-3">
                                             {report.security?.ssl_valid === true ? (
@@ -177,20 +189,33 @@ export default function AuditReports() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-foreground">
-                                            {report.plugins?.total ?? '—'}
-                                            {(report.plugins?.outdated ?? 0) > 0 && (
-                                                <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
-                                                    {report.plugins!.outdated} outdated
-                                                </span>
-                                            )}
+                                            {report.server?.wp_version?.version ? (
+                                                <>
+                                                    {report.plugins?.total ?? '—'}
+                                                    {(report.plugins?.outdated ?? 0) > 0 && (
+                                                        <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+                                                            {report.plugins!.outdated} outdated
+                                                        </span>
+                                                    )}
+                                                </>
+                                            ) : '—'}
                                         </td>
                                         <td className="px-4 py-3 text-foreground">
-                                            {report.themes?.total ?? '—'}
-                                            {(report.themes?.outdated ?? 0) > 0 && (
-                                                <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
-                                                    {report.themes!.outdated} outdated
-                                                </span>
-                                            )}
+                                            {report.server?.wp_version?.version ? (
+                                                <>
+                                                    {report.themes?.total ?? '—'}
+                                                    {(report.themes?.outdated ?? 0) > 0 && (
+                                                        <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+                                                            {report.themes!.outdated} outdated
+                                                        </span>
+                                                    )}
+                                                </>
+                                            ) : '—'}
+                                        </td>
+                                        <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={auditReportShow(report.id).url}>Detail</Link>
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))}
@@ -199,6 +224,8 @@ export default function AuditReports() {
                     </div>
                 )}
             </div>
+
+            <AuditReportDetail report={selectedReport} open={sheetOpen} onOpenChange={setSheetOpen} />
         </>
     );
 }

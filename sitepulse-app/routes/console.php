@@ -7,6 +7,6 @@ Schedule::command('sites:check-due')
     ->withoutOverlapping();
 
 Schedule::command('sites:audit-due')
-    ->everySixHours()
-    // ->everyThirtySeconds()
+    // ->everySixHours()
+    ->everyFifteenSeconds()
     ->withoutOverlapping();

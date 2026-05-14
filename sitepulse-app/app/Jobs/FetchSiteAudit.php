@@ -43,6 +43,18 @@ class FetchSiteAudit implements ShouldQueue
             $this->website->next_audit_at = now()->addHours(6);
             $this->website->save();
 
+            $data = $response->json();
+            $action->handle($this->website, [
+                'audited_at' => now()->format('Y-m-d H:i:s'),
+                'server' => [
+                    'php_errors' => [
+                        'status' => $data['data']['status'] ?? 0,
+                        'message' => $data['data']['error']['message'] ?? '',
+                        'file' => $data['data']['error']['file'] ?? '',
+                    ]
+                ]
+            ]);
+
             return;
         }
 

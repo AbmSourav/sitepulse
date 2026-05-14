@@ -17,7 +17,7 @@ export interface AuditReportServer {
     sql_server?: { version?: string; [key: string]: string | undefined };
     php_extensions?: Record<string, string>;
     db_size_bytes?: number;
-    php_errors?: Array<{ type?: string; message?: string; file?: string; line?: number }> | null;
+    php_errors?: { status?: number; message?: string; file?: string; } | null;
 }
 
 export interface AuditReportSecurity {

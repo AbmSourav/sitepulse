@@ -77,4 +77,17 @@ class AuditReportController extends Controller
             ],
         ]);
     }
+
+    public function show(Request $request, int $auditReport): Response
+    {
+        $report = AuditReport::findOrFail($auditReport);
+        $website = $report->website?->only('url');
+        $parsed = parse_url($website['url']);
+        $domain = $parsed['host'] . (!empty($parsed['port']) ? ':' . $parsed['port'] : '');
+
+        return Inertia::render('audit-reports/show', [
+            'report'  => $report,
+            'website' => $domain,
+        ]);
+    }
 }

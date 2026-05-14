@@ -7,13 +7,11 @@ use Sitepulse\SitepulseMonitor\Lib\Http;
 
 class AuditReport implements BaseService
 {
+    /** @var array<int, array{type: int, message: string, file: string, line: int}> */
+    private array $capturingPhpIssues = [];
+
     public function register()
     {
-        add_action('admin_init', function () {
-            // echo "<pre>";
-            // print_r($this->getSiteData());
-            // echo "</pre>";
-        });
     }
 
     public function send()
@@ -75,8 +73,8 @@ class AuditReport implements BaseService
                 'sql_server'         => $health->get_test_sql_server(),
                 'php_version'        => $health->get_test_php_version(),
                 'php_extensions'     => $health->get_test_php_extensions(),
-                'db_size_bytes'   => $this->getDbSizeBytes(),
-                'php_errors'      => $this->getFatalErrors(),
+                'db_size_bytes'      => $this->getDbSizeBytes(),
+                'php_errors'         => [],
             ],
         ];
 
@@ -105,39 +103,6 @@ class AuditReport implements BaseService
         }
 
         return $result;
-    }
-
-    private function getFatalErrors(): array
-    {
-        $errors = [];
-
-        if (function_exists('wp_paused_plugins')) {
-            foreach (wp_paused_plugins()->get_all() as $plugin => $error) {
-                $errors[] = [
-                    'source'  => 'plugin',
-                    'name'    => $plugin,
-                    'type'    => $error['type'] ?? null,
-                    'message' => $error['message'] ?? null,
-                    'file'    => $error['file'] ?? null,
-                    'line'    => $error['line'] ?? null,
-                ];
-            }
-        }
-
-        if (function_exists('wp_paused_themes')) {
-            foreach (wp_paused_themes()->get_all() as $theme => $error) {
-                $errors[] = [
-                    'source'  => 'theme',
-                    'name'    => $theme,
-                    'type'    => $error['type'] ?? null,
-                    'message' => $error['message'] ?? null,
-                    'file'    => $error['file'] ?? null,
-                    'line'    => $error['line'] ?? null,
-                ];
-            }
-        }
-
-        return $errors;
     }
 
     private function getCronStatus(): string

@@ -24,8 +24,6 @@ class StoreAuditReport
 
         $plugins     = array_map($sanitizeStrings, $data['plugins'] ?? []);
         $themes      = array_map($sanitizeStrings, $data['themes'] ?? []);
-        $phpErrors   = array_map($sanitizeStrings, $data['server']['php_errors'] ?? []);
-        unset($data['server']['php_errors']);
 
         $pluginsOutdated   = collect($plugins)->filter(fn ($p) => $p['require_update'] ?? false)->count();
         $themesOutdated    = collect($themes)->filter(fn ($t) => $t['require_update'] ?? false)->count();
@@ -34,14 +32,13 @@ class StoreAuditReport
             'website_id' => $website->id,
             'audited_at' => $data['audited_at'],
             'health' => [
-                ...$data['site_health'] ?? '',
+                ...($data['site_health'] ?? []),
                 'cron_status'   => $data['cron_status'] ?? null,
                 'admin_email'   => $data['admin_email'] ?? null,
                 'locale'        => $data['locale'] ?? null,
             ],
             'server' => [
-                ...$data['server'] ?? '',
-                'php_errors'      => $phpErrors ?: null,
+                ...($data['server'] ?? []),
             ],
             'security' => [
                 'ssl_valid'                => $data['ssl_valid'] ?? null,
@@ -84,6 +81,7 @@ class StoreAuditReport
             'server.sql_server.*'  => 'string',
             'server.php_extensions.*'  => 'string',
             'server.db_size_bytes'   => 'integer|min:0',
+            'server.php_errors'   => 'array',
 
             'site_health'                    => 'array',
             'site_health.https_status.*'     => 'string',
