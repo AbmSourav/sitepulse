@@ -26,11 +26,9 @@ export default function Dashboard() {
     );
 }
 
-Dashboard.layout = (props: { currentTeam?: { slug: string } | null }) => ({
-    breadcrumbs: [
-        {
-            title: 'Dashboard',
-            href: props.currentTeam ? dashboard(props.currentTeam.slug) : '/',
-        },
-    ],
+Dashboard.layout = () => ({
+    breadcrumbs: [{
+        title: 'Dashboard',
+        href: dashboard(),
+    }],
 });

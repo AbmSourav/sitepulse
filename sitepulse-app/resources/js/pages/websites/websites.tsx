@@ -4,13 +4,13 @@ import type { Website } from '@/types/global';
 import { toast } from 'sonner';
 
 export default function Websites() {
-    const { websites, currentTeam } = usePage().props;
+    const { websites } = usePage().props;
 
     function handleStatusChange(websiteId: number, currentStatus: string) {
         // TODO: after disabling a website, make a rest-api call to that website so that it can stop sending data to the server. --- IGNORE ---
         const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
 
-        router.post(websiteRoutes.update.url(currentTeam?.slug ?? ''), {
+        router.post(websiteRoutes.update.url(), {
             websiteId,
             status: newStatus
         }, {
@@ -57,11 +57,9 @@ export default function Websites() {
     );
 }
 
-Websites.layout = (props: { currentTeam?: { slug: string } | null }) => ({
-    breadcrumbs: [
-        {
-            title: 'Websites',
-            href: props.currentTeam ? websiteRoutes.index.url(props.currentTeam.slug) : '/websites',
-        },
-    ],
+Websites.layout = () => ({
+    breadcrumbs: [{
+        title: 'Websites',
+        href: websiteRoutes.index.url(),
+    }],
 });
