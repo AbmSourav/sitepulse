@@ -101,7 +101,7 @@ class WebsiteController extends Controller
     {
         $data = $request->validate([
             'websiteId' => 'required|exists:websites,id',
-            'status'    => 'required|in:active,disabled'
+            'status'    => 'required|in:connected,disconnected'
         ]);
 
         $website = Website::find($data['websiteId']);
@@ -112,9 +112,12 @@ class WebsiteController extends Controller
         $websites = Website::where('team_id', request()->user()->currentTeam->id)->get();
         if (!$websites->isEmpty()) {
             $websites->transform(function ($website) {
+                 $url = parse_url($website->url);
+                $domain = $url['host'] . (!empty($url['port']) ? ':' . $url['port'] :  '');
+
                 return [
                     'id'            => $website->id,
-                    'url'           => $website->url,
+                    'url'           => $domain,
                     'status'        => $website->status,
                     'created_at'    => $website->created_at->toDateTimeString(),
                 ];

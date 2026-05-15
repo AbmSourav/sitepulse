@@ -79,9 +79,9 @@ export function TeamSwitcher({ inHeader = false }: TeamSwitcherProps) {
                 className={
                     inHeader
                         ? 'w-56'
-                        : 'w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+                        : 'w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg mr-5'
                 }
-                side={inHeader ? undefined : isMobile ? 'bottom' : 'right'}
+                side={'bottom'}
                 align={inHeader ? 'end' : 'start'}
                 sideOffset={inHeader ? undefined : 4}
             >

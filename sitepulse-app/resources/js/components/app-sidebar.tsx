@@ -49,11 +49,6 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <TeamSwitcher />
-                    </SidebarMenuItem>
-                </SidebarMenu>
             </SidebarHeader>
 
             <SidebarContent>
