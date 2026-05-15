@@ -18,7 +18,7 @@ export default function WithoutSidebarLayout({
                         href={home()}
                         className="flex items-center gap-2 font-medium"
                     >
-                        <div className="mb-1 flex h-9 w-9 items-center justify-center rounded-md">
+                        <div className="mb-1 flex h-12 w-18 items-center justify-center rounded-md">
                             <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
                         </div>
                         <span>Site Pulse</span>
