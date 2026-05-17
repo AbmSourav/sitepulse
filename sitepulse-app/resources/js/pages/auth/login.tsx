@@ -78,13 +78,14 @@ export default function Login({
                                     id="remember"
                                     name="remember"
                                     tabIndex={3}
+                                    defaultChecked
                                 />
                                 <Label htmlFor="remember">Remember me</Label>
                             </div>
 
                             <Button
                                 type="submit"
-                                className="mt-4 w-full"
+                                className="mt-4 w-full cursor-pointer"
                                 tabIndex={4}
                                 disabled={processing}
                                 data-test="login-button"
@@ -97,7 +98,7 @@ export default function Login({
                         {canRegister && (
                             <div className="text-center text-sm text-muted-foreground">
                                 Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
+                                <TextLink className="cursor-pointer text-primary" href={register()} tabIndex={5}>
                                     Sign up
                                 </TextLink>
                             </div>
@@ -117,5 +118,5 @@ export default function Login({
 
 Login.layout = {
     title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    description: '',
 };

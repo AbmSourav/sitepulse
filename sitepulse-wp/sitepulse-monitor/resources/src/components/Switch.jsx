@@ -21,7 +21,6 @@ const Switch = () => {
             method: 'POST',
         }).then((res) => {
             setConnected(false);
-            console.log('Disconnected:', res)
         });
     }
 
@@ -31,39 +30,36 @@ const Switch = () => {
             method: 'POST',
         }).then((res) => {
             setConnected(true);
-            console.log('Connected:', res)
         });
     }
 
+    const handleConnection = () => {
+        if (!connected && spmAdmin?.hasApiKey !== '1') {
+            handleConnect()
+        } else if (!connected && spmAdmin?.hasApiKey === '1') {
+            handleReconnect()
+        } else if (connected && spmAdmin?.hasApiKey === '1') {
+            handleDisconnect()
+        }
+    }
+
+    let buttonLabel = __('Connect', 'sitepulse-monitor')
+    let btnClass = 'spm-conn__btn'
+    if (connected && spmAdmin?.hasApiKey === '1') {
+        buttonLabel = __('Connected', 'sitepulse-monitor')
+        btnClass = 'spm-conn__btn spm-connected'
+    } else if (!connected && spmAdmin?.hasApiKey === '1') {
+        buttonLabel = __('Reconnect', 'sitepulse-monitor')
+    }
+
     return (
-        <div className="spm-configs">
-            {console.log('Connected status:', spmAdmin)}
-            {!connected && spmAdmin?.hasApiKey !== '1' && (
-                <Button
-                    onClick={handleConnect}
-                    className="spm-configs__save"
-                >
-                    {__('connect', 'sitepulse-monitor')}
-                </Button>
-            )}
-
-            {connected && (
-                <Button
-                    onClick={handleDisconnect}
-                    className="spm-configs__disconnect"
-                >
-                    {__('Disconnect', 'sitepulse-monitor')}
-                </Button>
-            )}
-
-            {!connected && spmAdmin?.hasApiKey === '1' && (
-                <Button
-                    onClick={handleReconnect}
-                    className="spm-configs__save"
-                >
-                    {__('Reconnect', 'sitepulse-monitor')}
-                </Button>
-            )}
+        <div className="spm-conn">
+            <Button
+                onClick={handleConnection}
+                className={btnClass}
+            >
+                {buttonLabel}
+            </Button>
         </div>
     )
 }

@@ -8,6 +8,7 @@ import {
 } from '@wordpress/components'
 import { __, sprintf } from '@wordpress/i18n'
 import Switch from './components/Switch'
+import PageHeader from './components/PageHeader'
 
 const Admin = () => {
     const [showPagination, setShowPagination] = useState(1)
@@ -42,6 +43,7 @@ const Admin = () => {
 
     return (
         <>
+            <PageHeader />
             {notice.show && (
                 <Notice
                     status={notice.type}
@@ -55,7 +57,7 @@ const Admin = () => {
                 </Notice>
             )}
 
-            <Switch />
+            {/* <Switch /> */}
         </>
     )
 }

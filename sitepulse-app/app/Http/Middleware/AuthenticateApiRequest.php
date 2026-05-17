@@ -32,6 +32,11 @@ class AuthenticateApiRequest
             ], 403);
         }
 
+        // user email must be verified
+        if (! $website->user?->hasVerifiedEmail()) {
+            return response()->json(['error' => 'Account email is not verified.'], 403);
+        }
+
         $request->attributes->set('website', $website);
 
         return $next($request);

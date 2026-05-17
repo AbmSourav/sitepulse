@@ -24,6 +24,7 @@ class CheckDueAudits extends Command
                 $query->whereNull('next_audit_at')
                     ->orWhere('next_audit_at', '<=', now());
             })
+            ->whereHas('user', fn ($q) => $q->whereNotNull('email_verified_at'))
             ->chunkById(100, function ($sites) use ($isProduction, &$count, &$skipped) {
                 foreach ($sites as $site) {
                     if ($isProduction && $this->isLocalDomain($site->url)) {

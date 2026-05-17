@@ -7,9 +7,10 @@ yarn-error.log*
 lerna-debug.log*
 .DS_Store
 
-vendor
+sitepulse-app/vendor
 sitepulse-app/db
 sitepulse-app/public/build
+sitepulse-app/public/images
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

@@ -42,6 +42,7 @@ export default function Register() {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email address</Label>
+                                <span className="text-[10px] text-gray-500 italic">A verification email will be sent</span>
                                 <Input
                                     id="email"
                                     type="email"
@@ -86,7 +87,7 @@ export default function Register() {
 
                             <Button
                                 type="submit"
-                                className="mt-2 w-full"
+                                className="mt-2 w-full cursor-pointer"
                                 tabIndex={5}
                                 data-test="register-user-button"
                             >
@@ -97,7 +98,7 @@ export default function Register() {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
+                            <TextLink className="cursor-pointer text-primary" href={login()} tabIndex={6}>
                                 Log in
                             </TextLink>
                         </div>
@@ -110,5 +111,5 @@ export default function Register() {
 
 Register.layout = {
     title: 'Create an account',
-    description: 'Enter your details below to create your account',
+    description: '',
 };

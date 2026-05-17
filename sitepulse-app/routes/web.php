@@ -10,16 +10,20 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
-    Route::get('websites', [WebsiteController::class, 'index'])->name('websites.index');
     Route::get('websites/authorize', [WebsiteController::class, 'create'])->name('websites.authorize');
+
+    Route::post('websites/store', [WebsiteController::class, 'store'])->name('websites.store');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('websites', [WebsiteController::class, 'index'])->name('websites.index');
     Route::get('audit-reports', [AuditReportController::class, 'index'])->name('audit-reports.index');
     Route::get('audit-reports/filter', [AuditReportController::class, 'filter'])->name('audit-reports.filter');
     Route::get('audit-reports/{auditReport}', [AuditReportController::class, 'show'])->name('audit-reports.show');
 
-    Route::post('websites/store', [WebsiteController::class, 'store'])->name('websites.store');
     Route::post('websites/update', [WebsiteController::class, 'update'])->name('websites.update');
 });
 

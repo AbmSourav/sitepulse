@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TeamRole;
+use App\Jobs\FetchSiteAudit;
 use App\Models\Website;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -45,7 +47,9 @@ class WebsiteController extends Controller
         ]);
 
         $user = $request->user();
-        $teams = $user?->teams()->get();
+        $teams = $user->teams()
+            ->wherePivotIn('role', [TeamRole::Owner->value, TeamRole::Admin->value])
+            ->get();
 
         return Inertia::render('websites/authorize', [
             'teams'     => $teams,
@@ -87,8 +91,13 @@ class WebsiteController extends Controller
             ], 500);
         }
 
+        // start audit after website is connected
+        FetchSiteAudit::dispatch($website);
+
         $redirectUrl = rtrim($data['siteUrl'], '/') . '&' . http_build_query([
-            'spmApiKey' => $website->api_key,
+            'spmApiKey'  => $website->api_key,
+            'spmNotice'  => 'Website is connected',
+            'spmNoticeType' => 'success',
         ]);
 
         return Inertia::location($redirectUrl);

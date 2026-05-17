@@ -10,7 +10,6 @@ export default function WebsiteAuthorize() {
     const { teams, siteUrl } = usePage().props;
     const hostName = new URL(siteUrl ?? '').hostname;
 
-
     function handleTeamChange(id: string) {
         setLoading(true);
         router.post(store.url(),
@@ -31,10 +30,9 @@ export default function WebsiteAuthorize() {
 
     return (
         <>
-        {console.log(usePage().props)}
             <Head title="Website Authorize" />
-            <div className="flex h-full items-center flex-1 flex-col mt-10 overflow-x-auto rounded-xl p-4">
-                <div className="flex flex-col items-center p-[6rem] border border-muted rounded-lg shadow-md">
+            <div className="flex h-full items-center flex-1 flex-col mt-5 overflow-x-auto rounded-xl p-4">
+                <div className="flex flex-col items-center py-[6rem] px-[8rem] border border-muted rounded-lg shadow-lg">
                     <p className="mb-5 text-gray-700">Add your website to audit list</p>
 
                     <p className="mb-4 text-gray-500">{hostName}</p>
