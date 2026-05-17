@@ -4,6 +4,7 @@ use App\Http\Controllers\AuditReportController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::inertia('/', 'welcome', [
@@ -11,7 +12,9 @@ Route::inertia('/', 'welcome', [
 ])->name('home');
 
 Route::middleware(['auth'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', fn () => Inertia::render('dashboard', [
+        'emailVerified' => (bool) request()->user()?->email_verified_at,
+    ]))->name('dashboard');
 
     Route::get('websites/authorize', [WebsiteController::class, 'create'])->name('websites.authorize');
 
