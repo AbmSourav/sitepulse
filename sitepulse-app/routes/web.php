@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuditReportController;
+use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('audit-reports/{auditReport}', [AuditReportController::class, 'show'])->name('audit-reports.show');
 
     Route::post('websites/update', [WebsiteController::class, 'update'])->name('websites.update');
+
+    Route::get('incidents', [IncidentController::class, 'index'])->name('incidents.index');
 });
 
 Route::middleware(['auth'])->group(function () {

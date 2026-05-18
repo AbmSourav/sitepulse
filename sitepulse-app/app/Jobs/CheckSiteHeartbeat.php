@@ -117,14 +117,7 @@ class CheckSiteHeartbeat implements ShouldQueue
         // after first downtime ditected, second request should be made after 3 minutes
         if ($this->website->consecutive_failures === 1) {
             $intervalTime = 2;
-        }
 
-        if (
-            $this->website->consecutive_failures >= 2
-            && $this->website->uptime_status !== UptimeStatus::Down->value
-        ) {
-            // after 2nd reqest the site is confirm down so give some time to recover make next request after 10 minutes
-            $intervalTime = 9;
             $this->website->uptime_status = UptimeStatus::Down->value;
 
             SiteIncident::create([
@@ -133,6 +126,22 @@ class CheckSiteHeartbeat implements ShouldQueue
                 'reason'      => $reason,
                 'http_status' => $httpStatus,
             ]);
+        }
+
+        if (
+            $this->website->consecutive_failures >= 2
+        ) {
+            // after 2nd reqest the site is confirm down so give some time to recover,
+            // make next request after 10 minutes
+            $intervalTime = 9;
+        }
+
+        if (
+            $this->website->consecutive_failures >= 6
+        ) {
+            // after more than 40 minutes of downtime the site may need more time to recover,
+            // so next request after 20 minutes
+            $intervalTime = 19;
         }
     }
 }

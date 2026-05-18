@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Globe, ClipboardList } from 'lucide-react';
+import { LayoutGrid, Globe, ClipboardList, AlertTriangle } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -16,6 +16,7 @@ import {
 import { dashboard } from '@/routes';
 import { index as websitesIndex } from '@/routes/websites';
 import { index as auditReportsIndex } from '@/routes/audit-reports';
+import { index as incidentsIndex } from '@/routes/incidents';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
@@ -34,6 +35,11 @@ export function AppSidebar() {
             title: 'Audit Reports',
             href: auditReportsIndex(),
             icon: ClipboardList,
+        },
+        {
+            title: 'Incidents',
+            href: incidentsIndex(),
+            icon: AlertTriangle,
         },
     ];
 
