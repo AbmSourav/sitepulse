@@ -15,6 +15,7 @@ class Website extends Model
         'url',
         'api_key',
         'status',
+        'connected_at',
         'last_checked_at',
         'next_check_at',
         'consecutive_failures',
@@ -26,6 +27,7 @@ class Website extends Model
     protected function casts(): array
     {
         return [
+            'connected_at'    => 'datetime',
             'last_checked_at' => 'datetime',
             'next_check_at'   => 'datetime',
             'last_audited_at' => 'datetime',

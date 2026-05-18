@@ -46,6 +46,7 @@ function Duration({ startedAt, resolvedAt }: { startedAt: string; resolvedAt: st
     return <span>{label}</span>;
 }
 
+
 export default function Incidents() {
     const { incidents } = usePage<{ incidents: Incident[] } & Record<string, unknown>>().props;
 

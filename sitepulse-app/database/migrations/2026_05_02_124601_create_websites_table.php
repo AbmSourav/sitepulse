@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('url');
             $table->string('api_key')->unique();
             $table->string('status')->default('active');
+            $table->timestamp('connected_at')->nullable();
 
             $table->timestamp('last_checked_at')->nullable();
             $table->timestamp('next_check_at')->nullable();

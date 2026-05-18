@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\TeamRole;
 use App\Jobs\FetchSiteAudit;
+use App\Models\SiteIncident;
 use App\Models\Website;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
 
@@ -16,24 +18,14 @@ class WebsiteController extends Controller
      */
     public function index()
     {
-        $websites = Website::where('team_id', request()->user()->currentTeam->id)->get();
-
-        if (!$websites->isEmpty()) {
-            $websites->transform(function ($website) {
-                $url = parse_url($website->url);
-                $domain = $url['host'] . (!empty($url['port']) ? ':' . $url['port'] :  '');
-
-                return [
-                    'id'            => $website->id,
-                    'url'           => $domain,
-                    'status'        => $website->status,
-                    'created_at'    => $website->created_at->toDateTimeString(),
-                ];
-            });
-        }
+        $websites = Website::where('team_id', request()
+            ->user()->currentTeam->id)
+            ->with('incidents')
+            ->get();
 
         return Inertia::render('websites/websites', [
-            'websites' => $websites
+            'websites' => $this->formatWebsites($websites),
+            'uptime'   => $this->calcUptime($websites),
         ]);
     }
 
@@ -79,11 +71,12 @@ class WebsiteController extends Controller
 
         try {
             $website = Website::create([
-                'user_id'   => $request->user()->id,
-                'team_id'   => $data['teamId'],
-                'url'       => $data['siteUrl'],
-                'api_key'   => Str::random(32),
-                'status'    => 'connected',
+                'user_id'      => $request->user()->id,
+                'team_id'      => $data['teamId'],
+                'url'          => $data['siteUrl'],
+                'api_key'      => Str::random(32),
+                'status'       => 'connected',
+                'connected_at' => now(),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -116,26 +109,63 @@ class WebsiteController extends Controller
         $website = Website::find($data['websiteId']);
         $this->authorizeTeam($website->team_id);
 
-        $website->update(['status' => $data['status']]);
-
-        $websites = Website::where('team_id', request()->user()->currentTeam->id)->get();
-        if (!$websites->isEmpty()) {
-            $websites->transform(function ($website) {
-                 $url = parse_url($website->url);
-                $domain = $url['host'] . (!empty($url['port']) ? ':' . $url['port'] :  '');
-
-                return [
-                    'id'            => $website->id,
-                    'url'           => $domain,
-                    'status'        => $website->status,
-                    'created_at'    => $website->created_at->toDateTimeString(),
-                ];
-            });
+        $updates = ['status' => $data['status']];
+        if ($data['status'] === 'connected') {
+            $updates['connected_at'] = now();
         }
+        $website->update($updates);
+
+        $websites = Website::where('team_id', request()->user()->currentTeam->id)
+            ->with('incidents')
+            ->get();
 
         return Inertia::render('websites/websites', [
-            'websites' => $websites
+            'websites' => $this->formatWebsites($websites),
+            'uptime'   => $this->calcUptime($websites),
         ]);
+    }
+
+    private function formatWebsites(Collection $websites): Collection
+    {
+        return $websites->map(function (Website $website) {
+            $url    = parse_url($website->url);
+            $domain = $url['host'] . (! empty($url['port']) ? ':' . $url['port'] : '');
+
+            return [
+                'id'         => $website->id,
+                'url'        => $domain,
+                'status'     => $website->status,
+                'created_at' => $website->created_at->toDateTimeString(),
+            ];
+        });
+    }
+
+    private function calcUptime(Collection $websites): Collection
+    {
+        $now = now();
+
+        return $websites->mapWithKeys(function (Website $website) use ($now) {
+            if ($website->status === 'disconnected' || ! $website->connected_at) {
+                return [$website->id => null];
+            }
+
+            $connectedAt  = $website->connected_at;
+            $totalSeconds = $connectedAt->diffInSeconds($now);
+
+            $downtimeSeconds = $website->incidents
+                ->filter(fn (SiteIncident $i) => $i->started_at >= $connectedAt)
+                ->sum(fn (SiteIncident $i) => $i->started_at->diffInSeconds($i->resolved_at ?? $now));
+
+            $uptimeSeconds = max(0, $totalSeconds - $downtimeSeconds);
+            $uptimePct     = $totalSeconds > 0 ? round(($uptimeSeconds / $totalSeconds) * 100, 2) : 100.0;
+
+            return [$website->id => [
+                'uptime_seconds'    => $uptimeSeconds,
+                'total_seconds'     => $totalSeconds,
+                'uptime_percentage' => $uptimePct,
+                'incident_count'    => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at >= $connectedAt)->count(),
+            ]];
+        });
     }
 
     /**
