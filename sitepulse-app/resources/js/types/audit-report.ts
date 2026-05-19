@@ -45,6 +45,7 @@ export interface AuditReportTheme {
 export interface AuditReport {
     id: number;
     website_id: number;
+    website: { id: number; url: string } | null;
     audited_at: string;
     health: AuditReportHealth | null;
     server: AuditReportServer | null;

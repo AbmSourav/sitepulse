@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditReport;
 use App\Models\Website;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -13,68 +12,30 @@ class AuditReportController extends Controller
 {
     public function index(Request $request): Response
     {
-        $user = $request->user();
-        $teamId = $user->team_id;
-
-        $websiteList = Website::where('team_id', $teamId)
-            ->where('user_id', $user->id)
-            ->orderByDesc('created_at')
-            ->get()
-            ->transform(function ($site) {
-                $parsed = parse_url($site->url);
-                $domain = $parsed['host'] . (!empty($parsed['port']) ? ':' . $parsed['port'] : '');
-
-                return ['id' => $site->id, 'url' => $domain];
-            });
-
-        $website = Website::where('team_id', $teamId)->orderByDesc('created_at')->first();
-
-        $month = now()->startOfMonth();
-
-        $reports = $website
-            ? AuditReport::where('website_id', $website->id)
-                ->whereBetween('audited_at', [$month, $month->copy()->endOfMonth()])
-                ->orderByDesc('audited_at')
-                ->get()
-            : [];
-
-        return Inertia::render('audit-reports/auditReports', [
-            'websiteList'   => $websiteList,
-            'latestWebsite' => $website?->only('id', 'url'),
-            'auditReports'  => $reports,
-            'filters'       => [
-                'website_id' => $website?->id,
-                'month'      => $month->format('Y-m'),
-            ],
-        ]);
-    }
-
-    public function filter(Request $request): JsonResponse
-    {
         $teamId = $request->user()->team_id;
 
-        $websiteId = $request->integer('website_id');
-        $website = Website::where('team_id', $teamId)->find($websiteId);
+        $websites    = Website::where('team_id', $teamId)->orderBy('url')->get(['id', 'url']);
+        $websiteIds  = $websites->pluck('id');
+        $websiteList = $websites->map(fn ($site) => ['id' => $site->id, 'url' => $site->url]);
 
-        if (! $website) {
-            return response()->json(['auditReports' => [], 'filters' => ['website_id' => null, 'month' => $request->string('month')]]);
-        }
+        $websiteId = $request->integer('website_id') ?: null;
+        $month     = $request->filled('month') ? $request->string('month') : null;
 
-        $month = $request->filled('month')
-            ? now()->createFromFormat('Y-m', $request->string('month'))->startOfMonth()
-            : now()->startOfMonth();
-
-        $reports = AuditReport::where('website_id', $website->id)
-            ->whereBetween('audited_at', [$month, $month->copy()->endOfMonth()])
+        $reports = AuditReport::whereIn('website_id', $websiteIds)
+            ->when($websiteId, fn ($q) => $q->where('website_id', $websiteId))
+            ->when($month, function ($q) use ($month) {
+                $start = now()->createFromFormat('Y-m', $month)->startOfMonth();
+                $q->whereBetween('audited_at', [$start, $start->copy()->endOfMonth()]);
+            })
+            ->with('website:id,url')
             ->orderByDesc('audited_at')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
-        return response()->json([
+        return Inertia::render('audit-reports/auditReports', [
+            'websiteList'  => $websiteList,
             'auditReports' => $reports,
-            'filters'      => [
-                'website_id' => $website->id,
-                'month'      => $month->format('Y-m'),
-            ],
+            'filters'      => ['website_id' => $websiteId, 'month' => $month],
         ]);
     }
 
