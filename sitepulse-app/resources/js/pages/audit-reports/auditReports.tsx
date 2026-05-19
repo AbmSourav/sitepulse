@@ -90,7 +90,7 @@ export default function AuditReports() {
         <>
             <Head title="Audit Reports" />
             <div className="p-6">
-                <div className="bg-muted p-2 mb-1 flex items-center justify-between">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 p-2 mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Select value={filters.month} onValueChange={onMonthChange} disabled={loading}>
                             <SelectTrigger className="w-40 mr-3 bg-card">
@@ -136,9 +136,9 @@ export default function AuditReports() {
                         <p className="text-sm">No audit reports found for this month.</p>
                     </div>
                 ) : (
-                    <div>
+                    <div className="overflow-x-auto rounded-sm border border-gray-200 dark:border-gray-700">
                         <table className="w-full text-sm">
-                            <thead className="bg-muted text-muted-foreground">
+                            <thead className="bg-gray-50 dark:bg-gray-800">
                                 <tr>
                                     <th className="px-4 py-3 text-left font-medium">Date</th>
                                     <th className="px-4 py-3 text-left font-medium">Status</th>
