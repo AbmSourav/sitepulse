@@ -82,6 +82,16 @@ class Team extends Model
     }
 
     /**
+     * Get all notification channels for this team.
+     *
+     * @return HasMany<NotificationChannel, $this>
+     */
+    public function notificationChannels(): HasMany
+    {
+        return $this->hasMany(NotificationChannel::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

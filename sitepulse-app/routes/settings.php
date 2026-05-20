@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\NotificationChannelController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Teams\TeamController;
@@ -38,4 +39,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('settings/teams/{team}/invitations', [TeamInvitationController::class, 'store'])->name('teams.invitations.store');
     Route::delete('settings/teams/{team}/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
+
+    Route::get('settings/notifications', [NotificationChannelController::class, 'index'])->name('notifications.index');
+    Route::post('settings/notifications', [NotificationChannelController::class, 'store'])->name('notifications.store');
+    Route::patch('settings/notifications/{channel}', [NotificationChannelController::class, 'update'])->name('notifications.update');
+    Route::delete('settings/notifications/{channel}', [NotificationChannelController::class, 'destroy'])->name('notifications.destroy');
 });

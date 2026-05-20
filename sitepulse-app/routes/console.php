@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('sites:check-due')
-    ->everyMinute()
+    // ->everyMinute()
+    ->everyFifteenSeconds()
     ->withoutOverlapping();
 
 Schedule::command('sites:audit-due')

@@ -2,6 +2,8 @@
 
 WordPress Site Auditor SaaS with uptime monitoring. A WordPress plugin reports health metrics (plugins, DB size, PHP errors, SSL status); the Laravel app stores audit history, monitors uptime via scheduled heartbeat checks, and renders reports with recommendations. Alerts are sent via email and Slack/Discord webhooks for critical issues (plugin vulnerabilities, SSL expiry, site down).
 
+Important: Review CLAUDE.md file after code implementations and make changes if necessary.
+
 ## Monorepo Layout
 
 ```
@@ -149,30 +151,34 @@ app/
 ├── Http/
 │   ├── Controllers/
 │   │   ├── Api/                    # AuditController, SiteController (connect/disconnect)
-│   │   ├── Settings/               # Profile, Security
+│   │   ├── Settings/               # Profile, Security, NotificationChannel
 │   │   └── Teams/                  # Team CRUD, members, invitations
 │   └── Middleware/
 │       ├── AuthenticateApiRequest.php  # api_key + domain validation for plugin → Laravel
 │       └── EnsureTeamMembership.php
 ├── Jobs/
-│   └── CheckSiteHeartbeat.php      # GETs /heartbeat on one site, updates uptime state
+│   ├── CheckSiteHeartbeat.php      # GETs /heartbeat on one site, updates uptime state
+│   ├── SendIncidentNotification.php # Fires all active team channels on down/up transitions
+│   └── FetchSiteAudit.php          # Triggers an audit report fetch
 ├── Models/
-│   ├── User.php          # Has 2FA, belongs to teams
-│   ├── Team.php          # Slug-routed, soft-deletes
-│   ├── Website.php       # WP site registered by a team — also holds uptime state
-│   ├── AuditReport.php   # Immutable audit snapshot (5 JSON columns)
-│   ├── SiteIncident.php  # Outage record (one row per outage, not per check)
+│   ├── User.php                 # Has 2FA, belongs to teams
+│   ├── Team.php                 # Slug-routed, soft-deletes; has notificationChannels
+│   ├── Website.php              # WP site registered by a team — also holds uptime state + connected_at
+│   ├── AuditReport.php          # Immutable audit snapshot (5 JSON columns)
+│   ├── SiteIncident.php         # Outage record (one row per outage, not per check)
+│   ├── NotificationChannel.php  # Team-scoped alert destination (Slack, Discord, Webhook, Email)
 │   ├── Membership.php
 │   └── TeamInvitation.php
 └── Enums/
     ├── TeamRole.php
     ├── TeamPermission.php
-    └── UptimeStatus.php       # 'up' | 'down' | 'unknown'
+    ├── UptimeStatus.php              # 'up' | 'down' | 'unknown'
+    └── NotificationChannelType.php   # 'slack' | 'discord' | 'webhook' | 'email'; allowedForPlan()
 ```
 
 Routes:
-- `routes/web.php` — main web routes, dashboard under `/{team_slug}/dashboard`
-- `routes/settings.php` — profile, security, appearance, team management
+- `routes/web.php` — main web routes: websites, audit reports, incidents
+- `routes/settings.php` — profile, security, appearance, teams, notification channels
 - `routes/api.php` — plugin endpoints under `/api/v1/...`
 - `routes/console.php` — schedules `sites:check-due` every minute
 
@@ -199,10 +205,21 @@ Three pieces working together:
 Cadence is hardcoded at 5 min for now. Paid plans will make it per-site (see `sitepulse-app/plan.md` "Future: Paid Plans").
 
 Job behavior:
-- Success (`2xx + ok=true`) → `consecutive_failures = 0`, `uptime_status = 'up'`, close any open `SiteIncident`.
-- Failure (timeout / 5xx / non-2xx / `ok != true` / body contains PHP-error signature) → increment `consecutive_failures`. **Two-strike rule**: only flip to `down` and create a `SiteIncident` after `consecutive_failures >= 2`. Catches recovery-mode pages where WP returns 200 + critical-error HTML — the job scans the body for `Fatal error:`, `Parse error:`, `There has been a critical error...` etc.
+- Success (`2xx + ok=true`) → `consecutive_failures = 0`, `uptime_status = 'up'`, close any open `SiteIncident`, dispatch `SendIncidentNotification(..., 'up')`.
+- Failure (timeout / 5xx / non-2xx / `ok != true` / body contains PHP-error signature) → increment `consecutive_failures`. On the **first failure**: flip to `down`, create a `SiteIncident`, dispatch `SendIncidentNotification(..., 'down')`. Retry interval shortens to 2 min, then 9 min after 2nd failure, then 19 min after 6th+. Catches recovery-mode pages where WP returns 200 + critical-error HTML — the job scans the body for `Fatal error:`, `Parse error:`, `There has been a critical error...` etc.
 
 Incidents are written **only on state transitions** — healthy site = 0 rows; outage = 1 row. No per-check ledger.
+
+### Notification channels
+
+Team-scoped alert destinations stored in `notification_channels`. Each row has `type` (enum), `name`, `config` (JSON), `is_active`.
+
+- **Free plan**: Slack only. Gated by `NotificationChannelType::allowedForPlan('free')`.
+- **Slack / Discord**: POST to `config.webhook_url` (incoming webhook format).
+- **Webhook**: POST JSON payload to `config.url`; optional HMAC signature via `config.secret`.
+- **Email**: stubbed — returns early until a mail template is wired up.
+
+Managed under `Settings → Notifications` (`GET/POST/PATCH/DELETE /settings/notifications`).
 
 ### Website status values
 
@@ -210,6 +227,7 @@ Be careful with two different status fields on `websites`:
 
 - `status` — connection state: `'connected'` | `'disconnected'`. Set by the plugin via the connect/disconnect API. Filtered in `CheckDueSites` (`where('status', 'connected')`).
 - `uptime_status` — health from monitoring: `'up'` | `'down'` | `'unknown'` (default). Updated by `CheckSiteHeartbeat`. See `App\Enums\UptimeStatus`.
+- `connected_at` — timestamp of the last time the site was activated. Uptime % is calculated from this point, not `created_at`. Resets to `now()` each time the site is re-enabled. Disconnected sites return `null` uptime.
 
 ### Cross-container Docker networking
 

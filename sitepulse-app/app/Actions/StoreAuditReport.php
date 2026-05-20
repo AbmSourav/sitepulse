@@ -57,7 +57,8 @@ class StoreAuditReport
         ]);
 
         $website->last_audited_at = now();
-        $website->next_audit_at   = now()->addWeek();
+        // $website->next_audit_at   = now()->addWeek();
+        $website->next_audit_at   = now()->addHours(6);
         $website->save();
 
         return $report;

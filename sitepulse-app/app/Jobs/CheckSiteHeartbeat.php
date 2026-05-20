@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Enums\UptimeStatus;
 use App\Models\SiteIncident;
 use App\Models\Website;
+use App\Jobs\SendIncidentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -102,9 +103,14 @@ class CheckSiteHeartbeat implements ShouldQueue
         $this->website->consecutive_failures = 0;
 
         if ($this->website->uptime_status === UptimeStatus::Down->value) {
-            SiteIncident::where('website_id', $this->website->id)
+            $incident = SiteIncident::where('website_id', $this->website->id)
                 ->whereNull('resolved_at')
-                ->update(['resolved_at' => now()]);
+                ->first();
+
+            if ($incident) {
+                $incident->update(['resolved_at' => now()]);
+                SendIncidentNotification::dispatch($incident->fresh(), 'up');
+            }
         }
 
         $this->website->uptime_status = UptimeStatus::Up->value;
@@ -120,12 +126,20 @@ class CheckSiteHeartbeat implements ShouldQueue
 
             $this->website->uptime_status = UptimeStatus::Down->value;
 
-            SiteIncident::create([
+            $incident = SiteIncident::create([
                 'website_id'  => $this->website->id,
                 'started_at'  => now(),
                 'reason'      => $reason,
                 'http_status' => $httpStatus,
             ]);
+        } else if ($this->website->consecutive_failures === 2) {
+            $incident = SiteIncident::where('website_id', $this->website->id)
+                ->whereNull('resolved_at')
+                ->first();
+
+            if ($incident) {
+                SendIncidentNotification::dispatch($incident, 'down');
+            }
         }
 
         if (
