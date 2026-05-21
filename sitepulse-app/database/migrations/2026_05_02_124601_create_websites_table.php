@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->string('url');
-            $table->string('api_key')->unique();
+            $table->string('api_key')->nullable()->unique();
             $table->string('status')->default('active');
             $table->timestamp('connected_at')->nullable();
 

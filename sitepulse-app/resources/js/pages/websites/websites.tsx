@@ -3,12 +3,22 @@ import websiteRoutes from '@/routes/websites';
 import type { Website } from '@/types/global';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface UptimeStat {
     uptime_seconds: number;
     total_seconds: number;
     uptime_percentage: number;
     incident_count: number;
+}
+
+interface Team {
+    id: number;
+    name: string;
 }
 
 function formatSeconds(seconds: number) {
@@ -21,24 +31,51 @@ function formatSeconds(seconds: number) {
 }
 
 export default function Websites() {
-    const { websites, uptime } = usePage<{ websites: Website[]; uptime: Record<number, UptimeStat | null> } & Record<string, unknown>>().props;
-    const [ loading, setLoading ] = useState(false)
+    const { websites, uptime, teams } = usePage<{
+        websites: Website[];
+        uptime: Record<number, UptimeStat | null>;
+        teams: Team[];
+    } & Record<string, unknown>>().props;
+
+    const [loading, setLoading] = useState(false);
+    const [sheetOpen, setSheetOpen] = useState(false);
+    const [url, setUrl] = useState('');
+    const [teamId, setTeamId] = useState<string>(teams?.[0]?.id?.toString() ?? '');
+    const [submitting, setSubmitting] = useState(false);
 
     function handleStatusChange(websiteId: number, currentStatus: string) {
         const newStatus = currentStatus === 'connected' ? 'disconnected' : 'connected';
-        setLoading(true)
+        setLoading(true);
 
         router.post(websiteRoutes.update.url(),
-            {
-                websiteId,
-                status: newStatus
-            },
+            { websiteId, status: newStatus },
             {
                 preserveUrl: true,
-                onSuccess: (res) => {
+                onSuccess: () => {
                     toast.success('Website audit ' + (newStatus === 'disconnected' ? 'disconnected' : 'activated'));
                 },
-                onFinish: () => setLoading(false)
+                onFinish: () => setLoading(false),
+            }
+        );
+    }
+
+    function handleAddMonitor(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        setSubmitting(true);
+
+        router.post(websiteRoutes.monitor.url(),
+            { url, teamId: parseInt(teamId) },
+            {
+                onSuccess: () => {
+                    toast.success('Monitoring started');
+                    setSheetOpen(false);
+                    setUrl('');
+                },
+                onError: (errors) => {
+                    const first = Object.values(errors)[0];
+                    if (first) toast.error(first as string);
+                },
+                onFinish: () => setSubmitting(false),
             }
         );
     }
@@ -47,8 +84,12 @@ export default function Websites() {
         <>
             <Head title="Websites" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                <div className="flex justify-end md:px-12 sm:px-5">
+                    <Button onClick={() => setSheetOpen(true)}>Add Monitoring</Button>
+                </div>
+
                 {websites?.length > 0 ? (
-                    <div className='pt-6 flex flex-col md:px-12 sm:px-5'>
+                    <div className='pt-2 flex flex-col md:px-12 sm:px-5'>
                         {websites?.map((website: Website) => {
                             const createdAt = Temporal.PlainDate.from(website.created_at.slice(0, 10))
                                 .toLocaleString('en-US', { month: 'short', day: '2-digit', year: '2-digit' });
@@ -94,9 +135,53 @@ export default function Websites() {
                         })}
                     </div>
                 ) : (
-                    <p>No websites found.</p>
+                    <p className="md:px-12 sm:px-5">No websites found.</p>
                 )}
             </div>
+
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetContent className="sm:max-w-md">
+                    <SheetHeader>
+                        <SheetTitle>Add Monitoring</SheetTitle>
+                    </SheetHeader>
+
+                    <form onSubmit={handleAddMonitor} className="mt-6 flex flex-col gap-5 px-7">
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="monitor-url">URL</Label>
+                            <Input
+                                id="monitor-url"
+                                type="url"
+                                placeholder="https://example.com"
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        {teams && teams.length > 1 && (
+                            <div className="flex flex-col gap-1.5">
+                                <Label htmlFor="monitor-team">Team</Label>
+                                <Select value={teamId} onValueChange={setTeamId}>
+                                    <SelectTrigger id="monitor-team">
+                                        <SelectValue placeholder="Select team" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {teams.map((t) => (
+                                            <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
+                        <div className="pt-2">
+                            <Button type="submit" className="flex-1 cursor-pointer" disabled={submitting}>
+                                {submitting ? 'Starting…' : 'Start Monitoring'}
+                            </Button>
+                        </div>
+                    </form>
+                </SheetContent>
+            </Sheet>
         </>
     );
 }

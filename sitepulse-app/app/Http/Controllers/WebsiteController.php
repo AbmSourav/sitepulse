@@ -6,6 +6,7 @@ use App\Enums\TeamRole;
 use App\Jobs\FetchSiteAudit;
 use App\Models\SiteIncident;
 use App\Models\Website;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -16,17 +17,44 @@ class WebsiteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $websites = Website::where('team_id', request()
-            ->user()->currentTeam->id)
+        $user = $request->user();
+
+        $websites = Website::where('team_id', $user->currentTeam->id)
             ->with('incidents')
             ->get();
+
+        $teams = $user->teams()
+            ->wherePivotIn('role', [TeamRole::Owner->value, TeamRole::Admin->value])
+            ->get(['teams.id', 'teams.name']);
 
         return Inertia::render('websites/websites', [
             'websites' => $this->formatWebsites($websites),
             'uptime'   => $this->calcUptime($websites),
+            'teams'    => $teams,
         ]);
+    }
+
+    public function addMonitor(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'url'    => 'required|url|unique:websites,url',
+            'teamId' => 'required|exists:teams,id',
+        ]);
+
+        $this->authorizeTeam($data['teamId']);
+
+        Website::create([
+            'user_id'      => $request->user()->id,
+            'team_id'      => $data['teamId'],
+            'url'          => $data['url'],
+            'api_key'      => null,
+            'status'       => 'connected',
+            'connected_at' => now(),
+        ]);
+
+        return redirect()->route('websites.index');
     }
 
     /**
@@ -83,9 +111,6 @@ class WebsiteController extends Controller
                 'error' => 'Failed to create website. ' . $e->getMessage()
             ], 500);
         }
-
-        // start audit after website is connected
-        FetchSiteAudit::dispatch($website);
 
         $redirectUrl = rtrim($data['siteUrl'], '/') . '&' . http_build_query([
             'spmApiKey'  => $website->api_key,

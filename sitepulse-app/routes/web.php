@@ -24,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('websites', [WebsiteController::class, 'index'])->name('websites.index');
+    Route::post('websites/monitor', [WebsiteController::class, 'addMonitor'])->name('websites.monitor');
     Route::get('audit-reports', [AuditReportController::class, 'index'])->name('audit-reports.index');
     Route::get('audit-reports/{auditReport}', [AuditReportController::class, 'show'])->name('audit-reports.show');
 

@@ -38,23 +38,36 @@ class CheckSiteHeartbeat implements ShouldQueue
         $isUp       = false;
 
         try {
-            $response = Http::timeout(10)
-                ->withHeaders(['X-SPM-API-Key' => $this->website->api_key])
-                ->get($endpoint);
+            if ($this->website->api_key) {
+                // WordPress plugin mode
+                $response = Http::timeout(10)
+                    ->withHeaders(['X-SPM-API-Key' => $this->website->api_key])
+                    ->get($endpoint);
 
-            $httpStatus = $response->status();
-            $body       = $response->body();
+                $httpStatus = $response->status();
+                $body       = $response->body();
 
-            if ($this->bodyHasPhpError($body)) {
-                $reason = 'php_error';
-            } elseif ($response->successful() && $response->json('ok') === true) {
-                $isUp = true;
-            } elseif ($response->serverError()) {
-                $reason = 'http_5xx';
-            } elseif ($response->successful()) {
-                $reason = 'invalid_response';
+                if ($this->bodyHasPhpError($body)) {
+                    $reason = 'php_error';
+                } elseif ($response->successful() && $response->json('ok') === true) {
+                    $isUp = true;
+                } elseif ($response->serverError()) {
+                    $reason = 'http_5xx';
+                } elseif ($response->successful()) {
+                    $reason = 'invalid_response';
+                } else {
+                    $reason = 'http_' . $httpStatus;
+                }
             } else {
-                $reason = 'http_' . $httpStatus;
+                // Plain monitoring mode — any 2xx = up
+                $response   = Http::timeout(10)->get($origin . '/');
+                $httpStatus = $response->status();
+
+                if ($response->successful()) {
+                    $isUp = true;
+                } else {
+                    $reason = 'http_' . $httpStatus;
+                }
             }
         } catch (ConnectionException $e) {
             $reason = 'connection_refused';
