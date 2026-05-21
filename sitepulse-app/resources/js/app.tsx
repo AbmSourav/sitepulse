@@ -4,7 +4,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
-import SettingsLayout from '@/layouts/settings/layout';
 import WithoutSidebarLayout from './layouts/without-sidebar-layout';
 
 const appName = 'Site Pulse App';
@@ -17,9 +16,6 @@ createInertiaApp({
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
-            case name.startsWith('settings/'):
-            case name.startsWith('teams/'):
-                return [AppLayout, SettingsLayout];
             case name.startsWith('websites/authorize'):
                 return [WithoutSidebarLayout];
             default:

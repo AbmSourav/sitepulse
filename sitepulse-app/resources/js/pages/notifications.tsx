@@ -201,7 +201,7 @@ export default function Notifications() {
         <>
             <Head title="Notification Channels" />
 
-            <div className="space-y-4">
+            <div className="px-12 py-4 mt-5 space-y-4">
                 <Heading
                     variant="small"
                     title="Notification channels"
@@ -304,6 +304,6 @@ export default function Notifications() {
     );
 }
 
-Notifications.layout = {
+Notifications.layout = () => ({
     breadcrumbs: [{ title: 'Notification Channels', href: notificationsIndex() }],
-};
+});

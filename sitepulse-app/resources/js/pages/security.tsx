@@ -55,7 +55,7 @@ export default function Security({
 
             <h1 className="sr-only">Security settings</h1>
 
-            <div className="space-y-6">
+            <div className="px-12 py-4 mt-5 max-w-2xl space-y-6">
                 <Heading
                     variant="small"
                     title="Update password"
@@ -153,11 +153,11 @@ export default function Security({
     );
 }
 
-Security.layout = {
+Security.layout = () => ({
     breadcrumbs: [
         {
             title: 'Security settings',
             href: edit(),
         },
     ],
-};
+});

@@ -1,4 +1,4 @@
-import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { edit } from '@/routes/profile';
-import { send } from '@/routes/verification';
+import AppearanceToggleTab from '@/components/appearance-tabs';
 
 export default function Profile({
     mustVerifyEmail,
@@ -23,8 +23,7 @@ export default function Profile({
         <>
             <Head title="Profile settings" />
 
-            <h1 className="sr-only">Profile settings</h1>
-
+            <div className="px-12 py-4 mt-5 max-w-2xl flex flex-col space-y-10">
             <div className="space-y-6">
                 <Heading
                     variant="small"
@@ -74,16 +73,24 @@ export default function Profile({
                 </Form>
             </div>
 
+            <div className="space-y-6">
+                <Heading
+                    variant="small"
+                    title="Appearance settings"
+                    description=""
+                />
+                <AppearanceToggleTab />
+            </div>
+
             <DeleteUser />
+            </div>
         </>
     );
 }
 
-Profile.layout = {
-    breadcrumbs: [
-        {
-            title: 'Profile settings',
-            href: edit(),
-        },
-    ],
-};
+Profile.layout = () => ({
+    breadcrumbs: [{
+        title: 'Profile',
+        href: edit(),
+    }],
+});

@@ -94,7 +94,7 @@ export default function TeamEdit({
 
             <h1 className="sr-only">{pageTitle}</h1>
 
-            <div className="flex flex-col space-y-10">
+            <div className="flex flex-col space-y-10 px-12 py-4 mt-5 max-w-2xl">
                 <div className="space-y-6">
                     {permissions.canUpdateTeam ? (
                         <>

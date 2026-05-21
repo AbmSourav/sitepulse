@@ -24,7 +24,7 @@ export default function TeamsIndex({ teams }: Props) {
 
             <h1 className="sr-only">Teams</h1>
 
-            <div className="flex flex-col space-y-6">
+            <div className="flex flex-col space-y-6 px-12 py-4 mt-5">
                 <div className="flex items-center justify-between">
                     <Heading
                         variant="small"
@@ -44,7 +44,7 @@ export default function TeamsIndex({ teams }: Props) {
                         <div
                             key={team.id}
                             data-test="team-row"
-                            className="flex items-center justify-between rounded-lg border p-4"
+                            className="flex max-w-[60%] items-center justify-between rounded-lg border p-4"
                         >
                             <div className="flex items-center gap-4">
                                 <div>
@@ -123,11 +123,11 @@ export default function TeamsIndex({ teams }: Props) {
     );
 }
 
-TeamsIndex.layout = {
+TeamsIndex.layout = () => ({
     breadcrumbs: [
         {
             title: 'Teams',
             href: index(),
         },
     ],
-};
+});

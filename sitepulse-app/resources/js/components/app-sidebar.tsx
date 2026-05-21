@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, Globe, ClipboardList, AlertTriangle } from 'lucide-react';
+import { LayoutGrid, Globe, ClipboardList, AlertTriangle, Users, Bell } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -17,6 +17,8 @@ import { dashboard } from '@/routes';
 import { index as websitesIndex } from '@/routes/websites';
 import { index as auditReportsIndex } from '@/routes/audit-reports';
 import { index as incidentsIndex } from '@/routes/incidents';
+import { index as teamsIndex } from '@/routes/teams';
+import { index as notificationsIndex } from '@/routes/notifications';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {
@@ -43,6 +45,19 @@ export function AppSidebar() {
         },
     ];
 
+    const accountNavItems: NavItem[] = [
+        {
+            title: 'Teams',
+            href: teamsIndex(),
+            icon: Users,
+        },
+        {
+            title: 'Notifications',
+            href: notificationsIndex(),
+            icon: Bell,
+        },
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -59,10 +74,10 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                <NavMain items={accountNavItems} />
             </SidebarContent>
 
             <SidebarFooter>
-                {/* <NavFooter items={footerNavItems} className="mt-auto" /> */}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

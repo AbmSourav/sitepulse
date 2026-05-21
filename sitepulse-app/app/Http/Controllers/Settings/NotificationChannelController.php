@@ -39,7 +39,7 @@ class NotificationChannelController extends Controller
             'allowed'      => in_array($type, $allowed, true),
         ], NotificationChannelType::cases());
 
-        return Inertia::render('settings/notifications', [
+        return Inertia::render('notifications', [
             'channels'       => $channels,
             'availableTypes' => $availableTypes,
         ]);
