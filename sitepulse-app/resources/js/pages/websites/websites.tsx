@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 interface UptimeStat {
     uptime_seconds: number;
@@ -16,26 +17,34 @@ interface UptimeStat {
     incident_count: number;
 }
 
+interface MonitoredWebsite extends Website {
+    uptime_status: 'up' | 'down' | 'unknown';
+    last_checked_at: string | null;
+}
+
 interface Team {
     id: number;
     name: string;
 }
 
-function formatSeconds(seconds: number) {
-    const d = Math.floor(seconds / 86400);
-    const h = Math.floor((seconds % 86400) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    if (d > 0) return `${d} day ${h}h`;
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
+function formatRelativeTime(dateStr: string | null): string {
+    if (!dateStr) return '—';
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+
+    return `${Math.floor(diff / 86400)}d ago`;
 }
 
 export default function Websites() {
     const { websites, uptime, teams } = usePage<{
-        websites: Website[];
+        websites: MonitoredWebsite[];
         uptime: Record<number, UptimeStat | null>;
         teams: Team[];
     } & Record<string, unknown>>().props;
+    console.log(websites)
 
     const [loading, setLoading] = useState(false);
     const [sheetOpen, setSheetOpen] = useState(false);
@@ -52,7 +61,7 @@ export default function Websites() {
             {
                 preserveUrl: true,
                 onSuccess: () => {
-                    toast.success('Website audit ' + (newStatus === 'disconnected' ? 'disconnected' : 'activated'));
+                    toast.success(newStatus === 'disconnected' ? 'Monitoring disabled' : 'Monitoring activated');
                 },
                 onFinish: () => setLoading(false),
             }
@@ -83,60 +92,78 @@ export default function Websites() {
     return (
         <>
             <Head title="Websites" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex justify-end md:px-12 sm:px-5">
+            <div className="flex h-full flex-1 flex-col gap-4 px-12 py-4 mt-5">
+                <div className="flex items-center justify-between">
                     <Button onClick={() => setSheetOpen(true)}>Add Monitoring</Button>
                 </div>
 
-                {websites?.length > 0 ? (
-                    <div className='pt-2 flex flex-col md:px-12 sm:px-5'>
-                        {websites?.map((website: Website) => {
-                            const createdAt = Temporal.PlainDate.from(website.created_at.slice(0, 10))
-                                .toLocaleString('en-US', { month: 'short', day: '2-digit', year: '2-digit' });
+                <div className="overflow-hidden rounded-sm border border-border">
+                    <table className="w-full text-sm">
+                        <thead className="bg-gray-50 dark:bg-gray-800">
+                            <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                <th className="px-4 py-3">Name</th>
+                                <th className="px-4 py-3">Status</th>
+                                <th className="px-4 py-3">Uptime</th>
+                                <th className="px-4 py-3">Last Check</th>
+                                <th className="px-4 py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {websites?.length > 0 ? websites.map((website) => {
+                                const stat = uptime[website.id] ?? null;
+                                const isConnected = website.status === 'connected';
 
-                            const stat = uptime[website.id] ?? null;
+                                return (
+                                    <tr key={website.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                                        <td className="px-4 py-3 font-medium">{website.url}</td>
 
-                            return (
-                                <div key={website.id} className="flex items-center justify-between max-w-2xl border-b border-gray-200 py-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">{website.url}</h3>
-                                        <p className="text-xs text-gray-400">Created: {createdAt}</p>
-                                    </div>
+                                        <td className="px-4 py-3">
+                                            {!isConnected ? (
+                                                <Badge variant="secondary">Disabled</Badge>
+                                            ) : website.uptime_status === 'up' ? (
+                                                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0">Online</Badge>
+                                            ) : website.uptime_status === 'down' ? (
+                                                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0">Down</Badge>
+                                            ) : (
+                                                <Badge variant="outline" className="text-muted-foreground">Pending</Badge>
+                                            )}
+                                        </td>
 
-                                    <div className="text-center">
-                                        {stat && (
-                                            <>
-                                                <p className={`text-lg font-bold ${stat.uptime_percentage >= 99 ? 'text-green-600 dark:text-green-400' : stat.uptime_percentage >= 95 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        <td className="px-4 py-3">
+                                            {stat ? (
+                                                <span className={`font-medium ${stat.uptime_percentage >= 99 ? 'text-green-600 dark:text-green-400' : stat.uptime_percentage >= 95 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                                                     {stat.uptime_percentage}%
-                                                </p>
-                                                <p className="text-xs text-gray-400">uptime · {formatSeconds(stat.uptime_seconds)} up of {formatSeconds(stat.total_seconds)}</p>
-                                            </>
-                                        )}
-                                    </div>
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted-foreground">—</span>
+                                            )}
+                                        </td>
 
-                                    <div className="text-center">
-                                        {stat && (
-                                            <>
-                                                <p className="text-lg font-bold text-gray-700 dark:text-gray-200">{stat.incident_count}</p>
-                                                <p className="text-xs text-gray-400">incident{stat.incident_count !== 1 ? 's' : ''}</p>
-                                            </>
-                                        )}
-                                    </div>
+                                        <td className="px-4 py-3 text-muted-foreground">
+                                            {formatRelativeTime(website.last_checked_at)}
+                                        </td>
 
-                                    <button
-                                        className="bg-gray-600 py-1 px-2 text-sm text-white cursor-pointer rounded"
-                                        onClick={() => handleStatusChange(website.id, website.status)}
-                                        disabled={loading}
-                                    >
-                                        {website.status === 'connected' ? 'Disable' : 'Activate'}
-                                    </button>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <p className="md:px-12 sm:px-5">No websites found.</p>
-                )}
+                                        <td className="px-4 py-3 text-right">
+                                            <button
+                                                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 cursor-pointer disabled:opacity-50"
+                                                onClick={() => handleStatusChange(website.id, website.status)}
+                                                disabled={loading}
+                                            >
+                                                {isConnected ? 'Disable' : 'Enable'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            }) : (
+                                <tr>
+                                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                                        No websites yet. Click <strong>Add Monitoring</strong> to get started.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -174,8 +201,11 @@ export default function Websites() {
                             </div>
                         )}
 
-                        <div className="pt-2">
-                            <Button type="submit" className="flex-1 cursor-pointer" disabled={submitting}>
+                        <div className="flex gap-2 pt-2">
+                            <Button type="button" variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" className="flex-1" disabled={submitting}>
                                 {submitting ? 'Starting…' : 'Start Monitoring'}
                             </Button>
                         </div>

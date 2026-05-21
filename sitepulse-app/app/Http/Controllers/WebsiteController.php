@@ -140,13 +140,20 @@ class WebsiteController extends Controller
         }
         $website->update($updates);
 
-        $websites = Website::where('team_id', request()->user()->currentTeam->id)
+        $user = request()->user();
+
+        $websites = Website::where('team_id', $user->currentTeam->id)
             ->with('incidents')
             ->get();
+
+        $teams = $user->teams()
+            ->wherePivotIn('role', [TeamRole::Owner->value, TeamRole::Admin->value])
+            ->get(['teams.id', 'teams.name']);
 
         return Inertia::render('websites/websites', [
             'websites' => $this->formatWebsites($websites),
             'uptime'   => $this->calcUptime($websites),
+            'teams'    => $teams,
         ]);
     }
 
@@ -157,10 +164,12 @@ class WebsiteController extends Controller
             $domain = $url['host'] . (! empty($url['port']) ? ':' . $url['port'] : '');
 
             return [
-                'id'         => $website->id,
-                'url'        => $domain,
-                'status'     => $website->status,
-                'created_at' => $website->created_at->toDateTimeString(),
+                'id'              => $website->id,
+                'url'             => $domain,
+                'status'          => $website->status,
+                'uptime_status'   => $website->uptime_status,
+                'last_checked_at' => $website->last_checked_at?->toIso8601String(),
+                'created_at'      => $website->created_at->toDateTimeString(),
             ];
         });
     }
