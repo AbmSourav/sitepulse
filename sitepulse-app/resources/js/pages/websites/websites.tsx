@@ -1,6 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import websiteRoutes from '@/routes/websites';
-import type { Website } from '@/types/global';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -9,17 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import WebsiteStats, { type WebsiteStatsProps } from '@/components/websites/website-stats';
 
 interface UptimeStat {
     uptime_seconds: number;
     total_seconds: number;
     uptime_percentage: number;
     incident_count: number;
-}
-
-interface MonitoredWebsite extends Website {
-    uptime_status: 'up' | 'down' | 'unknown';
-    last_checked_at: string | null;
+    incidents_7_days: number;
+    incidents_30_days: number;
 }
 
 interface Team {
@@ -40,33 +37,16 @@ function formatRelativeTime(dateStr: string | null): string {
 
 export default function Websites() {
     const { websites, uptime, teams } = usePage<{
-        websites: MonitoredWebsite[];
+        websites: WebsiteStatsProps[];
         uptime: Record<number, UptimeStat | null>;
         teams: Team[];
     } & Record<string, unknown>>().props;
-    console.log(websites)
 
-    const [loading, setLoading] = useState(false);
-    const [sheetOpen, setSheetOpen] = useState(false);
+    const [addSheetOpen, setAddSheetOpen] = useState(false);
+    const [selectedWebsite, setSelectedWebsite] = useState<WebsiteStatsProps | null>(null);
     const [url, setUrl] = useState('');
     const [teamId, setTeamId] = useState<string>(teams?.[0]?.id?.toString() ?? '');
     const [submitting, setSubmitting] = useState(false);
-
-    function handleStatusChange(websiteId: number, currentStatus: string) {
-        const newStatus = currentStatus === 'connected' ? 'disconnected' : 'connected';
-        setLoading(true);
-
-        router.post(websiteRoutes.update.url(),
-            { websiteId, status: newStatus },
-            {
-                preserveUrl: true,
-                onSuccess: () => {
-                    toast.success(newStatus === 'disconnected' ? 'Monitoring disabled' : 'Monitoring activated');
-                },
-                onFinish: () => setLoading(false),
-            }
-        );
-    }
 
     function handleAddMonitor(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -77,7 +57,7 @@ export default function Websites() {
             {
                 onSuccess: () => {
                     toast.success('Monitoring started');
-                    setSheetOpen(false);
+                    setAddSheetOpen(false);
                     setUrl('');
                 },
                 onError: (errors) => {
@@ -94,18 +74,17 @@ export default function Websites() {
             <Head title="Websites" />
             <div className="flex h-full flex-1 flex-col gap-4 px-12 py-4 mt-5">
                 <div className="flex items-center justify-between">
-                    <Button onClick={() => setSheetOpen(true)}>Add Monitoring</Button>
+                    <Button className="cursor-pointer" onClick={() => setAddSheetOpen(true)}>Add Monitoring</Button>
                 </div>
 
-                <div className="overflow-hidden rounded-sm border border-border">
+                <div className="overflow-hidden rounded-sm">
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 dark:bg-gray-800">
-                            <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            <tr className="h-[55px] border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                 <th className="px-4 py-3">Name</th>
                                 <th className="px-4 py-3">Status</th>
                                 <th className="px-4 py-3">Uptime</th>
                                 <th className="px-4 py-3">Last Check</th>
-                                <th className="px-4 py-3"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -114,7 +93,11 @@ export default function Websites() {
                                 const isConnected = website.status === 'connected';
 
                                 return (
-                                    <tr key={website.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
+                                    <tr
+                                        key={website.id}
+                                        onClick={() => setSelectedWebsite(website)}
+                                        className="h-[55px] border-b border-border last:border-0 hover:bg-muted/20 transition-colors cursor-pointer"
+                                    >
                                         <td className="px-4 py-3 font-medium">{website.url}</td>
 
                                         <td className="px-4 py-3">
@@ -129,9 +112,9 @@ export default function Websites() {
                                             )}
                                         </td>
 
-                                        <td className="px-4 py-3">
+                                        <td className="px-4 py-3 relative">
                                             {stat ? (
-                                                <span className={`font-medium ${stat.uptime_percentage >= 99 ? 'text-green-600 dark:text-green-400' : stat.uptime_percentage >= 95 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                <span className={`text-[22px] absolute top-[10px] left-[5px] font-medium ${stat.uptime_percentage >= 97 ? 'text-green-600 dark:text-green-400' : stat.uptime_percentage >= 90 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                                                     {stat.uptime_percentage}%
                                                 </span>
                                             ) : (
@@ -142,21 +125,11 @@ export default function Websites() {
                                         <td className="px-4 py-3 text-muted-foreground">
                                             {formatRelativeTime(website.last_checked_at)}
                                         </td>
-
-                                        <td className="px-4 py-3 text-right">
-                                            <button
-                                                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 cursor-pointer disabled:opacity-50"
-                                                onClick={() => handleStatusChange(website.id, website.status)}
-                                                disabled={loading}
-                                            >
-                                                {isConnected ? 'Disable' : 'Enable'}
-                                            </button>
-                                        </td>
                                     </tr>
                                 );
                             }) : (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                                    <td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">
                                         No websites yet. Click <strong>Add Monitoring</strong> to get started.
                                     </td>
                                 </tr>
@@ -166,13 +139,20 @@ export default function Websites() {
                 </div>
             </div>
 
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetContent className="sm:max-w-md">
+            <WebsiteStats
+                website={selectedWebsite}
+                uptime={selectedWebsite ? (uptime[selectedWebsite.id] ?? null) : null}
+                open={selectedWebsite !== null}
+                onClose={() => setSelectedWebsite(null)}
+            />
+
+            <Sheet open={addSheetOpen} onOpenChange={setAddSheetOpen}>
+                <SheetContent className="sm:max-w-lg">
                     <SheetHeader>
                         <SheetTitle>Add Monitoring</SheetTitle>
                     </SheetHeader>
 
-                    <form onSubmit={handleAddMonitor} className="mt-6 flex flex-col gap-5 px-7">
+                    <form onSubmit={handleAddMonitor} className="mt-6 flex flex-col gap-5 px-10">
                         <div className="flex flex-col gap-1.5">
                             <Label htmlFor="monitor-url">URL</Label>
                             <Input
@@ -202,10 +182,10 @@ export default function Websites() {
                         )}
 
                         <div className="flex gap-2 pt-2">
-                            <Button type="button" variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>
+                            <Button type="button" variant="outline" className="flex-1 cursor-pointer" onClick={() => setAddSheetOpen(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit" className="flex-1" disabled={submitting}>
+                            <Button type="submit" className="flex-1 cursor-pointer" disabled={submitting}>
                                 {submitting ? 'Starting…' : 'Start Monitoring'}
                             </Button>
                         </div>

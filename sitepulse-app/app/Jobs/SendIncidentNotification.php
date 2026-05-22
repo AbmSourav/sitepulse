@@ -142,9 +142,7 @@ class SendIncidentNotification implements ShouldQueue
         $parsed   = parse_url($siteUrl);
         $domain   = ($parsed['host'] ?? $siteUrl) . (! empty($parsed['port']) ? ':' . $parsed['port'] : '');
 
-        $subject = $this->event === 'down'
-            ? "🔴 {$domain} is DOWN"
-            : "✅ {$domain} is back UP";
+        $subject = $this->event === 'down' ? "🔴 {$domain} is DOWN" : "✅ {$domain} is back Online";
 
         try {
             Mail::send('emails.incident-notification', $this->emailViewData($domain, $siteUrl), function ($message) use ($email, $subject) {

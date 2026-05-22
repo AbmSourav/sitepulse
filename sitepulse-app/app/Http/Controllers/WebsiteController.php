@@ -22,7 +22,7 @@ class WebsiteController extends Controller
         $user = $request->user();
 
         $websites = Website::where('team_id', $user->currentTeam->id)
-            ->with('incidents')
+            ->with(['incidents', 'latestIncident'])
             ->get();
 
         $teams = $user->teams()
@@ -143,7 +143,7 @@ class WebsiteController extends Controller
         $user = request()->user();
 
         $websites = Website::where('team_id', $user->currentTeam->id)
-            ->with('incidents')
+            ->with(['incidents', 'latestIncident'])
             ->get();
 
         $teams = $user->teams()
@@ -163,13 +163,27 @@ class WebsiteController extends Controller
             $url    = parse_url($website->url);
             $domain = $url['host'] . (! empty($url['port']) ? ':' . $url['port'] : '');
 
+            $latestIncident = $website->latestIncident ?? [];
+            if ($latestIncident) {
+                $latestIncident = [
+                    'id'          => $latestIncident->id,
+                    'started_at'  => $latestIncident->started_at->toIso8601String(),
+                    'resolved_at' => $latestIncident->resolved_at?->toIso8601String(),
+                    'reason'      => $latestIncident->reason,
+                    'http_status' => $latestIncident->http_status,
+                ];
+            }
+
             return [
                 'id'              => $website->id,
                 'url'             => $domain,
+                'full_url'        => $website->url,
                 'status'          => $website->status,
                 'uptime_status'   => $website->uptime_status,
                 'last_checked_at' => $website->last_checked_at?->toIso8601String(),
-                'created_at'      => $website->created_at->toDateTimeString(),
+                'connected_at'    => $website->connected_at?->toIso8601String(),
+                'created_at'      => $website->created_at->toIso8601String(),
+                'recentIncident'  => $latestIncident,
             ];
         });
     }
@@ -193,11 +207,15 @@ class WebsiteController extends Controller
             $uptimeSeconds = max(0, $totalSeconds - $downtimeSeconds);
             $uptimePct     = $totalSeconds > 0 ? round(($uptimeSeconds / $totalSeconds) * 100, 2) : 100.0;
 
+            $sinceConnected = fn (SiteIncident $i) => $i->started_at >= $connectedAt;
+
             return [$website->id => [
-                'uptime_seconds'    => $uptimeSeconds,
-                'total_seconds'     => $totalSeconds,
-                'uptime_percentage' => $uptimePct,
-                'incident_count'    => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at >= $connectedAt)->count(),
+                'uptime_seconds'      => $uptimeSeconds,
+                'total_seconds'       => $totalSeconds,
+                'uptime_percentage'   => $uptimePct,
+                'incident_count'      => $website->incidents->filter($sinceConnected)->count(),
+                'incidents_7_days'    => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at >= $now->copy()->subDays(7))->count(),
+                'incidents_30_days'   => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at >= $now->copy()->subDays(30))->count(),
             ]];
         });
     }

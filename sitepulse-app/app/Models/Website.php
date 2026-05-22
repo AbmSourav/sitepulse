@@ -59,4 +59,9 @@ class Website extends Model
     {
         return $this->hasMany(SiteIncident::class)->orderByDesc('started_at');
     }
+
+    public function latestIncident(): HasOne
+    {
+        return $this->hasOne(SiteIncident::class)->latestOfMany('started_at');
+    }
 }

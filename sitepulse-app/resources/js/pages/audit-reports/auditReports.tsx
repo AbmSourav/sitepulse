@@ -97,17 +97,17 @@ export default function AuditReports() {
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto rounded-sm border border-gray-200 dark:border-gray-700">
+                            <div className="overflow-x-auto rounded-sm">
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-50 dark:bg-gray-800 text-left">
-                                        <tr>
+                                        <tr className="h-[55px]">
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Website</th>
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Date</th>
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">WP Version</th>
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">SSL</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Plugins</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Themes</th>
+                                            {/* <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Plugins</th>
+                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Themes</th> */}
                                             <th className="px-4 py-3"></th>
                                         </tr>
                                     </thead>
@@ -115,7 +115,7 @@ export default function AuditReports() {
                                         {auditReports.data.map((report) => (
                                             <tr
                                                 key={report.id}
-                                                className="hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
+                                                className="h-[55px] hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
                                                 onClick={() => { setSelectedReport(report); setSheetOpen(true); }}
                                             >
                                                 <td className="px-4 py-3 font-medium">
@@ -152,30 +152,6 @@ export default function AuditReports() {
                                                     ) : (
                                                         <span className="text-gray-500 dark:text-gray-400">—</span>
                                                     )}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                                    {report.server?.wp_version?.version ? (
-                                                        <>
-                                                            {report.plugins?.total ?? '—'}
-                                                            {(report.plugins?.outdated ?? 0) > 0 && (
-                                                                <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
-                                                                    {report.plugins!.outdated} outdated
-                                                                </span>
-                                                            )}
-                                                        </>
-                                                    ) : '—'}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                                    {report.server?.wp_version?.version ? (
-                                                        <>
-                                                            {report.themes?.total ?? '—'}
-                                                            {(report.themes?.outdated ?? 0) > 0 && (
-                                                                <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
-                                                                    {report.themes!.outdated} outdated
-                                                                </span>
-                                                            )}
-                                                        </>
-                                                    ) : '—'}
                                                 </td>
                                                 <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                                                     <Button variant="outline" size="sm" asChild>

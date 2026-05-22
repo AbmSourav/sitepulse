@@ -130,10 +130,10 @@ export default function Incidents() {
                         </div>
                     ) : (
                         <>
-                            <div className="overflow-x-auto rounded-sm border border-gray-200 dark:border-gray-700">
+                            <div className="overflow-x-auto rounded-sm">
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-50 dark:bg-gray-800 text-left">
-                                        <tr>
+                                        <tr className="h-[55px]">
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Website</th>
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">HTTP</th>
@@ -145,7 +145,7 @@ export default function Incidents() {
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {incidents.data.map((incident) => (
-                                            <tr key={incident.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <tr key={incident.id} className="h-[55px] hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                                 <td className="px-4 py-3 font-medium">
                                                     {incident.website ? parseDomain(incident.website.url) : '—'}
                                                 </td>
