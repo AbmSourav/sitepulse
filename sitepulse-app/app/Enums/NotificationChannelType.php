@@ -4,15 +4,15 @@ namespace App\Enums;
 
 enum NotificationChannelType: string
 {
-    case Slack   = 'slack';
     case Email   = 'email';
+    case Slack   = 'slack';
     case Discord = 'discord';
     case Webhook = 'webhook';
 
     public static function allowedForPlan(string $plan): array
     {
         return match ($plan) {
-            'free'  => [self::Slack],
+            'free'  => [self::Email],
             default => self::cases(),
         };
     }
@@ -20,8 +20,8 @@ enum NotificationChannelType: string
     public function label(): string
     {
         return match ($this) {
-            self::Slack   => 'Slack',
             self::Email   => 'Email',
+            self::Slack   => 'Slack',
             self::Discord => 'Discord',
             self::Webhook => 'Webhook',
         };

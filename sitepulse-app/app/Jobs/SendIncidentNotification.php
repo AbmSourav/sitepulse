@@ -12,6 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 class SendIncidentNotification implements ShouldQueue
@@ -36,18 +37,22 @@ class SendIncidentNotification implements ShouldQueue
             ->where('is_active', true)
             ->get();
 
+        $emailAddress = null;
+
         foreach ($channels as $channel) {
             try {
                 match ($channel->type) {
                     NotificationChannelType::Slack   => $this->sendSlack($channel->config, $website->url),
                     NotificationChannelType::Discord => $this->sendDiscord($channel->config, $website->url),
                     NotificationChannelType::Webhook => $this->sendWebhook($channel->config, $website->url),
-                    NotificationChannelType::Email   => null, // stubbed until mail template is ready
+                    NotificationChannelType::Email   => $emailAddress = $channel->config['email'] ?? null,
                 };
             } catch (Throwable $e) {
                 Log::warning("SendIncidentNotification: channel {$channel->id} ({$channel->type->value}) failed — {$e->getMessage()}");
             }
         }
+
+        $this->sendEmail($emailAddress ?? $website->user?->email);
     }
 
     private function message(string $siteUrl): string
@@ -124,5 +129,74 @@ class SendIncidentNotification implements ShouldQueue
         }
 
         $request->post($url);
+    }
+
+    private function sendEmail(?string $email): void
+    {
+        if (! $email) {
+            return;
+        }
+
+        $website  = $this->incident->website;
+        $siteUrl  = $website?->url ?? '';
+        $parsed   = parse_url($siteUrl);
+        $domain   = ($parsed['host'] ?? $siteUrl) . (! empty($parsed['port']) ? ':' . $parsed['port'] : '');
+
+        $subject = $this->event === 'down'
+            ? "🔴 {$domain} is DOWN"
+            : "✅ {$domain} is back UP";
+
+        try {
+            Mail::send('emails.incident-notification', $this->emailViewData($domain, $siteUrl), function ($message) use ($email, $subject) {
+                $message->to($email)->subject($subject);
+            });
+        } catch (Throwable $e) {
+            Log::warning("SendIncidentNotification: email to {$email} failed — {$e->getMessage()}");
+        }
+    }
+
+    private function emailViewData(string $domain, string $siteUrl): array
+    {
+        $minutes = $this->incident->resolved_at
+            ? (int) $this->incident->started_at->diffInMinutes($this->incident->resolved_at)
+            : 0;
+
+        if ($minutes < 60) {
+            $duration = "{$minutes}m";
+        } elseif ($minutes < 1440) {
+            $h = (int) ($minutes / 60);
+            $m = $minutes % 60;
+            $duration = $m > 0 ? "{$h}h {$m}m" : "{$h}h";
+        } else {
+            $d = (int) ($minutes / 1440);
+            $h = (int) (($minutes % 1440) / 60);
+            $duration = $h > 0 ? "{$d}d {$h}h" : "{$d}d";
+        }
+
+        $reasonLabel = match ($this->incident->reason) {
+            'connection_refused' => 'Connection refused',
+            'php_error'          => 'PHP fatal error detected',
+            'invalid_response'   => 'Invalid response from server',
+            'request_failed'     => 'Request failed',
+            default              => $this->incident->reason
+                ? 'HTTP ' . ltrim($this->incident->reason, 'http_')
+                : 'Unknown',
+        };
+
+        $subject = $this->event === 'down' ? "🔴 {$domain} is DOWN" : "✅ {$domain} is back Online";
+
+        return [
+            'subject'      => $subject,
+            'event'        => $this->event,
+            'domain'       => $domain,
+            'siteUrl'      => $siteUrl,
+            'sitepulseUrl' => config('app.url'),
+            'reason'       => $this->incident->reason,
+            'reasonLabel'  => $reasonLabel,
+            'httpStatus'   => $this->incident->http_status,
+            'startedAt'    => $this->incident->started_at->format('M j, Y H:i T'),
+            'resolvedAt'   => $this->incident->resolved_at?->format('M j, Y H:i T') ?? '',
+            'duration'     => $duration,
+        ];
     }
 }
