@@ -108,7 +108,7 @@ export function AuditReportDetail({ report, open, onOpenChange }: Props) {
                 </SheetHeader>
 
                 {report && (
-                    <div className="px-5 pb-6 space-y-5">
+                    <div className="px-8 pb-6 space-y-5">
                         {/* Server */}
                         <section>
                             <SectionHeading>Server</SectionHeading>

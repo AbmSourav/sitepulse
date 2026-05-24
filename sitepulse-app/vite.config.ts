@@ -8,7 +8,10 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
     server: {
-        hmr: false,
+        // hmr: false,
+        watch: {
+            usePolling: true,
+        },
     },
     plugins: [
         laravel({

@@ -122,7 +122,7 @@ class TeamController extends Controller
             : null;
 
         DB::transaction(function () use ($user, $team) {
-            User::where('current_team_id', $team->id)
+            User::where('team_id', $team->id)
                 ->where('id', '!=', $user->id)
                 ->each(fn (User $affectedUser) => $affectedUser->switchTeam($affectedUser->personalTeam()));
 

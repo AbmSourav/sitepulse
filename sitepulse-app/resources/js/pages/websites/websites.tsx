@@ -45,7 +45,6 @@ export default function Websites() {
     const [addSheetOpen, setAddSheetOpen] = useState(false);
     const [selectedWebsite, setSelectedWebsite] = useState<WebsiteStatsProps | null>(null);
     const [url, setUrl] = useState('');
-    const [teamId, setTeamId] = useState<string>(teams?.[0]?.id?.toString() ?? '');
     const [submitting, setSubmitting] = useState(false);
 
     function handleAddMonitor(e: React.FormEvent<HTMLFormElement>) {
@@ -53,7 +52,7 @@ export default function Websites() {
         setSubmitting(true);
 
         router.post(websiteRoutes.monitor.url(),
-            { url, teamId: parseInt(teamId) },
+            { url },
             {
                 onSuccess: () => {
                     toast.success('Monitoring started');
@@ -91,6 +90,7 @@ export default function Websites() {
                             {websites?.length > 0 ? websites.map((website) => {
                                 const stat = uptime[website.id] ?? null;
                                 const isConnected = website.status === 'connected';
+                                console.log('stats', stat, website)
 
                                 return (
                                     <tr
@@ -113,7 +113,7 @@ export default function Websites() {
                                         </td>
 
                                         <td className="px-4 py-3 relative">
-                                            {stat ? (
+                                            {stat && (website?.uptime_status !== 'unknown') ? (
                                                 <span className={`text-[22px] absolute top-[10px] left-[5px] font-medium ${stat.uptime_percentage >= 97 ? 'text-green-600 dark:text-green-400' : stat.uptime_percentage >= 90 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                                                     {stat.uptime_percentage}%
                                                 </span>
@@ -164,22 +164,6 @@ export default function Websites() {
                                 required
                             />
                         </div>
-
-                        {teams && teams.length > 1 && (
-                            <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="monitor-team">Team</Label>
-                                <Select value={teamId} onValueChange={setTeamId}>
-                                    <SelectTrigger id="monitor-team">
-                                        <SelectValue placeholder="Select team" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {teams.map((t) => (
-                                            <SelectItem key={t.id} value={t.id.toString()}>{t.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
 
                         <div className="flex gap-2 pt-2">
                             <Button type="button" variant="outline" className="flex-1 cursor-pointer" onClick={() => setAddSheetOpen(false)}>

@@ -154,15 +154,6 @@ export default function WebsiteStats({ website, uptime, open, onClose }: Props) 
                                 )}
                             </div>
                         </div>
-                        {/* <a
-                            href={website.full_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-0.5"
-                        >
-                            {website.full_url}
-                            <ExternalLink className="size-3" />
-                        </a> */}
                     </div>
 
                     {uptime && (
@@ -220,9 +211,9 @@ export default function WebsiteStats({ website, uptime, open, onClose }: Props) 
                         <button
                             onClick={handleToggleStatus}
                             disabled={toggling}
-                            className={`text-sm py-2 px-3 hover:text-white rounded cursor-pointer disabled:opacity-50 ${
+                            className={`text-sm py-2 px-3 hover:text-white rounded cursor-pointer disabled:opacity-50 focus-visible:outline-none ${
                                 isConnected
-                                    ? 'text-red-600 dark:text-red-400 hover:bg-red-700 dark:hover:bg-red-300'
+                                    ? 'text-red-600 border border-red-600 dark:text-red-400 hover:bg-red-700 dark:hover:bg-red-300'
                                     : 'text-green-600 dark:text-green-400 hover:bg-green-700 dark:hover:bg-green-300'
                             }`}
                         >

@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { Eye, EyeOff, LockKeyhole, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AlertError from '@/components/alert-error';
@@ -24,6 +24,7 @@ export default function TwoFactorRecoveryCodes({
     errors,
 }: Props) {
     const [codesAreVisible, setCodesAreVisible] = useState<boolean>(false);
+    const [processing, setProcessing] = useState(false);
     const codesSectionRef = useRef<HTMLDivElement | null>(null);
     const canRegenerateCodes = recoveryCodesList.length > 0 && codesAreVisible;
 
@@ -52,6 +53,15 @@ export default function TwoFactorRecoveryCodes({
 
     const RecoveryCodeIconComponent = codesAreVisible ? EyeOff : Eye;
 
+    function handleRegenerate() {
+        setProcessing(true);
+        router.post(regenerateRecoveryCodes.url(), {}, {
+            preserveScroll: true,
+            onSuccess: () => fetchRecoveryCodes(),
+            onFinish: () => setProcessing(false),
+        });
+    }
+
     return (
         <Card>
             <CardHeader>
@@ -72,30 +82,20 @@ export default function TwoFactorRecoveryCodes({
                         aria-expanded={codesAreVisible}
                         aria-controls="recovery-codes-section"
                     >
-                        <RecoveryCodeIconComponent
-                            className="size-4"
-                            aria-hidden="true"
-                        />
+                        <RecoveryCodeIconComponent className="size-4" aria-hidden="true" />
                         {codesAreVisible ? 'Hide' : 'View'} recovery codes
                     </Button>
 
                     {canRegenerateCodes && (
-                        <Form
-                            {...regenerateRecoveryCodes.form()}
-                            options={{ preserveScroll: true }}
-                            onSuccess={fetchRecoveryCodes}
+                        <Button
+                            variant="secondary"
+                            type="button"
+                            disabled={processing}
+                            aria-describedby="regenerate-warning"
+                            onClick={handleRegenerate}
                         >
-                            {({ processing }) => (
-                                <Button
-                                    variant="secondary"
-                                    type="submit"
-                                    disabled={processing}
-                                    aria-describedby="regenerate-warning"
-                                >
-                                    <RefreshCw /> Regenerate codes
-                                </Button>
-                            )}
-                        </Form>
+                            <RefreshCw /> Regenerate codes
+                        </Button>
                     )}
                 </div>
                 <div
@@ -116,42 +116,28 @@ export default function TwoFactorRecoveryCodes({
                                 >
                                     {recoveryCodesList.length ? (
                                         recoveryCodesList.map((code, index) => (
-                                            <div
-                                                key={index}
-                                                role="listitem"
-                                                className="select-text"
-                                            >
+                                            <div key={index} role="listitem" className="select-text">
                                                 {code}
                                             </div>
                                         ))
                                     ) : (
-                                        <div
-                                            className="space-y-2"
-                                            aria-label="Loading recovery codes"
-                                        >
-                                            {Array.from(
-                                                { length: 8 },
-                                                (_, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="h-4 animate-pulse rounded bg-muted-foreground/20"
-                                                        aria-hidden="true"
-                                                    />
-                                                ),
-                                            )}
+                                        <div className="space-y-2" aria-label="Loading recovery codes">
+                                            {Array.from({ length: 8 }, (_, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="h-4 animate-pulse rounded bg-muted-foreground/20"
+                                                    aria-hidden="true"
+                                                />
+                                            ))}
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="text-xs text-muted-foreground select-none">
                                     <p id="regenerate-warning">
-                                        Each recovery code can be used once to
-                                        access your account and will be removed
-                                        after use. If you need more, click{' '}
-                                        <span className="font-bold">
-                                            Regenerate codes
-                                        </span>{' '}
-                                        above.
+                                        Each recovery code can be used once to access your account and
+                                        will be removed after use. If you need more, click{' '}
+                                        <span className="font-bold">Regenerate codes</span> above.
                                     </p>
                                 </div>
                             </>

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\TeamRole;
 use App\Jobs\FetchSiteAudit;
 use App\Models\SiteIncident;
 use App\Models\Website;
@@ -25,29 +24,21 @@ class WebsiteController extends Controller
             ->with(['incidents', 'latestIncident'])
             ->get();
 
-        $teams = $user->teams()
-            ->wherePivotIn('role', [TeamRole::Owner->value, TeamRole::Admin->value])
-            ->get(['teams.id', 'teams.name']);
-
         return Inertia::render('websites/websites', [
             'websites' => $this->formatWebsites($websites),
             'uptime'   => $this->calcUptime($websites),
-            'teams'    => $teams,
         ]);
     }
 
     public function addMonitor(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'url'    => 'required|url|unique:websites,url',
-            'teamId' => 'required|exists:teams,id',
+            'url'    => 'required|url|unique:websites,url'
         ]);
-
-        $this->authorizeTeam($data['teamId']);
 
         Website::create([
             'user_id'      => $request->user()->id,
-            'team_id'      => $data['teamId'],
+            'team_id'      => request()->user()->team_id,
             'url'          => $data['url'],
             'api_key'      => null,
             'status'       => 'connected',
@@ -66,13 +57,7 @@ class WebsiteController extends Controller
             'siteUrl' => 'required|url',
         ]);
 
-        $user = $request->user();
-        $teams = $user->teams()
-            ->wherePivotIn('role', [TeamRole::Owner->value, TeamRole::Admin->value])
-            ->get();
-
         return Inertia::render('websites/authorize', [
-            'teams'     => $teams,
             'siteUrl'   => $data['siteUrl'],
         ]);
     }
@@ -146,14 +131,9 @@ class WebsiteController extends Controller
             ->with(['incidents', 'latestIncident'])
             ->get();
 
-        $teams = $user->teams()
-            ->wherePivotIn('role', [TeamRole::Owner->value, TeamRole::Admin->value])
-            ->get(['teams.id', 'teams.name']);
-
         return Inertia::render('websites/websites', [
             'websites' => $this->formatWebsites($websites),
             'uptime'   => $this->calcUptime($websites),
-            'teams'    => $teams,
         ]);
     }
 

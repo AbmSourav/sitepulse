@@ -1,4 +1,4 @@
-import { Form, Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { ChevronDown, Mail, UserPlus, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import CancelInvitationModal from '@/components/cancel-invitation-modal';
@@ -52,6 +52,13 @@ export default function TeamEdit({
 }: Props) {
     const getInitials = useInitials();
 
+    const { data, setData, patch, processing, errors: formErrors } = useForm({ name: team.name });
+
+    function handleUpdateTeam(e: React.SyntheticEvent) {
+        e.preventDefault();
+        patch(update.url(team.slug), { preserveScroll: true });
+    }
+
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [removeMemberDialogOpen, setRemoveMemberDialogOpen] = useState(false);
@@ -104,38 +111,30 @@ export default function TeamEdit({
                                 description="Update your team name and settings"
                             />
 
-                            <Form
-                                {...update.form(team.slug)}
-                                className="space-y-6"
-                            >
-                                {({ errors, processing }) => (
-                                    <>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="name">
-                                                Team name
-                                            </Label>
-                                            <Input
-                                                id="name"
-                                                name="name"
-                                                data-test="team-name-input"
-                                                defaultValue={team.name}
-                                                required
-                                            />
-                                            <InputError message={errors.name} />
-                                        </div>
+                            <form onSubmit={handleUpdateTeam} className="space-y-6">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="name">Team name</Label>
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        data-test="team-name-input"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={formErrors.name} />
+                                </div>
 
-                                        <div className="flex items-center gap-4">
-                                            <Button
-                                                type="submit"
-                                                data-test="team-save-button"
-                                                disabled={processing}
-                                            >
-                                                Save
-                                            </Button>
-                                        </div>
-                                    </>
-                                )}
-                            </Form>
+                                <div className="flex items-center gap-4">
+                                    <Button
+                                        type="submit"
+                                        data-test="team-save-button"
+                                        disabled={processing}
+                                    >
+                                        Save
+                                    </Button>
+                                </div>
+                            </form>
                         </>
                     ) : (
                         <>

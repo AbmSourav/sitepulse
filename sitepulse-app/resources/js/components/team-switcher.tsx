@@ -23,10 +23,12 @@ export function TeamSwitcher({ inHeader = false }: TeamSwitcherProps) {
     const isMobile = useIsMobile();
     const currentTeam = page.props.currentTeam;
     const teams = page.props.teams ?? [];
+    console.log(page)
 
     const switchTeam = (team: Team) => {
-        router.visit(switchMethod(team.slug), {
-            onFinish: () => window.location.reload(),
+        if (!team.slug) return;
+        router.post(switchMethod.url(team.slug), {}, {
+            preserveScroll: false,
         });
     };
 

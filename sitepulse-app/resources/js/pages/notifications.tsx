@@ -241,12 +241,12 @@ export default function Notifications() {
             </div>
 
             <Sheet open={view !== null} onOpenChange={(o) => { if (!o) closeSheet(); }}>
-                <SheetContent className="sm:max-w-md">
+                <SheetContent className="sm:max-w-lg">
                     <SheetHeader>
                         <SheetTitle>{sheetTitle}</SheetTitle>
                     </SheetHeader>
 
-                    <div className="px-7 mt-2">
+                    <div className="px-8 mt-2">
                         {view?.mode === 'list' && (() => {
                             const typeChannels = channels.filter((ch) => ch.type === view.type.value);
 
