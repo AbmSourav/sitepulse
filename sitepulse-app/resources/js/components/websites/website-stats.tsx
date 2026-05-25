@@ -214,7 +214,7 @@ export default function WebsiteStats({ website, uptime, open, onClose }: Props) 
                             className={`text-sm py-2 px-3 hover:text-white rounded cursor-pointer disabled:opacity-50 focus-visible:outline-none ${
                                 isConnected
                                     ? 'text-red-600 border border-red-600 dark:text-red-400 hover:bg-red-700 dark:hover:bg-red-300'
-                                    : 'text-green-600 dark:text-green-400 hover:bg-green-700 dark:hover:bg-green-300'
+                                    : 'text-green-600 border border-green-600 dark:text-green-400 hover:bg-green-700 dark:hover:bg-green-300'
                             }`}
                         >
                             {isConnected ? 'Disable monitoring' : 'Enable monitoring'}
