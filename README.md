@@ -32,6 +32,60 @@ sitepulse/
 [![Inertia.js](https://img.shields.io/badge/Inertia.js-v3-9553E9?logo=inertia&logoColor=white)]()
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)]()
 
+<br>
+
+## Downtime Monitoring
+
+SitePulse monitors connected websites by running periodic heartbeat checks through Laravel's scheduler and queue system. Here's how the full pipeline works:
+
+### 1. Scheduler — `sites:check-due` (every 15 seconds)
+
+`routes/console.php` schedules the `sites:check-due` artisan command to run every 15 seconds via `php artisan schedule:work`, on production it'll use Supervisor. The command queries all websites where `status = 'connected'` and `next_check_at` is past due (or null), then dispatches one `CheckSiteHeartbeat` job per site into the queue.
+
+```
+Scheduler (every 15s)
+  └── CheckDueSites command
+        └── dispatches CheckSiteHeartbeat job per due site
+```
+
+### 2. Queue Job — `CheckSiteHeartbeat`
+
+The job runs via `php artisan queue:work`. For each website it:
+
+- **WordPress sites** (have an `api_key`): Laravel app sends a GET request to WordPress site's `/index.php?rest_route=/sitepulse-monitor/v1/heartbeat` rest api with an `X-SPM-API-Key` header and expects `{ ok: true }` in the response body. Also scans the body for PHP fatal error signatures.
+- **Plain sites** (no `api_key`): sends a GET to the site root URL and considers any 2xx response as up.
+
+After each check, `next_check_at` is updated based on the result:
+
+| State | Next check interval |
+|---|---|
+| Up | 4 minutes |
+| 1st failure | 2 minutes (confirm it's really down) |
+| 2nd+ failure | 9 minutes |
+| 6+ consecutive failures | 19 minutes |
+
+**State transitions:**
+- On the **1st failure**: `uptime_status` flips to `down`, a `SiteIncident` row is created.
+- On the **2nd failure** (confirmed down): `SendIncidentNotification` is dispatched with event `'down'`.
+- On **recovery** (next successful check): the open incident is resolved, `SendIncidentNotification` dispatched with event `'up'`.
+
+Incidents are written only on transitions — a healthy site has zero incident rows.
+
+### 3. Notification Job — `SendIncidentNotification`
+
+Dispatched on down/up transitions. Loads all active `NotificationChannel` rows for the site's team and fires each one:
+
+| Channel type | Delivery |
+|---|---|
+| **Email** | Laravel `Mail::send()` using the `emails.incident-notification` Blade template |
+| **Slack** | POST to the configured incoming webhook URL |
+| **Discord** | POST to the configured incoming webhook URL |
+| **Webhook** | POST JSON payload; optional HMAC-SHA256 signature via `X-SPM-Signature` header |
+
+The email always fires as a fallback — if no email channel is configured for the team, it falls back to the website owner's account email.
+
+<br>
+
 ## WordPress Stack
 
 [![PHP](https://img.shields.io/badge/PHP-8.1-777BB4?logo=php&logoColor=white)]()
