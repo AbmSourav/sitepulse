@@ -1,6 +1,7 @@
 # Site Pulse
 
-WordPress Site Auditor SaaS with uptime monitoring. A WordPress plugin reports health metrics (plugins, DB size, PHP errors, SSL status); the Laravel app stores audit history, monitors uptime via scheduled heartbeat checks, and renders reports with recommendations. Alerts are sent via email and Slack/Discord webhooks for critical issues (plugin vulnerabilities, SSL expiry, site down).
+SitePulse is a SaaS platform that gives website site owners a single place to monitor the health and availability of their websites. 
+A lightweight WordPress plugin continuously reports key site metrics — plugin vulnerabilities, SSL certificate status, database size, and PHP errors — back to the SitePulse dashboard, where all audit history is stored and actionable recommendations are surfaced. In parallel, SitePulse runs automated uptime checks every few minutes and immediately alerts the team via email, Slack, or Discord the moment a site goes down — and again when it recovers. The result is full visibility into both the real-time availability and long-term health of every WordPress site a team manages, without any manual checking.
 
 <br>
 
