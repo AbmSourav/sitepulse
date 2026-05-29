@@ -24,7 +24,13 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install PHP Dependencies (no dev)
+      - name: Install PHP Dependencies (with dev for wayfinder)
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Generate Wayfinder routes
+        run: php artisan wayfinder:generate
+
+      - name: Remove dev dependencies
         run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Install Node Dependencies
