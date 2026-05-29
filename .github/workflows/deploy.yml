@@ -168,6 +168,7 @@ jobs:
             sudo chown -R www-data:www-data /var/www/sitepulse
             sudo chmod -R 755 /var/www/sitepulse/storage /var/www/sitepulse/bootstrap/cache
 
+            sudo -u www-data php /var/www/sitepulse/artisan config:clear
             sudo -u www-data php /var/www/sitepulse/artisan storage:link --force
             sudo -u www-data php /var/www/sitepulse/artisan migrate --force
 
