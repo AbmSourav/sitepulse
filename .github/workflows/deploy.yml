@@ -106,6 +106,12 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "${{ secrets.LIGHTSAIL_HOST }}" >> ~/.ssh/known_hosts
 
+      - name: Deploy filesystem permissions
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }} \
+            "sudo chown -R ubuntu:www-data /var/www/sitepulse && sudo chmod -R 775 /var/www/sitepulse"
+
       - name: Deploy via Rsync
         run: |
           rsync -az --delete \
