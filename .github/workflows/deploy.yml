@@ -1,0 +1,206 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sitepulse-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Dependencies
+        run: |
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          npm install
+
+      - name: PHP Lint (Pint)
+        run: composer lint
+
+      - name: Frontend Format Check
+        run: npm run format:check
+
+      - name: Frontend Lint Check
+        run: npm run lint:check
+
+  build:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sitepulse-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install PHP Dependencies (no dev)
+        run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install Node Dependencies
+        run: npm ci
+
+      - name: Build Frontend Assets
+        run: npm run build
+
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: |
+            sitepulse-app/
+            !sitepulse-app/node_modules/
+            !sitepulse-app/tests/
+            !sitepulse-app/docker-configs/
+            !sitepulse-app/db/
+            !sitepulse-app/.env
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Download Release Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release
+          path: release/
+
+      - name: Write .env
+        run: |
+          cat > release/.env <<EOF
+          APP_ENV=production
+          APP_DEBUG=false
+          APP_URL=https://sitepulsee.com
+          APP_KEY=${{ secrets.APP_KEY }}
+
+          LOG_CHANNEL=stack
+          LOG_STACK=single
+          LOG_LEVEL=error
+
+          DB_CONNECTION=mysql
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_DATABASE=sitepulse
+          DB_USERNAME=sitepulse
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+
+          SESSION_DRIVER=database
+          SESSION_LIFETIME=120
+          QUEUE_CONNECTION=database
+          CACHE_STORE=database
+
+          FILESYSTEM_DISK=local
+
+          MAIL_MAILER=resend
+          MAIL_FROM_ADDRESS=noreply@sitepulsee.com
+          MAIL_FROM_NAME=SitePulse
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          EOF
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.LIGHTSAIL_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy via Rsync
+        run: |
+          rsync -az --delete \
+            --exclude='.env' \
+            --exclude='storage/' \
+            --exclude='bootstrap/cache/' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
+            release/ \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/var/www/sitepulse/
+
+      - name: Upload .env
+        run: |
+          scp -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            release/.env \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/var/www/sitepulse/.env
+
+      - name: Checkout infra configs (sparse)
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            infra/configs
+          path: repo-configs/
+
+      - name: Deploy Caddy config
+        run: |
+          scp -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            repo-configs/infra/configs/Caddyfile \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/tmp/Caddyfile
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }} \
+            "sudo mv /tmp/Caddyfile /etc/caddy/Caddyfile && sudo chown root:caddy /etc/caddy/Caddyfile && sudo chmod 644 /etc/caddy/Caddyfile"
+
+      - name: Deploy Supervisor config
+        run: |
+          scp -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            repo-configs/infra/configs/sitepulse.conf \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/tmp/sitepulse.conf
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }} \
+            "sudo mv /tmp/sitepulse.conf /etc/supervisor/conf.d/sitepulse.conf"
+
+      - name: Post-deploy
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }} << 'ENDSSH'
+            set -e
+
+            sudo chown -R www-data:www-data /var/www/sitepulse
+            sudo chmod -R 755 /var/www/sitepulse/storage /var/www/sitepulse/bootstrap/cache
+
+            sudo -u www-data php /var/www/sitepulse/artisan storage:link --force
+            sudo -u www-data php /var/www/sitepulse/artisan migrate --force
+
+            sudo -u www-data php /var/www/sitepulse/artisan config:cache
+            sudo -u www-data php /var/www/sitepulse/artisan route:cache
+            sudo -u www-data php /var/www/sitepulse/artisan view:cache
+            sudo -u www-data php /var/www/sitepulse/artisan event:cache
+
+            sudo supervisorctl reread
+            sudo supervisorctl update
+            sudo supervisorctl restart sitepulse-queue:*
+
+            sudo systemctl reload caddy
+          ENDSSH
+
+      - name: Health check
+        run: |
+          curl --fail --retry 5 --retry-delay 5 --retry-connrefused \
+            https://sitepulsee.com/up

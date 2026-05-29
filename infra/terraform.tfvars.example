@@ -1,0 +1,28 @@
+# Copy this to terraform.tfvars and fill in the values
+# terraform.tfvars is gitignored — never commit it
+
+aws_region            = "us-east-1"
+aws_access_key_id     = "AKIA..."
+aws_secret_access_key = "..."
+
+instance_name     = "sitepulse-prod"
+bundle_id         = "small_3_0"
+blueprint_id      = "ubuntu_24_04"
+availability_zone = "us-east-1a"
+static_ip_name    = "sitepulse-prod-ip"
+key_pair_name     = "sitepulse-deploy"
+
+# ssh-keygen -t ed25519 -C "sitepulse-deploy" -f ~/.ssh/sitepulse_deploy
+# paste the contents of ~/.ssh/sitepulse_deploy.pub here
+ssh_public_key = "ssh-ed25519 AAAA..."
+
+# Use the same value for DB_PASSWORD GitHub Secret
+db_password = "..."
+
+# Cloudflare → Profile → API Tokens → "Edit zone DNS" scoped to sitepulsee.com
+cloudflare_api_token = "..."
+
+# Cloudflare → sitepulsee.com → Overview → right sidebar
+cloudflare_zone_id = "..."
+
+domain = "sitepulsee.com"

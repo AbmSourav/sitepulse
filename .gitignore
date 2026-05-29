@@ -154,3 +154,12 @@ sitepulse-wp/.env
 sitepulse-wp/sitepulse-monitor/resources/build
 
 .gityai
+
+# Terraform
+infra/terraform.tfvars
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+
+sitepulse-app/plan.md
