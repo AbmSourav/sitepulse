@@ -165,17 +165,17 @@ jobs:
             ubuntu@${{ secrets.LIGHTSAIL_HOST }} << 'ENDSSH'
             set -e
 
+            php /var/www/sitepulse/artisan config:clear
+            php /var/www/sitepulse/artisan storage:link --force
+            php /var/www/sitepulse/artisan migrate --force
+
+            php /var/www/sitepulse/artisan config:cache
+            php /var/www/sitepulse/artisan route:cache
+            php /var/www/sitepulse/artisan view:cache
+            php /var/www/sitepulse/artisan event:cache
+
             sudo chown -R www-data:www-data /var/www/sitepulse
             sudo chmod -R 755 /var/www/sitepulse/storage /var/www/sitepulse/bootstrap/cache
-
-            sudo -u www-data php /var/www/sitepulse/artisan config:clear
-            sudo -u www-data php /var/www/sitepulse/artisan storage:link --force
-            sudo -u www-data php /var/www/sitepulse/artisan migrate --force
-
-            sudo -u www-data php /var/www/sitepulse/artisan config:cache
-            sudo -u www-data php /var/www/sitepulse/artisan route:cache
-            sudo -u www-data php /var/www/sitepulse/artisan view:cache
-            sudo -u www-data php /var/www/sitepulse/artisan event:cache
 
             sudo supervisorctl reread
             sudo supervisorctl update
