@@ -14,11 +14,11 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { index as websitesIndex } from '@/routes/websites';
 import { index as auditReportsIndex } from '@/routes/audit-reports';
 import { index as incidentsIndex } from '@/routes/incidents';
-import { index as teamsIndex } from '@/routes/teams';
 import { index as notificationsIndex } from '@/routes/notifications';
+import { index as teamsIndex } from '@/routes/teams';
+import { index as websitesIndex } from '@/routes/websites';
 import type { NavItem } from '@/types';
 
 export function AppSidebar() {

@@ -1,6 +1,6 @@
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import type { AuditReport, AuditReportPlugin, AuditReportTheme } from '@/types';
 
 interface Props {
@@ -10,8 +10,14 @@ interface Props {
 }
 
 function formatBytes(bytes?: number): string {
-    if (!bytes) return '—';
-    if (bytes >= 1_073_741_824) return `${(bytes / 1_073_741_824).toFixed(1)} GB`;
+    if (!bytes) {
+return '—';
+}
+
+    if (bytes >= 1_073_741_824) {
+return `${(bytes / 1_073_741_824).toFixed(1)} GB`;
+}
+
     return `${(bytes / 1_048_576).toFixed(1)} MB`;
 }
 
@@ -29,9 +35,13 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 function HealthCheckRow({ label, value }: { label: string; value?: Record<string, string> }) {
-    if (!value) return null;
+    if (!value) {
+return null;
+}
+
     const status = value.status ?? '';
     const good = status === 'good';
+
     return (
         <div className="flex items-center justify-between py-1.5 text-sm">
             <span className="text-muted-foreground">{label}</span>
@@ -71,6 +81,7 @@ function PluginRow({ item }: { item: AuditReportPlugin }) {
 
 function ThemeRow({ item }: { item: AuditReportTheme }) {
     const outdated = item.require_update;
+
     return (
         <div className="py-2 border-b border-border last:border-0">
             <div className="flex items-center justify-between gap-2">

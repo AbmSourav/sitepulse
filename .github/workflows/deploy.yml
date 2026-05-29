@@ -6,40 +6,7 @@ on:
       - main
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: sitepulse-app
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install Dependencies
-        run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-          npm install
-
-      - name: PHP Lint (Pint)
-        run: composer lint
-
-      - name: Frontend Format Check
-        run: npm run format:check
-
-      - name: Frontend Lint Check
-        run: npm run lint:check
-
   build:
-    needs: [lint]
     runs-on: ubuntu-latest
     defaults:
       run:

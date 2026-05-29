@@ -31,6 +31,7 @@ export default function TwoFactorChallenge() {
                 toggleText: 'login using an authentication code',
             };
         }
+
         return {
             title: 'Authentication code',
             description: 'Enter the authentication code provided by your authenticator application.',
@@ -57,7 +58,10 @@ export default function TwoFactorChallenge() {
         router.post(store.url(), payload, {
             onError: (errs) => {
                 setErrors(errs as Record<string, string>);
-                if (!showRecoveryInput) setCode('');
+
+                if (!showRecoveryInput) {
+setCode('');
+}
             },
             onFinish: () => setProcessing(false),
         });

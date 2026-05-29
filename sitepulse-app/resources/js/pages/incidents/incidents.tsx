@@ -1,7 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { AlertTriangle } from 'lucide-react';
 import { index as incidentsIndex } from '@/routes/incidents';
 import type { Website } from '@/types/website';
-import { AlertTriangle } from 'lucide-react';
 
 interface Incident {
     id: number;
@@ -40,7 +40,9 @@ function parseDomain(url: string) {
 }
 
 function Duration({ startedAt, resolvedAt }: { startedAt: string; resolvedAt: string | null }) {
-    if (!resolvedAt) return <span className="text-yellow-600 dark:text-yellow-400">Ongoing</span>;
+    if (!resolvedAt) {
+return <span className="text-yellow-600 dark:text-yellow-400">Ongoing</span>;
+}
 
     const ms = new Date(resolvedAt).getTime() - new Date(startedAt).getTime();
     const minutes = Math.floor(ms / 60000);
@@ -48,9 +50,14 @@ function Duration({ startedAt, resolvedAt }: { startedAt: string; resolvedAt: st
     const days = Math.floor(hours / 24);
 
     let label = '';
-    if (days > 0) label = `${days}d ${hours % 24}h`;
-    else if (hours > 0) label = `${hours}h ${minutes % 60}m`;
-    else label = `${minutes}m`;
+
+    if (days > 0) {
+label = `${days}d ${hours % 24}h`;
+} else if (hours > 0) {
+label = `${hours}h ${minutes % 60}m`;
+} else {
+label = `${minutes}m`;
+}
 
     return <span>{label}</span>;
 }
@@ -66,9 +73,17 @@ export default function Incidents() {
         const params: Record<string, string | number> = {};
         const merged: Record<string, string | number | null> = { website_id: filters?.website_id, month: filters?.month, ...overrides };
 
-        if (merged.website_id) params.website_id = merged.website_id;
-        if (merged.month) params.month = merged.month;
-        if (merged.page) params.page = merged.page;
+        if (merged.website_id) {
+params.website_id = merged.website_id;
+}
+
+        if (merged.month) {
+params.month = merged.month;
+}
+
+        if (merged.page) {
+params.page = merged.page;
+}
 
         router.get(incidentsIndex(), params, { preserveState: true, replace: true });
     }

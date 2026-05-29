@@ -1,14 +1,15 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import websiteRoutes from '@/routes/websites';
-import { toast } from 'sonner';
 import { useState } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import WebsiteStats, { type WebsiteStatsProps } from '@/components/websites/website-stats';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import WebsiteStats from '@/components/websites/website-stats';
+import type {WebsiteStatsProps} from '@/components/websites/website-stats';
+import websiteRoutes from '@/routes/websites';
 
 interface UptimeStat {
     uptime_seconds: number;
@@ -25,12 +26,23 @@ interface Team {
 }
 
 function formatRelativeTime(dateStr: string | null): string {
-    if (!dateStr) return '—';
+    if (!dateStr) {
+return '—';
+}
+
     const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
 
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 60) {
+return `${diff}s ago`;
+}
+
+    if (diff < 3600) {
+return `${Math.floor(diff / 60)}m ago`;
+}
+
+    if (diff < 86400) {
+return `${Math.floor(diff / 3600)}h ago`;
+}
 
     return `${Math.floor(diff / 86400)}d ago`;
 }
@@ -61,7 +73,10 @@ export default function Websites() {
                 },
                 onError: (errors) => {
                     const first = Object.values(errors)[0];
-                    if (first) toast.error(first as string);
+
+                    if (first) {
+toast.error(first as string);
+}
                 },
                 onFinish: () => setSubmitting(false),
             }

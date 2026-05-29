@@ -1,7 +1,7 @@
 import { AppContent } from '@/components/app-content';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { AppShell } from '@/components/app-shell';
 import type { AppLayoutProps } from '@/types';
-import AppLogoIcon from '@/components/app-logo-icon';
 
 export default function WithoutSidebarLayout({
     children,

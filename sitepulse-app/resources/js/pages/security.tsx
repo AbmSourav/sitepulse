@@ -63,6 +63,7 @@ export default function Security({
                     reset('password', 'password_confirmation');
                     passwordInput.current?.focus();
                 }
+
                 if (errs.current_password) {
                     reset('current_password');
                     currentPasswordInput.current?.focus();

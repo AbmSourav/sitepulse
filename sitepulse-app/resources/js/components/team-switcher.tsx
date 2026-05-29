@@ -26,7 +26,10 @@ export function TeamSwitcher({ inHeader = false }: TeamSwitcherProps) {
     console.log(page)
 
     const switchTeam = (team: Team) => {
-        if (!team.slug) return;
+        if (!team.slug) {
+return;
+}
+
         router.post(switchMethod.url(team.slug), {}, {
             preserveScroll: false,
         });

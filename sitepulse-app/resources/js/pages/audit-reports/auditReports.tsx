@@ -1,9 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { AuditReportDetail } from '@/components/audit-report/audit-report-detail';
 import { CalendarDays } from 'lucide-react';
+import { useState } from 'react';
+import { AuditReportDetail } from '@/components/audit-report/audit-report-detail';
 import { Button } from '@/components/ui/button';
 import { show as auditReportShow, index as auditReportsIndex } from '@/routes/audit-reports';
-import { useState } from 'react';
 import type { AuditReport, Website } from '@/types';
 
 interface PaginatedReports {
@@ -36,9 +36,17 @@ export default function AuditReports() {
         const params: Record<string, string | number> = {};
         const merged: Record<string, string | number | null> = { website_id: filters?.website_id, month: filters?.month, ...overrides };
 
-        if (merged.website_id) params.website_id = merged.website_id;
-        if (merged.month) params.month = merged.month;
-        if (merged.page) params.page = merged.page;
+        if (merged.website_id) {
+params.website_id = merged.website_id;
+}
+
+        if (merged.month) {
+params.month = merged.month;
+}
+
+        if (merged.page) {
+params.page = merged.page;
+}
 
         router.get(auditReportsIndex(), params, { preserveState: true, replace: true });
     }
@@ -73,6 +81,7 @@ export default function AuditReports() {
                                 d.setMonth(d.getMonth() - i);
                                 const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                                 const label = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
                                 return <option key={value} value={value}>{label}</option>;
                             })}
                         </select>
@@ -116,7 +125,9 @@ export default function AuditReports() {
                                             <tr
                                                 key={report.id}
                                                 className="h-[55px] hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer"
-                                                onClick={() => { setSelectedReport(report); setSheetOpen(true); }}
+                                                onClick={() => {
+ setSelectedReport(report); setSheetOpen(true); 
+}}
                                             >
                                                 <td className="px-4 py-3 font-medium">
                                                     {report.website ? parseDomain(report.website.url) : '—'}

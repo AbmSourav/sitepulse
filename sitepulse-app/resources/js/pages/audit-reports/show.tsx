@@ -11,8 +11,14 @@ interface Props {
 }
 
 function formatBytes(bytes?: number): string {
-    if (!bytes) return '—';
-    if (bytes >= 1_073_741_824) return `${(bytes / 1_073_741_824).toFixed(1)} GB`;
+    if (!bytes) {
+return '—';
+}
+
+    if (bytes >= 1_073_741_824) {
+return `${(bytes / 1_073_741_824).toFixed(1)} GB`;
+}
+
     return `${(bytes / 1_048_576).toFixed(1)} MB`;
 }
 
@@ -30,9 +36,13 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 function HealthCheckRow({ label, value }: { label: string; value?: Record<string, string> }) {
-    if (!value) return null;
+    if (!value) {
+return null;
+}
+
     const status = value.status ?? '';
     const good = status === 'good';
+
     return (
         <div className="flex items-center justify-between mt-3 py-2 text-sm border-b border-border last:border-0">
             <span className="text-muted-foreground">{label}</span>

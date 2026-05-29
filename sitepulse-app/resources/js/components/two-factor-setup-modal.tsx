@@ -161,7 +161,9 @@ function TwoFactorVerificationStep({
         setProcessing(true);
         router.post(confirm.url(), { code }, {
             onSuccess: () => onClose(),
-            onError: () => { setCode(''); setCodeError('Invalid code. Please try again.'); },
+            onError: () => {
+ setCode(''); setCodeError('Invalid code. Please try again.'); 
+},
             onFinish: () => setProcessing(false),
         });
     }
@@ -174,7 +176,9 @@ function TwoFactorVerificationStep({
                         id="otp"
                         maxLength={OTP_MAX_LENGTH}
                         value={code}
-                        onChange={(value) => { setCode(value); setCodeError(undefined); }}
+                        onChange={(value) => {
+ setCode(value); setCodeError(undefined); 
+}}
                         disabled={processing}
                         pattern={REGEXP_ONLY_DIGITS}
                         autoFocus

@@ -1,6 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import { Bell, Globe, Mail, Plus, Webhook } from 'lucide-react';
+import { useState } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -38,6 +38,7 @@ const CHANNEL_FIELD_LABELS: Record<string, string> = {
 
 function ChannelIcon({ type, className }: { type: string; className?: string }) {
     const Icon = CHANNEL_ICONS[type] ?? Globe;
+
     return <Icon className={className} />;
 }
 
@@ -186,7 +187,10 @@ export default function Notifications() {
     }
 
     function handleDelete(channel: Channel) {
-        if (!confirm(`Remove "${channel.name}"?`)) return;
+        if (!confirm(`Remove "${channel.name}"?`)) {
+return;
+}
+
         router.delete(destroy(channel.id).url, { preserveScroll: true, onSuccess: closeSheet });
     }
 
@@ -240,7 +244,11 @@ export default function Notifications() {
                 </div>
             </div>
 
-            <Sheet open={view !== null} onOpenChange={(o) => { if (!o) closeSheet(); }}>
+            <Sheet open={view !== null} onOpenChange={(o) => {
+ if (!o) {
+closeSheet();
+} 
+}}>
                 <SheetContent className="sm:max-w-lg">
                     <SheetHeader>
                         <SheetTitle>{sheetTitle}</SheetTitle>

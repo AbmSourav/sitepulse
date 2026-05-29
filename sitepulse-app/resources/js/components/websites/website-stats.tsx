@@ -1,9 +1,9 @@
 import { router } from '@inertiajs/react';
+import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import websiteRoutes from '@/routes/websites';
 
 interface Incident {
@@ -49,9 +49,18 @@ const REASON_LABELS: Record<string, string> = {
 };
 
 function reasonLabel(reason: string | null, httpStatus: number | null): string {
-    if (!reason) return 'Unknown';
-    if (REASON_LABELS[reason]) return REASON_LABELS[reason];
-    if (reason.startsWith('http_') && httpStatus) return `HTTP ${httpStatus}`;
+    if (!reason) {
+return 'Unknown';
+}
+
+    if (REASON_LABELS[reason]) {
+return REASON_LABELS[reason];
+}
+
+    if (reason.startsWith('http_') && httpStatus) {
+return `HTTP ${httpStatus}`;
+}
+
     return reason;
 }
 
@@ -60,14 +69,20 @@ function formatDuration(startedAt: string, resolvedAt: string | null): string {
     const end   = resolvedAt ? new Date(resolvedAt).getTime() : Date.now();
     const mins  = Math.floor((end - start) / 60000);
 
-    if (mins < 60)  return `${mins}m`;
+    if (mins < 60)  {
+return `${mins}m`;
+}
+
     if (mins < 1440) {
         const h = Math.floor(mins / 60);
         const m = mins % 60;
+
         return m > 0 ? `${h}h ${m}m` : `${h}h`;
     }
+
     const d = Math.floor(mins / 1440);
     const h = Math.floor((mins % 1440) / 60);
+
     return h > 0 ? `${d}d ${h}h` : `${d}d`;
 }
 
@@ -113,7 +128,9 @@ function StatCard({ label, value, small }: { label: string; value: string; small
 export default function WebsiteStats({ website, uptime, open, onClose }: Props) {
     const [toggling, setToggling] = useState(false);
 
-    if (!website) return null;
+    if (!website) {
+return null;
+}
 
     const isConnected = website.status === 'connected';
     const incident = Array.isArray(website.recentIncident) ? null : website.recentIncident;
@@ -132,7 +149,11 @@ export default function WebsiteStats({ website, uptime, open, onClose }: Props) 
     }
 
     return (
-        <Sheet open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+        <Sheet open={open} onOpenChange={(o) => {
+ if (!o) {
+onClose();
+} 
+}}>
             <SheetContent className="sm:max-w-xl overflow-y-auto">
                 <SheetHeader className="mb-4">
                     <SheetTitle>Monitoring Stats</SheetTitle>

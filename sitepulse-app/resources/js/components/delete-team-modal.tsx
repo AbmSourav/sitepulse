@@ -31,6 +31,7 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
 
     const handleOpenChange = (nextOpen: boolean) => {
         onOpenChange(nextOpen);
+
         if (!nextOpen) {
             setConfirmationName('');
             setErrors({});

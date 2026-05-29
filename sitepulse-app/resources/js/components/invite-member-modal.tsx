@@ -44,6 +44,7 @@ export default function InviteMemberModal({
 
     const handleOpenChange = (nextOpen: boolean) => {
         onOpenChange(nextOpen);
+
         if (!nextOpen) {
             setInviteRole('member');
             setEmail('');
