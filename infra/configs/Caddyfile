@@ -11,11 +11,11 @@
 }
 
 # www → non-www redirect (Cloudflare proxies both)
-www.sitepulsee.com {
+www.sitepulsee.com:80 {
     redir https://sitepulsee.com{uri} permanent
 }
 
-sitepulsee.com {
+sitepulsee.com:80 {
     root * /var/www/sitepulse/public
     encode zstd gzip
 

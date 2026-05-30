@@ -13,22 +13,36 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     /**
      * Register any application services.
      */
+    public function boot(): void
+    {
+        parent::boot();
+
+        Telescope::auth(function ($request) {
+            $user = $request->user('web');
+            return $user
+                && $user->hasVerifiedEmail()
+                && in_array($user->email, [
+                    'keramotul.islam@gmail.com',
+                ]);
+        });
+    }
+
     public function register(): void
     {
-        // Telescope::night();
+        Telescope::night();
 
         $this->hideSensitiveRequestDetails();
 
-        $isLocal = $this->app->environment('local');
+        // $isLocal = $this->app->environment('local');
 
-        Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
-            return $isLocal ||
-                   $entry->isReportableException() ||
-                   $entry->isFailedRequest() ||
-                   $entry->isFailedJob() ||
-                   $entry->isScheduledTask() ||
-                   $entry->hasMonitoredTag();
-        });
+        // Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
+        //     return $isLocal ||
+        //            $entry->isReportableException() ||
+        //            $entry->isFailedRequest() ||
+        //            $entry->isFailedJob() ||
+        //            $entry->isScheduledTask() ||
+        //            $entry->hasMonitoredTag();
+        // });
     }
 
     /**
@@ -56,9 +70,10 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     protected function gate(): void
     {
-        Gate::define('viewTelescope', function (User $user) {
-            return in_array($user->email, [
-                //
+        Gate::define('viewTelescope', function (?User $user) {
+            \Illuminate\Support\Facades\Log::info('viewTelescope gate', ['user' => $user?->email]);
+            return $user && in_array($user->email, [
+                'keramotul.islam@gmail.com',
             ]);
         });
     }

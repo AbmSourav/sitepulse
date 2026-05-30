@@ -200,13 +200,26 @@ Three pieces working together:
 
 1. **Scheduler** (`routes/console.php`) — runs `sites:check-due` every minute. Triggered by either system cron calling `php artisan schedule:run`, or by `php artisan schedule:work` running long-lived in dev.
 2. **Command** (`app/Console/Commands/CheckDueSites.php`) — picks sites where `status = 'connected'` AND (`next_check_at IS NULL` OR `next_check_at <= now()`). Dispatches one `CheckSiteHeartbeat` job per due site.
-3. **Job** (`app/Jobs/CheckSiteHeartbeat.php`) — hits `GET <origin>/index.php?rest_route=/sitepulse-monitor/v1/heartbeat` with `X-SPM-API-Key` header. Classifies response, updates state, writes `next_check_at = now() + 5min`.
+3. **Job** (`app/Jobs/CheckSiteHeartbeat.php`) — checks the site based on monitoring mode (see below), classifies response, updates state, writes `next_check_at = now() + 5min`.
 
 Cadence is hardcoded at 5 min for now. Paid plans will make it per-site (see `sitepulse-app/plan.md` "Future: Paid Plans").
 
+### Two monitoring modes
+
+Determined by whether `websites.api_key` is set:
+
+- **WordPress plugin mode** (`api_key` is set) — site was connected via the SitePulse WP plugin. Hits `GET <origin>/index.php?rest_route=/sitepulse-monitor/v1/heartbeat` with `X-SPM-API-Key: <api_key>` header. Expects `{"ok": true}` in response body. Also scans body for PHP fatal error signatures.
+- **Plain URL mode** (`api_key` is null) — site was added directly from the SaaS dashboard without the WP plugin. Hits `GET <origin>/` and treats any `2xx` response as up. No WP plugin required.
+
 Job behavior:
-- Success (`2xx + ok=true`) → `consecutive_failures = 0`, `uptime_status = 'up'`, close any open `SiteIncident`, dispatch `SendIncidentNotification(..., 'up')`.
-- Failure (timeout / 5xx / non-2xx / `ok != true` / body contains PHP-error signature) → increment `consecutive_failures`. On the **first failure**: flip to `down`, create a `SiteIncident`, dispatch `SendIncidentNotification(..., 'down')`. Retry interval shortens to 2 min, then 9 min after 2nd failure, then 19 min after 6th+. Catches recovery-mode pages where WP returns 200 + critical-error HTML — the job scans the body for `Fatal error:`, `Parse error:`, `There has been a critical error...` etc.
+- **Plugin mode success**: `2xx + ok=true` → up.
+- **Plugin mode failure**: non-2xx, timeout, `ok != true`, or PHP error in body → down.
+- **Plain mode success**: any `2xx` → up.
+- **Plain mode failure**: non-2xx or timeout → down.
+- On **first failure**: flip to `down`, create a `SiteIncident`, retry after 2 min.
+- On **second failure**: dispatch `SendIncidentNotification(..., 'down')`, retry after 9 min.
+- After **6th+ failure**: retry after 19 min.
+- On **recovery**: close the `SiteIncident`, dispatch `SendIncidentNotification(..., 'up')`.
 
 Incidents are written **only on state transitions** — healthy site = 0 rows; outage = 1 row. No per-check ledger.
 

@@ -10,3 +10,6 @@ Schedule::command('sites:audit-due')
     ->everySixHours()
     // ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('telescope:prune --hours=3')
+    ->everyThreeHours();
