@@ -184,7 +184,7 @@ jobs:
             sudo supervisorctl update
             sudo supervisorctl restart sitepulse-queue:*
 
-            sudo systemctl reload caddy
+            sudo systemctl restart caddy
           ENDSSH
 
       - name: Health check
