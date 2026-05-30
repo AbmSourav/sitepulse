@@ -166,6 +166,8 @@ jobs:
             ubuntu@${{ secrets.LIGHTSAIL_HOST }} << 'ENDSSH'
             set -e
 
+            composer --working-dir=/var/www/sitepulse install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
             php /var/www/sitepulse/artisan config:clear
             php /var/www/sitepulse/artisan storage:link --force
             php /var/www/sitepulse/artisan migrate --force
