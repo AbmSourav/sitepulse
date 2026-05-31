@@ -12,8 +12,6 @@ use Inertia\Response;
 
 class NotificationChannelController extends Controller
 {
-    private string $plan = 'free';
-
     public function index(Request $request): Response
     {
         $teamId = $request->user()->team_id;
@@ -29,14 +27,14 @@ class NotificationChannelController extends Controller
                 'is_active' => $ch->is_active,
             ]);
 
-        $allowed = NotificationChannelType::allowedForPlan($this->plan);
+        $allowedChannels = $request->user()->planLimits()['notificationChannels'];
 
         $availableTypes = array_map(fn (NotificationChannelType $type) => [
             'value'        => $type->value,
             'label'        => $type->label(),
             'description'  => $type->description(),
             'config_fields' => $type->configFields(),
-            'allowed'      => in_array($type, $allowed, true),
+            'allowed'      => in_array($type->value, $allowedChannels, true),
         ], NotificationChannelType::cases());
 
         return Inertia::render('notifications', [
@@ -54,9 +52,6 @@ class NotificationChannelController extends Controller
         ]);
 
         $type = NotificationChannelType::from($data['type']);
-
-        $allowed = NotificationChannelType::allowedForPlan($this->plan);
-        abort_unless(in_array($type, $allowed, true), 403, 'This channel type requires a paid plan.');
 
         $this->validateConfig($type, $data['config']);
 

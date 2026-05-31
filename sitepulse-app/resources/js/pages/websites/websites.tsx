@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import PlanLimitDialog from '@/components/plan-limit-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +59,7 @@ export default function Websites() {
     const [selectedWebsite, setSelectedWebsite] = useState<WebsiteStatsProps | null>(null);
     const [url, setUrl] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [planError, setPlanError] = useState<string | null>(null);
 
     function handleAddMonitor(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -72,11 +74,12 @@ export default function Websites() {
                     setUrl('');
                 },
                 onError: (errors) => {
-                    const first = Object.values(errors)[0];
-
-                    if (first) {
-toast.error(first as string);
-}
+                    if (errors.plan) {
+                        setPlanError(errors.plan);
+                    } else {
+                        const first = Object.values(errors)[0];
+                        if (first) toast.error(first as string);
+                    }
                 },
                 onFinish: () => setSubmitting(false),
             }
@@ -85,6 +88,7 @@ toast.error(first as string);
 
     return (
         <>
+            <PlanLimitDialog message={planError} onClose={() => setPlanError(null)} />
             <Head title="Websites" />
             <div className="flex h-full flex-1 flex-col gap-4 px-12 py-4 mt-5">
                 <div className="flex items-center justify-between">

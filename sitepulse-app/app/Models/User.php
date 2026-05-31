@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Plan;
 use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Concerns\HasTeams;
@@ -13,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'email', 'password', 'team_id'])]
+#[Fillable(['name', 'email', 'password', 'team_id', 'subscription_detail'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -28,9 +29,28 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'   => 'datetime',
+            'password'            => 'hashed',
+            'subscription_detail' => 'array',
         ];
+    }
+
+    public function plan(): Plan
+    {
+        if (is_array($this->subscription_detail)) {
+            return Plan::from($this->subscription_detail['plan']);
+        }
+
+        return Plan::Free;
+    }
+
+    public function planLimits(): array
+    {
+        if (is_array($this->subscription_detail)) {
+            return $this->subscription_detail['limits'];
+        }
+
+        return $this->plan()->limits();
     }
 
     public function sendEmailVerificationNotification(): void

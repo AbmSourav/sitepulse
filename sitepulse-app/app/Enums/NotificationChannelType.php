@@ -9,14 +9,6 @@ enum NotificationChannelType: string
     case Discord = 'discord';
     case Webhook = 'webhook';
 
-    public static function allowedForPlan(string $plan): array
-    {
-        return match ($plan) {
-            'free'  => [self::Email],
-            default => self::cases(),
-        };
-    }
-
     public function label(): string
     {
         return match ($this) {

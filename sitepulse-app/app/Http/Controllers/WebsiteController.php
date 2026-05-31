@@ -38,7 +38,7 @@ class WebsiteController extends Controller
 
         Website::create([
             'user_id'      => $request->user()->id,
-            'team_id'      => request()->user()->team_id,
+            'team_id'      => $request->user()->currentTeam->id,
             'url'          => $data['url'],
             'api_key'      => null,
             'status'       => 'connected',

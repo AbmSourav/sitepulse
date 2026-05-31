@@ -23,7 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('user-password.update');
 
     Route::get('teams', [TeamController::class, 'index'])->name('teams.index');
-    Route::post('teams', [TeamController::class, 'store'])->name('teams.store');
+    Route::post('teams', [TeamController::class, 'store'])->middleware('plan.limit:maxTeams')->name('teams.store');
 
     Route::get('teams/{team}', [TeamController::class, 'edit'])->name('teams.edit');
     Route::patch('teams/{team}', [TeamController::class, 'update'])->name('teams.update');
@@ -37,7 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('teams/{team}/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
 
     Route::get('notifications', [NotificationChannelController::class, 'index'])->name('notifications.index');
-    Route::post('notifications', [NotificationChannelController::class, 'store'])->name('notifications.store');
+    Route::post('notifications', [NotificationChannelController::class, 'store'])->middleware('plan.limit:notificationChannels')->name('notifications.store');
     Route::patch('notifications/{channel}', [NotificationChannelController::class, 'update'])->name('notifications.update');
     Route::delete('notifications/{channel}', [NotificationChannelController::class, 'destroy'])->name('notifications.destroy');
 });

@@ -77,7 +77,7 @@ class CheckSiteHeartbeat implements ShouldQueue
 
         $this->website->last_checked_at = now();
 
-        $intervalTime = 4;
+        $intervalTime = $this->website->user->planLimits()['minInterval'];
         if ($isUp) {
             $this->handleSuccess();
         } else {

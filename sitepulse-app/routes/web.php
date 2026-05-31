@@ -22,12 +22,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('websites/authorize', [WebsiteController::class, 'create'])->name('websites.authorize');
 
-    Route::post('websites/store', [WebsiteController::class, 'store'])->name('websites.store');
+    Route::post('websites/store', [WebsiteController::class, 'store'])->middleware('plan.limit:maxSites')->name('websites.store');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('websites', [WebsiteController::class, 'index'])->name('websites.index');
-    Route::post('websites/monitor', [WebsiteController::class, 'addMonitor'])->name('websites.monitor');
+    Route::post('websites/monitor', [WebsiteController::class, 'addMonitor'])->middleware('plan.limit:maxSites')->name('websites.monitor');
     Route::get('audit-reports', [AuditReportController::class, 'index'])->name('audit-reports.index');
     Route::get('audit-reports/{auditReport}', [AuditReportController::class, 'show'])->name('audit-reports.show');
 

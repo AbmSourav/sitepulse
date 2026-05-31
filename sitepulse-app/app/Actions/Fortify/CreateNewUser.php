@@ -5,6 +5,7 @@ namespace App\Actions\Fortify;
 use App\Actions\Teams\CreateTeam;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Enums\Plan;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -28,14 +29,22 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             ...$this->profileRules(),
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => $this->passwordRules(),
+        ], [
+            'email.unique' => 'Wrong credentials for creating account.',
         ])->validate();
 
         return DB::transaction(function () use ($input) {
             $user = User::create([
-                'name' => $input['name'],
-                'email' => $input['email'],
-                'password' => $input['password'],
+                'name'                => $input['name'],
+                'email'               => $input['email'],
+                'password'            => $input['password'],
+                'subscription_detail' => [
+                    'plan'   => Plan::Free->value,
+                    'label'  => Plan::Free->label(),
+                    'limits' => Plan::Free->limits(),
+                ],
             ]);
 
             $this->createTeam->handle($user, $user->name."'s Team", isPersonal: true);

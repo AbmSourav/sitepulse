@@ -1,6 +1,19 @@
 import type { Auth } from '@/types/auth';
 import type { Team } from '@/types/teams';
 
+export type PlanLimits = {
+    maxSites: number;
+    minInterval: number;
+    maxTeams: number;
+    notificationChannels: string[];
+};
+
+export type PlanInfo = {
+    value: 'free' | 'pro' | 'enterprise';
+    label: string;
+    limits: PlanLimits;
+};
+
 export interface Website {
     id: number;
     team_id: number;
@@ -19,6 +32,7 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             currentTeam: Team | null;
             teams: Team[];
+            currentPlan: PlanInfo | null;
             siteUrl: string | null;
             websites: Website[];
             [key: string]: unknown;

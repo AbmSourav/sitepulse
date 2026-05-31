@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Plan;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Models\User;
@@ -51,6 +52,28 @@ class UserFactory extends Factory
 
             $user->switchTeam($team);
         });
+    }
+
+    public function pro(): static
+    {
+        return $this->state(fn () => [
+            'subscription_detail' => [
+                'plan'   => Plan::Pro->value,
+                'label'  => Plan::Pro->label(),
+                'limits' => Plan::Pro->limits(),
+            ],
+        ]);
+    }
+
+    public function enterprise(): static
+    {
+        return $this->state(fn () => [
+            'subscription_detail' => [
+                'plan'   => Plan::Enterprise->value,
+                'label'  => Plan::Enterprise->label(),
+                'limits' => Plan::Enterprise->limits(),
+            ],
+        ]);
     }
 
     /**
