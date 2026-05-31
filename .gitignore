@@ -7,10 +7,11 @@ yarn-error.log*
 lerna-debug.log*
 .DS_Store
 
-sitepulse-app/vendor
-sitepulse-app/db
-sitepulse-app/public/build
-sitepulse-app/public/images
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -162,5 +163,21 @@ infra/.terraform.lock.hcl
 infra/terraform.tfstate
 infra/terraform.tfstate.backup
 
-sitepulse-app/plan.md
-TODO.md
+plan/*
+sitepulse-app/resources/js/actions
+sitepulse-app/resources/js/routes
+sitepulse-app/resources/js/wayfinder
+/.phpunit.cache
+/bootstrap/ssr
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/resources/js/actions
+
+sitepulse-app/vendor
+sitepulse-app/db
+sitepulse-app/public/build
+sitepulse-app/public/images

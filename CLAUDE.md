@@ -173,7 +173,8 @@ app/
     ├── TeamRole.php
     ├── TeamPermission.php
     ├── UptimeStatus.php              # 'up' | 'down' | 'unknown'
-    └── NotificationChannelType.php   # 'slack' | 'discord' | 'webhook' | 'email'; allowedForPlan()
+    ├── NotificationChannelType.php   # 'slack' | 'discord' | 'webhook' | 'email'
+    └── Plan.php                      # 'free' | 'pro' | 'enterprise'; limits() + label()
 ```
 
 Routes:
@@ -200,9 +201,9 @@ Three pieces working together:
 
 1. **Scheduler** (`routes/console.php`) — runs `sites:check-due` every minute. Triggered by either system cron calling `php artisan schedule:run`, or by `php artisan schedule:work` running long-lived in dev.
 2. **Command** (`app/Console/Commands/CheckDueSites.php`) — picks sites where `status = 'connected'` AND (`next_check_at IS NULL` OR `next_check_at <= now()`). Dispatches one `CheckSiteHeartbeat` job per due site.
-3. **Job** (`app/Jobs/CheckSiteHeartbeat.php`) — checks the site based on monitoring mode (see below), classifies response, updates state, writes `next_check_at = now() + 5min`.
+3. **Job** (`app/Jobs/CheckSiteHeartbeat.php`) — checks the site based on monitoring mode (see below), classifies response, updates state, writes `next_check_at = now() + <plan interval>`.
 
-Cadence is hardcoded at 5 min for now. Paid plans will make it per-site (see `sitepulse-app/plan.md` "Future: Paid Plans").
+Check cadence comes from `$website->user->planLimits()['minInterval']` (minutes). Free = 5 min, Pro = 3 min, Enterprise = 1 min.
 
 ### Two monitoring modes
 
@@ -227,7 +228,8 @@ Incidents are written **only on state transitions** — healthy site = 0 rows; o
 
 Team-scoped alert destinations stored in `notification_channels`. Each row has `type` (enum), `name`, `config` (JSON), `is_active`.
 
-- **Free plan**: Slack only. Gated by `NotificationChannelType::allowedForPlan('free')`.
+- **Free plan**: Email only. Gated by `EnforcePlanLimit` middleware (`plan.limit:notificationChannels`) on `POST /settings/notifications`.
+- **Pro / Enterprise**: All channel types allowed.
 - **Slack / Discord**: POST to `config.webhook_url` (incoming webhook format).
 - **Webhook**: POST JSON payload to `config.url`; optional HMAC signature via `config.secret`.
 - **Email**: stubbed — returns early until a mail template is wired up.
@@ -276,6 +278,31 @@ Layout resolution (`app.tsx`):
 - Every user has a personal team created on registration
 - URLs are **not** team-prefixed — authorization is handled per-controller via `authorizeTeam(int $teamId)` in `WebsiteController` (checks `$user->team_id` matches the resource's `team_id`)
 - Roles: `Owner`, `Member`, `Guest` (via `TeamRole` enum)
+
+### Plan / Subscription System
+
+Plans belong to the **user**, not the team. The `Plan` enum (`app/Enums/Plan.php`) is the single source of truth for default limits:
+
+| Plan | maxSites | minInterval | maxTeams | notificationChannels |
+|------|----------|-------------|----------|----------------------|
+| Free | 3 | 5 min | 1 | email |
+| Pro | unlimited | 3 min | 1 | all |
+| Enterprise | unlimited | 1 min | unlimited | all |
+
+**Storage**: `users.subscription_detail` — nullable JSON column. When `null`, the user is on Free. When set, contains `{ plan, label, limits }` with user-specific values that override the enum defaults. New users are created with Free plan details written explicitly (not null) by `CreateNewUser`.
+
+**Reading limits**: Always via `$user->planLimits()` (reads from DB column if set, falls back to `Plan::Free->limits()`). Never read the `Plan` enum directly in controllers or jobs.
+
+**Enforcement**: `EnforcePlanLimit` middleware (`app/Http/Middleware/EnforcePlanLimit.php`) registered as `plan.limit`. Applied per-route with a parameter:
+- `plan.limit:maxSites` — on `websites.store` and `websites.monitor`
+- `plan.limit:maxTeams` — on `teams.store` (counts teams where user has `Owner` role in pivot)
+- `plan.limit:notificationChannels` — on `notifications.store`
+
+Limit errors are thrown as `ValidationException::withMessages(['plan' => '...'])` (422) so Inertia's `onError` callback fires and a `PlanLimitDialog` popup is shown to the user.
+
+**Upgrading a user** (future — Lemon Squeezy / Paddle webhook): update `subscription_detail` on the user row with the new plan, label, and limits. No migrations needed.
+
+**Shared prop**: `currentPlan` is shared via `HandleInertiaRequests` as `{ value, label, limits }` for frontend use.
 
 ### WordPress Plugin (`sitepulse-monitor`)
 

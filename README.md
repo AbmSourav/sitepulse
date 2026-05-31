@@ -1,26 +1,14 @@
-# Site Pulse
+# SitePulse
 
-SitePulse is a SaaS platform that gives website site owners a single place to monitor the health and availability of their websites. 
-A lightweight WordPress plugin continuously reports key site metrics — plugin vulnerabilities, SSL certificate status, database size, and PHP errors — back to the SitePulse dashboard, where all audit history is stored and actionable recommendations are surfaced. In parallel, SitePulse runs automated uptime checks every few minutes and immediately alerts the team via email, Slack, or Discord the moment a site goes down — and again when it recovers. The result is full visibility into both the real-time availability and long-term health of every WordPress site a team manages, without any manual checking.
+**[SitePulse](https://sitepulsee.com)** is a SaaS platform for monitoring the health and uptime of any website. Add any URL for plain uptime monitoring, or connect the WordPress plugin to unlock deeper insight — audit history, SSL status, plugin vulnerabilities, database health, and PHP errors — all in one dashboard with instant alerts the moment something goes wrong.
 
-<br>
+No more manually checking sites. No more finding out a site was down hours after the fact.
 
-## Monorepo Layout
-
-```
-sitepulse/
-├── sitepulse-app/          # Laravel 13 app — backend API + React/Inertia frontend
-└── sitepulse-wp/           # WordPress Docker dev environment
-    ├── sitepulse-monitor/  # WP plugin source — tracked in git
-    └── wordpress/          # Full WP install — NOT tracked in git
-        └── wp-content/plugins/sitepulse-monitor/   # Symlink or copy for local dev
-```
-
-`sitepulse-wp/sitepulse-monitor/` is the canonical plugin source. The `sitepulse-wp/wordpress/` directory is gitignored — only the plugin folder at `sitepulse-wp/sitepulse-monitor/` is tracked.
+> Hosted on **AWS** · Infrastructure provisioned with **Terraform** · Deployed via **GitHub Actions CI/CD**
 
 <br>
 
-## SaaS Stack
+## SaaS App Stack
 
 [![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white)]()
 [![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)]()
@@ -35,62 +23,85 @@ sitepulse/
 
 <br>
 
-## Downtime Monitoring
+## Features
 
-SitePulse monitors connected websites by running periodic heartbeat checks through Laravel's scheduler and queue system. Here's how the full pipeline works:
-
-### 1. Scheduler — `sites:check-due` (every 15 seconds)
-
-`routes/console.php` schedules the `sites:check-due` artisan command to run every 15 seconds via `php artisan schedule:work`, on production it'll use Supervisor. The command queries all websites where `status = 'connected'` and `next_check_at` is past due (or null), then dispatches one `CheckSiteHeartbeat` job per site into the queue.
-
-```
-Scheduler (every 15s)
-  └── CheckDueSites command
-        └── dispatches CheckSiteHeartbeat job per due site
-```
-
-### 2. Queue Job — `CheckSiteHeartbeat`
-
-The job runs via `php artisan queue:work`. For each website it:
-
-- **WordPress sites** (have an `api_key`): Laravel app sends a GET request to WordPress site's `/index.php?rest_route=/sitepulse-monitor/v1/heartbeat` rest api with an `X-SPM-API-Key` header and expects `{ ok: true }` in the response body. Also scans the body for PHP fatal error signatures.
-- **Plain sites** (no `api_key`): sends a GET to the site root URL and considers any 2xx response as up.
-
-After each check, `next_check_at` is updated based on the result:
-
-| State | Next check interval |
-|---|---|
-| Up | 4 minutes |
-| 1st failure | 2 minutes (confirm it's really down) |
-| 2nd+ failure | 9 minutes |
-| 6+ consecutive failures | 19 minutes |
-
-**State transitions:**
-- On the **1st failure**: `uptime_status` flips to `down`, a `SiteIncident` row is created.
-- On the **2nd failure** (confirmed down): `SendIncidentNotification` is dispatched with event `'down'`.
-- On **recovery** (next successful check): the open incident is resolved, `SendIncidentNotification` dispatched with event `'up'`.
-
-Incidents are written only on transitions — a healthy site has zero incident rows.
-
-### 3. Notification Job — `SendIncidentNotification`
-
-Dispatched on down/up transitions. Loads all active `NotificationChannel` rows for the site's team and fires each one:
-
-| Channel type | Delivery |
-|---|---|
-| **Email** | Laravel `Mail::send()` using the `emails.incident-notification` Blade template |
-| **Slack** | POST to the configured incoming webhook URL |
-| **Discord** | POST to the configured incoming webhook URL |
-| **Webhook** | POST JSON payload; optional HMAC-SHA256 signature via `X-SPM-Signature` header |
-
-The email always fires as a fallback — if no email channel is configured for the team, it falls back to the website owner's account email.
+- **Universal uptime monitoring** — add any URL and SitePulse will check it on a per-plan cadence (1–5 min). No plugin required.
+- **WordPress deep monitoring** — connect the lightweight plugin to get health snapshots covering plugin vulnerabilities, SSL certificate, database size, server info, and PHP errors. Full audit history stored and queryable.
+- **Incident tracking** — every outage is recorded with start time, HTTP status, and failure reason. Resolved automatically on recovery.
+- **Instant alerts** — down/up notifications via Email, Slack, Discord, or custom webhooks the moment a state transition is detected.
+- **Team collaboration** — invite members, assign roles (Owner / Member / Guest), and share monitoring across a team.
+- **Plan-based limits** — Free, Pro, and Enterprise tiers with configurable site limits, check intervals, and notification channel access.
 
 <br>
 
-## WordPress Stack
+## How Uptime Monitoring Works
+
+```
+System cron (every minute)
+  └── sites:check-due command
+        └── dispatches CheckSiteHeartbeat job per due site
+              ├── Plain mode      →  GET /  (any 2xx = up)
+              └── WordPress mode  →  GET /heartbeat  (api_key auth, expects {ok:true},
+                                     also detects PHP fatal errors in response body)
+```
+
+On **first failure**: incident created, retry in 2 min.  
+On **second failure** (confirmed down): alert dispatched to all team notification channels.  
+On **recovery**: incident resolved, recovery alert dispatched.
+
+| State | Next check |
+|---|---|
+| Up | Free: 5 min · Pro: 3 min · Enterprise: 1 min |
+| 1st failure | 2 min |
+| 2nd+ failure | 9 min |
+| 6+ consecutive failures | 19 min |
+
+<br>
+
+## Monorepo Layout
+
+```
+sitepulse/
+├── sitepulse-app/          # Laravel 13 app — backend API + React/Inertia frontend
+└── sitepulse-wp/           # WordPress Docker dev environment
+    ├── sitepulse-monitor/  # WP plugin source — tracked in git
+    └── wordpress/          # Full WP install — NOT tracked in git
+```
+
+`sitepulse-wp/sitepulse-monitor/` is the canonical plugin source. `sitepulse-wp/wordpress/` is gitignored.
+
+<br>
+
+## WordPress Plugin Stack
 
 [![PHP](https://img.shields.io/badge/PHP-8.1-777BB4?logo=php&logoColor=white)]()
 [![WordPress](https://img.shields.io/badge/WordPress-6.x-21759B?logo=wordpress&logoColor=white)]()
 [![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?logo=mysql&logoColor=white)]()
 [![Nginx](https://img.shields.io/badge/Nginx-latest-009639?logo=nginx&logoColor=white)]()
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)]()
+
+<br>
+
+## Notification Channels
+
+Alerts are dispatched on down and recovery events to all active channels configured per team:
+
+| Channel | How |
+|---|---|
+| **Email** | Blade template via Laravel Mail (Resend in production) |
+| **Slack** | Incoming webhook POST |
+| **Discord** | Incoming webhook POST |
+| **Custom Webhook** | JSON POST with optional HMAC-SHA256 signature (`X-SPM-Signature`) |
+
+If no email channel is configured, alerts fall back to the site owner's account email.
+
+<br>
+
+## Plans
+
+| | Free | Pro | Enterprise |
+|---|---|---|---|
+| Monitored sites | 3 | Unlimited | Unlimited |
+| Check interval | 5 min | 3 min | 1 min |
+| Teams | 1 | 1 | Unlimited |
+| Notification channels | Email | All | All |
