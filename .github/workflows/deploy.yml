@@ -68,37 +68,9 @@ jobs:
           APP_KEY: ${{ secrets.APP_KEY }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        run: |
-          {
-            echo "APP_ENV=production"
-            echo "APP_DEBUG=false"
-            echo "APP_URL=https://sitepulsee.com"
-            echo "ASSET_URL=https://sitepulsee.com"
-            echo "APP_KEY=$(printenv APP_KEY)"
-            echo ""
-            echo "LOG_CHANNEL=stack"
-            echo "LOG_STACK=single"
-            echo "LOG_LEVEL=error"
-            echo ""
-            echo "DB_CONNECTION=mysql"
-            echo "DB_HOST=127.0.0.1"
-            echo "DB_PORT=3306"
-            echo "DB_DATABASE=sitepulse"
-            echo "DB_USERNAME=sitepulse"
-            echo "DB_PASSWORD=$(printenv DB_PASSWORD)"
-            echo ""
-            echo "SESSION_DRIVER=database"
-            echo "SESSION_LIFETIME=120"
-            echo "QUEUE_CONNECTION=database"
-            echo "CACHE_STORE=database"
-            echo ""
-            echo "FILESYSTEM_DISK=local"
-            echo ""
-            echo "MAIL_MAILER=resend"
-            echo "MAIL_FROM_ADDRESS=noreply@sitepulsee.com"
-            echo "MAIL_FROM_NAME=SitePulse"
-            echo "RESEND_API_KEY=$(printenv RESEND_API_KEY)"
-          } > release/.env
+          PROXY_USERNAME: ${{ secrets.PROXY_USERNAME }}
+          PROXY_PASSWORD: ${{ secrets.PROXY_PASSWORD }}
+        run: envsubst < release/.env.prod > release/.env
 
       - name: Configure SSH
         run: |
