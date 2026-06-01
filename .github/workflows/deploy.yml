@@ -50,6 +50,7 @@ jobs:
             !sitepulse-app/docker-configs/
             !sitepulse-app/db/
             !sitepulse-app/.env
+            sitepulse-app/.env.prod
           retention-days: 1
 
   deploy:
@@ -62,9 +63,6 @@ jobs:
         with:
           name: release
           path: release/
-
-      - name: Debug artifact structure
-        run: find release/ -maxdepth 3 | head -40
 
       - name: Write .env
         env:
