@@ -40,7 +40,7 @@ class CheckSiteHeartbeat implements ShouldQueue
         try {
             if ($this->website->api_key) {
                 // WordPress plugin mode
-                $response = Http::timeout(10)
+                $response = $this->httpClient()
                     ->withHeaders(['X-SPM-API-Key' => $this->website->api_key])
                     ->get($endpoint);
 
@@ -60,7 +60,7 @@ class CheckSiteHeartbeat implements ShouldQueue
                 }
             } else {
                 // Plain monitoring mode — any 2xx = up
-                $response   = Http::timeout(10)->get($origin . '/');
+                $response   = $this->httpClient()->get($origin . '/');
                 $httpStatus = $response->status();
 
                 if ($response->successful()) {
@@ -86,6 +86,25 @@ class CheckSiteHeartbeat implements ShouldQueue
 
         $this->website->next_check_at = now()->addMinutes($intervalTime);
         $this->website->save();
+    }
+
+    private function httpClient(): \Illuminate\Http\Client\PendingRequest
+    {
+        $client = Http::timeout(10);
+
+        if (config('services.proxy.enabled')) {
+            $client = $client->withOptions([
+                'proxy' => sprintf(
+                    'https://%s:%s@%s:%d',
+                    config('services.proxy.username'),
+                    config('services.proxy.password'),
+                    parse_url(config('services.proxy.url'), PHP_URL_HOST),
+                    (int) config('services.proxy.port'),
+                ),
+            ]);
+        }
+
+        return $client;
     }
 
     private function bodyHasPhpError(string $body): bool

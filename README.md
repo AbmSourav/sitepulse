@@ -4,7 +4,9 @@
 
 No more manually checking sites. No more finding out a site was down hours after the fact.
 
-> Hosted on **AWS** · Infrastructure provisioned with **Terraform** · Deployed via **GitHub Actions CI/CD**
+> [!NOTE]
+> · Hosted on **AWS** <br>
+> · Infrastructure provisioned with **Terraform**. Deployed via **GitHub Actions CI/CD**
 
 <br>
 
