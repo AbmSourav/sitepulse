@@ -169,9 +169,9 @@ sitepulse-app/resources/js/routes
 sitepulse-app/resources/js/wayfinder
 /.phpunit.cache
 /bootstrap/ssr
-/public/build
-/public/fonts-manifest.dev.json
-/public/hot
+sitepulse-app/public/build
+sitepulse-app/public/fonts-manifest.dev.json
+sitepulse-app/public/hot
 /public/storage
 /storage/*.key
 /storage/pail

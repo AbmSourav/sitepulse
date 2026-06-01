@@ -36,12 +36,15 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $avatarUrl = 'https://www.gravatar.com/avatar/' . hash('sha256', strtolower(trim($user->email))) . '?s=64&d=mp';
 
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $user,
+                'user' => $user ? array_merge($user->toArray(), [
+                    'avatar' => $avatarUrl,
+                ]) : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'currentTeam' => fn () => $user?->currentTeam ? $user->toUserTeam($user->currentTeam) : null,
