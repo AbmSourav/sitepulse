@@ -70,7 +70,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           PROXY_USERNAME: ${{ secrets.PROXY_USERNAME }}
           PROXY_PASSWORD: ${{ secrets.PROXY_PASSWORD }}
-        run: envsubst < release/.env.prod > release/.env
+        run: envsubst < release/sitepulse-app/.env.prod > release/.env
 
       - name: Configure SSH
         run: |
