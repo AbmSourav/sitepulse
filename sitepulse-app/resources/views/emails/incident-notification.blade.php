@@ -26,7 +26,7 @@
     <div class="wrapper">
         <div class="header">
             <a href="{{ $sitepulseUrl }}" style="display: inline-block; text-decoration: none;">
-                <img src="{{ asset('images/SitePulse.png') }}" alt="SitePulse" style="height: 35px; width: 40px; vertical-align: middle;">
+                <img src="https://sitepulsee.com/images/SitePulse.png" alt="SitePulse" style="height: 35px; width: 40px; vertical-align: middle;">
                 <span style="font-size: 18px; font-weight: 700; color: #232323; vertical-align: middle; margin-left: 6px;">SitePulse</span>
             </a>
         </div>
