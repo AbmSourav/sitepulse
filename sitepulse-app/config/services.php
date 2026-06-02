@@ -35,10 +35,16 @@ return [
         ],
     ],
 
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect'      => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+    ],
+
     'proxy' => [
         'enabled'  => env('PROXY_ENABLED', false),
         'url'      => env('PROXY_URL', 'https://dc.decodo.com'),
-        'port'     => (int) env('PROXY_PORT', 10001),
+        'port'     => (int) env('PROXY_PORT', 10000),
         'username' => env('PROXY_USERNAME', ''),
         'password' => env('PROXY_PASSWORD', ''),
     ],

@@ -3,6 +3,7 @@
 WordPress Site Auditor SaaS with uptime monitoring. A WordPress plugin reports health metrics (plugins, DB size, PHP errors, SSL status); the Laravel app stores audit history, monitors uptime via scheduled heartbeat checks, and renders reports with recommendations. Alerts are sent via email and Slack/Discord webhooks for critical issues (plugin vulnerabilities, SSL expiry, site down).
 
 Important: Review CLAUDE.md file after code implementations and make changes if necessary.
+Improtant: Claude is not allowed to look into or make changes to .env files.
 
 ## Monorepo Layout
 

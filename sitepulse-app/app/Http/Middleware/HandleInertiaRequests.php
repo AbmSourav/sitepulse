@@ -36,7 +36,10 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        $avatarUrl = 'https://www.gravatar.com/avatar/' . hash('sha256', strtolower(trim($user->email))) . '?s=64&d=mp';
+        $avatarUrl = '';
+        if ($user) {
+            $avatarUrl = 'https://www.gravatar.com/avatar/' . hash('sha256', strtolower(trim($user->email))) . '?s=64&d=mp';
+        }
 
         return [
             ...parent::share($request),

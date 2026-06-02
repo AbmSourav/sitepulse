@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('auth_provider')->nullable();
+            $table->string('auth_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->json('subscription_detail')->nullable();
+            $table->string('password')->nullable();
             $table->unsignedBigInteger('team_id')->nullable();
             $table->rememberToken();
             $table->timestamps();

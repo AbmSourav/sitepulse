@@ -35,17 +35,22 @@ class CreateNewUser implements CreatesNewUsers
             'email.unique' => 'Wrong credentials for creating account.',
         ])->validate();
 
+        return $this->storeUserAndTeam([
+            'name'                => $input['name'],
+            'email'               => $input['email'],
+            'password'            => $input['password'] ?? null,
+            'subscription_detail' => [
+                'plan'   => Plan::Free->value,
+                'label'  => Plan::Free->label(),
+                'limits' => Plan::Free->limits(),
+            ],
+        ]);
+    }
+
+    public function storeUserAndTeam(array $input): User
+    {
         return DB::transaction(function () use ($input) {
-            $user = User::create([
-                'name'                => $input['name'],
-                'email'               => $input['email'],
-                'password'            => $input['password'],
-                'subscription_detail' => [
-                    'plan'   => Plan::Free->value,
-                    'label'  => Plan::Free->label(),
-                    'limits' => Plan::Free->limits(),
-                ],
-            ]);
+            $user = User::create($input);
 
             $this->createTeam->handle($user, $user->name."'s Team", isPersonal: true);
 
