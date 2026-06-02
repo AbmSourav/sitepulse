@@ -159,6 +159,7 @@ jobs:
             sudo supervisorctl update
             sudo supervisorctl restart sitepulse-queue:*
 
+            sudo systemctl restart php8.5-fpm
             sudo systemctl restart caddy
           ENDSSH
 
