@@ -18,26 +18,28 @@ class DashboardController extends Controller
         $since7 = $now->copy()->subDays(7);
 
         $websites = Website::where('team_id', $teamId)
-            ->with(['incidents' => fn ($q) => $q->where('started_at', '>=', $since7)])
+            ->with(['incidents' => fn ($q) => $q->where('started_at', '>=', $since7->toDateTimeString())])
             ->get();
 
         $sitesOnline     = $websites->where('uptime_status', 'up')->count();
         $sitesTotal      = $websites->count();
         $activeIncidents = $websites
             ->where('status', 'connected')
-            ->sum(fn (Website $w) => $w->incidents->whereNull('resolved_at')->count());
+            ->sum(fn (Website $site) => $site->incidents->whereNull('resolved_at')->count());
 
         $siteStats = $websites->map(function (Website $website) use ($now, $since7) {
+            $siteStat = [
+                'id'              => $website->id,
+                'url'             => parse_url($website->url, PHP_URL_HOST),
+                'status'          => $website->status,
+                'uptime_status'   => $website->uptime_status,
+                'last_checked_at' => $website->last_checked_at?->toIso8601String(),
+                'incidents_7d'    => $website->incidents->count(),
+            ];
+
             if ($website->status === 'disconnected') {
-                return [
-                    'id'              => $website->id,
-                    'url'             => parse_url($website->url, PHP_URL_HOST),
-                    'status'          => $website->status,
-                    'uptime_status'   => $website->uptime_status,
-                    'last_checked_at' => $website->last_checked_at?->toIso8601String(),
-                    'uptime_7d'       => null,
-                    'incidents_7d'    => 0,
-                ];
+                $siteStat['uptime_7d'] = null;
+                return $siteStat;
             }
 
             $windowStart   = $website->created_at->gt($since7) ? $website->created_at : $since7;
@@ -50,19 +52,14 @@ class DashboardController extends Controller
                 return max(0, $start->diffInSeconds($end));
             });
 
-            $uptime7d = $windowSeconds > 0
-                ? round(max(0, ($windowSeconds - $downtimeSeconds) / $windowSeconds * 100), 2)
-                : 100.0;
+            $uptime7d = 100.0;
+            if ($windowSeconds > 0) {
+                $uptime7d = round(max(0, ($windowSeconds - $downtimeSeconds) / $windowSeconds * 100), 2);
+            }
 
-            return [
-                'id'              => $website->id,
-                'url'             => parse_url($website->url, PHP_URL_HOST),
-                'status'          => $website->status,
-                'uptime_status'   => $website->uptime_status,
-                'last_checked_at' => $website->last_checked_at?->toIso8601String(),
-                'uptime_7d'       => $uptime7d,
-                'incidents_7d'    => $website->incidents->count(),
-            ];
+            $siteStat['uptime_7d'] = $uptime7d;
+
+            return $siteStat;
         });
 
         $connected  = $siteStats->whereNotNull('uptime_7d');
