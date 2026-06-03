@@ -28,7 +28,7 @@ class DashboardController extends Controller
             ->sum(fn (Website $w) => $w->incidents->whereNull('resolved_at')->count());
 
         $siteStats = $websites->map(function (Website $website) use ($now, $since7) {
-            if ($website->status === 'disconnected' || ! $website->connected_at) {
+            if ($website->status === 'disconnected') {
                 return [
                     'id'              => $website->id,
                     'url'             => parse_url($website->url, PHP_URL_HOST),
@@ -40,7 +40,7 @@ class DashboardController extends Controller
                 ];
             }
 
-            $windowStart   = $website->connected_at->gt($since7) ? $website->connected_at : $since7;
+            $windowStart   = $website->created_at->gt($since7) ? $website->created_at : $since7;
             $windowSeconds = $windowStart->diffInSeconds($now);
 
             $downtimeSeconds = $website->incidents->sum(function (SiteIncident $i) use ($now, $since7) {

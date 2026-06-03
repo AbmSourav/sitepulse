@@ -97,8 +97,8 @@ export default function Dashboard() {
                             <tr className="h-[45px] border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                 <th className="px-5 py-3">Site</th>
                                 <th className="px-5 py-3">Status</th>
-                                <th className="px-5 py-3">7-day Uptime</th>
-                                <th className="px-5 py-3">Incidents (7d)</th>
+                                <th className="px-5 py-3">Uptime</th>
+                                <th className="px-5 py-3">Incidents</th>
                                 <th className="px-5 py-3">Last Check</th>
                             </tr>
                         </thead>
@@ -145,11 +145,10 @@ export default function Dashboard() {
                             )) : (
                                 <tr>
                                     <td colSpan={5} className="px-5 py-12 text-center text-muted-foreground">
-                                        No sites monitored yet.{' '}
-                                        <Link href={websiteRoutes.index.url()} className="text-primary hover:underline">
+                                        <span className="mb-2 block">No sites monitored yet.</span>
+                                        <Link href={websiteRoutes.index.url()} className="bg-primary text-white px-2 py-1 rounded hover:bg-primary/90 transition-colors">
                                             Add a site
-                                        </Link>{' '}
-                                        to get started.
+                                        </Link>
                                     </td>
                                 </tr>
                             )}

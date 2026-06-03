@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 
 class GoogleController extends Controller
 {
@@ -22,7 +23,11 @@ class GoogleController extends Controller
 
     public function callback(CreateNewUser $createNewUser)
     {
-        $googleUser = Socialite::driver('google')->user();
+        try {
+            $googleUser = Socialite::driver('google')->user();
+        } catch (InvalidStateException) {
+            return redirect()->route('login')->withErrors(['email' => 'Google sign-in failed. Please try again.']);
+        }
 
         $user = User::where('auth_provider', 'google')
             ->where('auth_id', $googleUser->getId())

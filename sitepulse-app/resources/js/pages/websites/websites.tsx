@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import WebsiteStats from '@/components/websites/website-stats';
 import type {WebsiteStatsProps} from '@/components/websites/website-stats';
 import websiteRoutes from '@/routes/websites';
+import { Globe } from 'lucide-react';
 
 interface UptimeStat {
     uptime_seconds: number;
@@ -154,7 +155,13 @@ export default function Websites() {
                             }) : (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
-                                        No websites yet. Click <strong>Add Monitoring</strong> to get started.
+                                        <div className="flex flex-col items-center justify-center pt-5">
+                                            <Globe className="size-10 mb-3 opacity-40" />
+                                            <p className="text-gray-500 dark:text-gray-400">
+                                                <span>No websites yet.</span><br/>
+                                                Click <strong>Add Monitoring</strong> to get started.
+                                            </p>
+                                        </div>
                                     </td>
                                 </tr>
                             )}

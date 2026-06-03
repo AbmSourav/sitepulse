@@ -174,15 +174,15 @@ class WebsiteController extends Controller
         $now = now();
 
         return $websites->mapWithKeys(function (Website $website) use ($now) {
-            if ($website->status === 'disconnected' || ! $website->connected_at) {
+            if ($website->status === 'disconnected') {
                 return [$website->id => null];
             }
 
-            $connectedAt  = $website->connected_at;
-            $totalSeconds = $connectedAt->diffInSeconds($now);
+            $since        = $website->created_at;
+            $totalSeconds = $since->diffInSeconds($now);
 
             $downtimeSeconds = $website->incidents
-                ->filter(fn (SiteIncident $i) => $i->started_at->gte($website->created_at))
+                ->filter(fn (SiteIncident $i) => $i->started_at->gte($since))
                 ->sum(fn (SiteIncident $i) => $i->started_at->diffInSeconds($i->resolved_at ?? $now));
 
             $uptimeSeconds = max(0, $totalSeconds - $downtimeSeconds);
@@ -192,7 +192,7 @@ class WebsiteController extends Controller
                 'uptime_seconds'      => $uptimeSeconds,
                 'total_seconds'       => $totalSeconds,
                 'uptime_percentage'   => $uptimePct,
-                'incident_count'      => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($connectedAt))->count(),
+                'incident_count'      => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($since))->count(),
                 'incidents_7_days'    => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($now->copy()->subDays(7)))->count(),
                 'incidents_30_days'   => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($now->copy()->subDays(30)))->count(),
             ]];
