@@ -21,7 +21,7 @@ class WebsiteController extends Controller
         $user = $request->user();
 
         $websites = Website::where('team_id', $user->currentTeam->id)
-            ->with(['incidents', 'latestIncident'])
+            ->with(['incidents', 'latestIncident', 'user'])
             ->get();
 
         return Inertia::render('websites/websites', [
@@ -128,7 +128,7 @@ class WebsiteController extends Controller
         $user = request()->user();
 
         $websites = Website::where('team_id', $user->currentTeam->id)
-            ->with(['incidents', 'latestIncident'])
+            ->with(['incidents', 'latestIncident', 'user'])
             ->get();
 
         return Inertia::render('websites/websites', [
@@ -164,6 +164,7 @@ class WebsiteController extends Controller
                 'connected_at'    => $website->connected_at?->toIso8601String(),
                 'created_at'      => $website->created_at->toIso8601String(),
                 'recentIncident'  => $latestIncident,
+                'created_by'      => $website->user ? ['id' => $website->user->id, 'name' => $website->user->name] : null,
             ];
         });
     }
@@ -181,21 +182,19 @@ class WebsiteController extends Controller
             $totalSeconds = $connectedAt->diffInSeconds($now);
 
             $downtimeSeconds = $website->incidents
-                ->filter(fn (SiteIncident $i) => $i->started_at >= $connectedAt)
+                ->filter(fn (SiteIncident $i) => $i->started_at->gte($website->created_at))
                 ->sum(fn (SiteIncident $i) => $i->started_at->diffInSeconds($i->resolved_at ?? $now));
 
             $uptimeSeconds = max(0, $totalSeconds - $downtimeSeconds);
             $uptimePct     = $totalSeconds > 0 ? round(($uptimeSeconds / $totalSeconds) * 100, 2) : 100.0;
 
-            $sinceConnected = fn (SiteIncident $i) => $i->started_at >= $connectedAt;
-
             return [$website->id => [
                 'uptime_seconds'      => $uptimeSeconds,
                 'total_seconds'       => $totalSeconds,
                 'uptime_percentage'   => $uptimePct,
-                'incident_count'      => $website->incidents->filter($sinceConnected)->count(),
-                'incidents_7_days'    => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at >= $now->copy()->subDays(7))->count(),
-                'incidents_30_days'   => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at >= $now->copy()->subDays(30))->count(),
+                'incident_count'      => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($connectedAt))->count(),
+                'incidents_7_days'    => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($now->copy()->subDays(7)))->count(),
+                'incidents_30_days'   => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($now->copy()->subDays(30)))->count(),
             ]];
         });
     }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuditReportController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\WebsiteController;
@@ -20,9 +21,7 @@ Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', fn () => Inertia::render('dashboard', [
-        'emailVerified' => (bool) request()->user()?->email_verified_at,
-    ]))->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('websites/authorize', [WebsiteController::class, 'create'])->name('websites.authorize');
 

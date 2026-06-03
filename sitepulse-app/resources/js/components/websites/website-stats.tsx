@@ -23,6 +23,7 @@ export interface WebsiteStatsProps {
     last_checked_at: string | null;
     connected_at: string | null;
     recentIncident: Incident | [];
+    created_by: { id: number; name: string } | null;
 }
 
 interface UptimeStat {

@@ -103,6 +103,7 @@ export default function Websites() {
                                 <th className="px-4 py-3">Status</th>
                                 <th className="px-4 py-3">Uptime</th>
                                 <th className="px-4 py-3">Last Check</th>
+                                <th className="px-4 py-3">Added by</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -144,11 +145,15 @@ export default function Websites() {
                                         <td className="px-4 py-3 text-muted-foreground">
                                             {formatRelativeTime(website.last_checked_at)}
                                         </td>
+
+                                        <td className="px-4 py-3 text-muted-foreground">
+                                            {website.created_by?.name ?? '—'}
+                                        </td>
                                     </tr>
                                 );
                             }) : (
                                 <tr>
-                                    <td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">
+                                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
                                         No websites yet. Click <strong>Add Monitoring</strong> to get started.
                                     </td>
                                 </tr>
