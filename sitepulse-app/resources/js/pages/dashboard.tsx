@@ -65,7 +65,7 @@ export default function Dashboard() {
                 </div>
             )}
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl py-10 px-10">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <StatCard
                         label="Sites Online"
