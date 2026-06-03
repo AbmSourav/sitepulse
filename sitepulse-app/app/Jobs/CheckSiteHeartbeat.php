@@ -132,14 +132,17 @@ class CheckSiteHeartbeat implements ShouldQueue
 
     private function handleSuccess(): void
     {
-        if ($this->website->consecutive_failures > 1 && $this->website->uptime_status === UptimeStatus::Down->value) {
+        if ($this->website->uptime_status === UptimeStatus::Down->value) {
             $incident = SiteIncident::where('website_id', $this->website->id)
                 ->whereNull('resolved_at')
                 ->first();
 
             if ($incident) {
                 $incident->update(['resolved_at' => now()]);
-                SendIncidentNotification::dispatch($incident->fresh(), 'up');
+
+                if ($this->website->consecutive_failures > 1) {
+                    SendIncidentNotification::dispatch($incident->fresh(), 'up');
+                }
             }
         }
 
@@ -157,12 +160,18 @@ class CheckSiteHeartbeat implements ShouldQueue
 
             $this->website->uptime_status = UptimeStatus::Down->value;
 
-            $incident = SiteIncident::create([
-                'website_id'  => $this->website->id,
-                'started_at'  => now(),
-                'reason'      => $reason,
-                'http_status' => $httpStatus,
-            ]);
+            $existingIncident = SiteIncident::where('website_id', $this->website->id)
+                ->whereNull('resolved_at')
+                ->exists();
+
+            if (! $existingIncident) {
+                SiteIncident::create([
+                    'website_id'  => $this->website->id,
+                    'started_at'  => now(),
+                    'reason'      => $reason,
+                    'http_status' => $httpStatus,
+                ]);
+            }
         } else if ($this->website->consecutive_failures === 2) {
             $incident = SiteIncident::where('website_id', $this->website->id)
                 ->whereNull('resolved_at')

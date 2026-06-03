@@ -40,7 +40,7 @@ function uptimeColor(pct: number) {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
     return (
-        <div className="flex flex-col gap-1 rounded-xl border border-sidebar-border/70 dark:border-sidebar-border p-5">
+        <div className="flex flex-col gap-1 rounded-xl border-2 border-sidebar-border/60 dark:border-sidebar-border p-5">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
             <span className="text-3xl font-semibold">{value}</span>
             {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
@@ -84,9 +84,9 @@ export default function Dashboard() {
                     />
                 </div>
 
-                <div className="flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <div className="flex items-center justify-between border-b border-border px-5 py-3">
-                        <span className="text-sm font-medium">Sites — last 7 days</span>
+                <div className="flex-1 overflow-hidden rounded-xl border-2 border-sidebar-border/60 dark:border-sidebar-border">
+                    <div className="flex items-center justify-between border-b border-border bg-gray-50 dark:bg-gray-800 px-5 py-2">
+                        <span className="text-xs font-medium">Sites — last 7 days</span>
                         <Link href={websiteRoutes.index.url()} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                             Manage sites →
                         </Link>
@@ -94,7 +94,7 @@ export default function Dashboard() {
 
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="h-[45px] border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            <tr className="h-[45px] border-b border-border bg-gray-50 dark:bg-gray-800 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
                                 <th className="px-5 py-3">Site</th>
                                 <th className="px-5 py-3">Status</th>
                                 <th className="px-5 py-3">Uptime</th>
