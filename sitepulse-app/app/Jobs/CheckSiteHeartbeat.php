@@ -132,9 +132,7 @@ class CheckSiteHeartbeat implements ShouldQueue
 
     private function handleSuccess(): void
     {
-        $this->website->consecutive_failures = 0;
-
-        if ($this->website->uptime_status === UptimeStatus::Down->value) {
+        if ($this->website->consecutive_failures > 1 && $this->website->uptime_status === UptimeStatus::Down->value) {
             $incident = SiteIncident::where('website_id', $this->website->id)
                 ->whereNull('resolved_at')
                 ->first();
@@ -145,6 +143,7 @@ class CheckSiteHeartbeat implements ShouldQueue
             }
         }
 
+        $this->website->consecutive_failures = 0;
         $this->website->uptime_status = UptimeStatus::Up->value;
     }
 
