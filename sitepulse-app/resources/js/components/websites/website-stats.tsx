@@ -24,6 +24,7 @@ export interface WebsiteStatsProps {
     connected_at: string | null;
     recentIncident: Incident | [];
     created_by: { id: number; name: string } | null;
+    domain_expires_at: string | null;
 }
 
 interface UptimeStat {

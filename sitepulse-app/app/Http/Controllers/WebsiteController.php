@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\CheckDomainExpiry;
 use App\Jobs\FetchSiteAudit;
 use App\Models\SiteIncident;
 use App\Models\Website;
@@ -10,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
-
 class WebsiteController extends Controller
 {
     /**
@@ -36,7 +36,7 @@ class WebsiteController extends Controller
             'url'    => 'required|url|unique:websites,url'
         ]);
 
-        Website::create([
+        $website = Website::create([
             'user_id'      => $request->user()->id,
             'team_id'      => $request->user()->currentTeam->id,
             'url'          => $data['url'],
@@ -44,6 +44,8 @@ class WebsiteController extends Controller
             'status'       => 'connected',
             'connected_at' => now(),
         ]);
+
+        CheckDomainExpiry::dispatch($website);
 
         return redirect()->route('websites.index');
     }
@@ -96,6 +98,8 @@ class WebsiteController extends Controller
                 'error' => 'Failed to create website. ' . $e->getMessage()
             ], 500);
         }
+
+        CheckDomainExpiry::dispatch($website);
 
         $redirectUrl = rtrim($data['siteUrl'], '/') . '&' . http_build_query([
             'spmApiKey'  => $website->api_key,
@@ -163,8 +167,9 @@ class WebsiteController extends Controller
                 'last_checked_at' => $website->last_checked_at?->toIso8601String(),
                 'connected_at'    => $website->connected_at?->toIso8601String(),
                 'created_at'      => $website->created_at->toIso8601String(),
-                'recentIncident'  => $latestIncident,
-                'created_by'      => $website->user ? ['id' => $website->user->id, 'name' => $website->user->name] : null,
+                'recentIncident'   => $latestIncident,
+                'created_by'       => $website->user ? ['id' => $website->user->id, 'name' => $website->user->name] : null,
+                'domain_expires_at' => $website->meta_data['domain_expires_at'] ?? null,
             ];
         });
     }

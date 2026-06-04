@@ -20,6 +20,7 @@ interface Props {
     sitesTotal: number;
     activeIncidents: number;
     avgUptime7d: number | null;
+    domainsExpiringSoon: number;
     siteStats: SiteStat[];
 }
 
@@ -49,7 +50,7 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
 }
 
 export default function Dashboard() {
-    const { emailVerified, sitesOnline, sitesTotal, activeIncidents, avgUptime7d, siteStats } =
+    const { emailVerified, sitesOnline, sitesTotal, activeIncidents, avgUptime7d, domainsExpiringSoon, siteStats } =
         usePage<Props & Record<string, unknown>>().props;
 
     return (
@@ -66,7 +67,7 @@ export default function Dashboard() {
             )}
 
             <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl py-10 px-10">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                <div className="grid auto-rows-min gap-4 md:grid-cols-4">
                     <StatCard
                         label="Sites Online"
                         value={`${sitesOnline} / ${sitesTotal}`}
@@ -81,6 +82,11 @@ export default function Dashboard() {
                         label="Avg 7-day Uptime"
                         value={avgUptime7d != null ? `${avgUptime7d}%` : '—'}
                         sub="Across all connected sites"
+                    />
+                    <StatCard
+                        label="Domains Expiring Soon"
+                        value={domainsExpiringSoon}
+                        sub="Within next 30 days"
                     />
                 </div>
 

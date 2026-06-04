@@ -22,6 +22,7 @@ class Website extends Model
         'uptime_status',
         'last_audited_at',
         'next_audit_at',
+        'meta_data',
     ];
 
     protected function casts(): array
@@ -32,6 +33,7 @@ class Website extends Model
             'next_check_at'   => 'datetime',
             'last_audited_at' => 'datetime',
             'next_audit_at'   => 'datetime',
+            'meta_data'       => 'array',
         ];
     }
 

@@ -104,6 +104,7 @@ export default function Websites() {
                                 <th className="px-4 py-3">Status</th>
                                 <th className="px-4 py-3">Uptime</th>
                                 <th className="px-4 py-3">Last Check</th>
+                                <th className="px-4 py-3">Domain Expiry</th>
                                 <th className="px-4 py-3">Added by</th>
                             </tr>
                         </thead>
@@ -135,7 +136,7 @@ export default function Websites() {
 
                                         <td className="px-4 py-3 relative">
                                             {stat && (website?.uptime_status !== 'unknown') ? (
-                                                <span className={`text-[22px] absolute top-[10px] left-[5px] font-medium ${stat.uptime_percentage >= 97 ? 'text-green-600 dark:text-green-400' : stat.uptime_percentage >= 90 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                <span className={`text-[22px] absolute top-[10px] left-[10px] font-medium ${stat.uptime_percentage >= 97 ? 'text-green-600 dark:text-green-400' : stat.uptime_percentage >= 90 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                                                     {stat.uptime_percentage}%
                                                 </span>
                                             ) : (
@@ -148,13 +149,25 @@ export default function Websites() {
                                         </td>
 
                                         <td className="px-4 py-3 text-muted-foreground">
+                                            {website.domain_expires_at ? (() => {
+                                                const days = Math.ceil((new Date(website.domain_expires_at!).getTime() - Date.now()) / 86400000);
+                                                return (
+                                                    <span className={days <= 30 ? 'text-red-600 dark:text-red-400 font-medium' : days <= 60 ? 'text-yellow-600 dark:text-yellow-400' : ''}>
+                                                        {new Date(website.domain_expires_at!).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                        {days <= 30 && ` (${days}d)`}
+                                                    </span>
+                                                );
+                                            })() : '—'}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-muted-foreground">
                                             {website.created_by?.name ?? '—'}
                                         </td>
                                     </tr>
                                 );
                             }) : (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                                    <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
                                         <div className="flex flex-col items-center justify-center pt-5">
                                             <Globe className="size-10 mb-3 opacity-40" />
                                             <p className="text-gray-500 dark:text-gray-400">

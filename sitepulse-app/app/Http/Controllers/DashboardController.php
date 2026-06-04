@@ -67,13 +67,20 @@ class DashboardController extends Controller
             ? round($connected->avg('uptime_7d'), 2)
             : null;
 
+        $domainsExpiringSoon = Website::where('team_id', $teamId)
+            ->where('status', 'connected')
+            ->whereNotNull('meta_data->domain_expires_at')
+            ->whereRaw("JSON_UNQUOTE(meta_data->>'$.domain_expires_at') <= ?", [$now->copy()->addDays(30)->toDateString()])
+            ->count();
+
         return Inertia::render('dashboard', [
-            'emailVerified'   => (bool) $user->email_verified_at,
-            'sitesOnline'     => $sitesOnline,
-            'sitesTotal'      => $sitesTotal,
-            'activeIncidents' => $activeIncidents,
-            'avgUptime7d'     => $avgUptime7d,
-            'siteStats'       => $siteStats->values(),
+            'emailVerified'       => (bool) $user->email_verified_at,
+            'sitesOnline'         => $sitesOnline,
+            'sitesTotal'          => $sitesTotal,
+            'activeIncidents'     => $activeIncidents,
+            'avgUptime7d'         => $avgUptime7d,
+            'domainsExpiringSoon' => $domainsExpiringSoon,
+            'siteStats'           => $siteStats->values(),
         ]);
     }
 }
