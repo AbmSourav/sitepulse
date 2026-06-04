@@ -12,88 +12,90 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
 
             <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
 
-                {/* Nav */}
-                <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur dark:border-gray-800 dark:bg-gray-950/80">
-                    <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-                        <div className="flex items-center gap-2">
-                            <AppLogo />
+                <div className="">
+                    {/* Nav */}
+                    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur dark:border-gray-800 dark:bg-gray-950/80">
+                        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+                            <div className="flex items-center overflow-hidden">
+                                <AppLogo size={10} />
+                            </div>
+                            <nav className="flex items-center gap-3">
+                                {auth.user ? (
+                                    <Link href={dashboard()} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                                        Dashboard →
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <Link href={login()} className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                                            Log in
+                                        </Link>
+                                        {canRegister && (
+                                            <Link href={register()} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
+                                                Get started free
+                                            </Link>
+                                        )}
+                                    </>
+                                )}
+                            </nav>
                         </div>
-                        <nav className="flex items-center gap-3">
-                            {auth.user ? (
-                                <Link href={dashboard()} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                                    Dashboard →
-                                </Link>
-                            ) : (
-                                <>
-                                    <Link href={login()} className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+                    </header>
+
+                    {/* Hero */}
+                    <section className="relative overflow-hidden px-6 py-24 text-center lg:py-28">
+                        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-white to-white dark:from-primary/10 dark:via-gray-950 dark:to-gray-950" />
+                        <div className="mx-auto max-w-3xl">
+                            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                                    <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                                </span>
+                                Uptime monitoring + WordPress audits
+                            </div>
+                            <h1 className="flex flex-col mb-6 text-5xl font-extrabold leading-tight tracking-tight lg:text-6xl">
+                                <span>Monitor any Website</span>
+                                <span className="text-4xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                                    Deep-dive WordPress website
+                                </span>
+                            </h1>
+                            <p className="mx-auto mb-10 max-w-xl text-lg text-gray-500 dark:text-gray-400">
+                                SitePulse checks uptime for any website — and goes deeper for WordPress with plugin audits, SSL tracking, PHP error detection,<br />
+                                and instant alerts.
+                            </p>
+                            <p className="mb-8 text-gray-500 dark:text-gray-400">
+                                Monitor up to 3 sites for free. No credit card required.
+                            </p>
+                            <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+                                {canRegister ? (
+                                    <Link href={register()} className="rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg hover:opacity-90 transition-opacity">
+                                        Start monitoring free
+                                    </Link>
+                                ) : (
+                                    <Link href={login()} className="rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg hover:opacity-90 transition-opacity">
                                         Log in
                                     </Link>
-                                    {canRegister && (
-                                        <Link href={register()} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity">
-                                            Get started free
-                                        </Link>
-                                    )}
-                                </>
-                            )}
-                        </nav>
-                    </div>
-                </header>
-
-                {/* Hero */}
-                <section className="relative overflow-hidden px-6 py-24 text-center lg:py-36">
-                    <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-white to-white dark:from-primary/10 dark:via-gray-950 dark:to-gray-950" />
-                    <div className="mx-auto max-w-3xl">
-                        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
-                            <span className="relative flex h-2 w-2">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-                            </span>
-                            Uptime monitoring + WordPress audits
-                        </div>
-                        <h1 className="flex flex-col mb-6 text-5xl font-extrabold leading-tight tracking-tight lg:text-6xl">
-                            <span>Monitor any Website</span>
-                            <span className="text-4xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                                Deep-dive WordPress website
-                            </span>
-                        </h1>
-                        <p className="mx-auto mb-10 max-w-xl text-lg text-gray-500 dark:text-gray-400">
-                            SitePulse checks uptime for any website — and goes deeper for WordPress with plugin audits, SSL tracking, PHP error detection,<br />
-                            and instant alerts.
-                        </p>
-                        <p className="mb-8 text-gray-500 dark:text-gray-400">
-                            Monitor up to 3 sites for free. No credit card required.
-                        </p>
-                        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-                            {canRegister ? (
-                                <Link href={register()} className="rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg hover:opacity-90 transition-opacity">
-                                    Start monitoring free
-                                </Link>
-                            ) : (
-                                <Link href={login()} className="rounded-xl bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground shadow-lg hover:opacity-90 transition-opacity">
-                                    Log in
-                                </Link>
-                            )}
-                            <a href="#how-it-works" className="rounded-xl border border-gray-200 px-8 py-3.5 text-base font-semibold text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
-                                See how it works
-                            </a>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Stats bar */}
-                <div className="border-y border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50">
-                    <div className="mx-auto grid max-w-5xl grid-cols-2 divide-x divide-y divide-gray-100 md:grid-cols-4 md:divide-y-0 dark:divide-gray-800">
-                        {[
-                            { value: '5 min', label: 'Check interval on Free plan' },
-                            { value: '100+', label: 'Proxy IPs to prevent false alerts' },
-                            { value: '99.9%', label: 'Uptime report accuracy' },
-                            { value: 'Instant', label: 'Slack, Discord & email alerts' },
-                        ].map((stat) => (
-                            <div key={stat.label} className="px-8 py-6 text-center">
-                                <p className="text-2xl font-bold text-primary">{stat.value}</p>
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+                                )}
+                                <a href="#how-it-works" className="rounded-xl border border-gray-200 px-8 py-3.5 text-base font-semibold text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                                    See how it works
+                                </a>
                             </div>
-                        ))}
+                        </div>
+                    </section>
+
+                    {/* Stats bar */}
+                    <div className="border-y border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/50">
+                        <div className="mx-auto grid max-w-5xl grid-cols-2 divide-x divide-y divide-gray-100 md:grid-cols-4 md:divide-y-0 dark:divide-gray-800">
+                            {[
+                                { value: '5 min', label: 'Check interval on Free plan' },
+                                { value: '100+', label: 'Proxy IPs to prevent false alerts' },
+                                { value: '99.9%', label: 'Uptime report accuracy' },
+                                { value: 'Instant', label: 'Slack, Discord & email alerts' },
+                            ].map((stat) => (
+                                <div key={stat.label} className="px-8 py-6 text-center">
+                                    <p className="text-2xl font-bold text-primary">{stat.value}</p>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -248,10 +250,9 @@ export default function Welcome({ canRegister = true }: { canRegister?: boolean 
 
                 {/* Footer */}
                 <footer className="border-t border-gray-100 px-6 py-8 dark:border-gray-800">
-                    <div className="mx-auto flex max-w-6xl items-center justify-between text-sm text-gray-400">
-                        <div className="flex items-center gap-2">
-                            <Activity className="h-4 w-4 text-primary" />
-                            <span className="font-semibold text-gray-700 dark:text-gray-300">SitePulse</span>
+                    <div className="mx-auto flex items-center justify-between text-sm text-gray-400">
+                        <div className="flex items-center overflow-hidden">
+                            <AppLogo size={10} />
                         </div>
                         <p>Uptime monitoring &amp; WordPress audit</p>
                     </div>
