@@ -12,8 +12,8 @@ Schedule::command('sites:audit-due')
     ->withoutOverlapping();
 
 Schedule::command('domains:check-due')
-    // ->daily()
-    ->everyMinute()
+    ->daily()
+    // ->everyMinute()
     ->withoutOverlapping();
 
 Schedule::command('telescope:prune --hours=3')
