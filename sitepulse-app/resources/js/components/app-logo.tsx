@@ -8,7 +8,7 @@ export default function AppLogo() {
             </div>
             <div className="ml-1 grid flex-1 text-left text-lg">
                 <span className="mb-0.5 truncate leading-tight font-semibold">
-                    Site Pulse
+                    SitePulse
                 </span>
             </div>
         </>
