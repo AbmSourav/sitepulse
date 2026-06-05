@@ -19,6 +19,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   web:
     image: caddy:2-alpine
@@ -31,6 +33,23 @@ services:
       - ./:/var/www/html:cached
     depends_on:
       - php
+
+  redis:
+    image: redis:7-alpine
+    container_name: sitepulse-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-secret}
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: sitepulse-redisinsight
+    restart: unless-stopped
+    ports:
+      - "${REDIS_INSIGHT_PORT:-5540}:5540"
+    depends_on:
+      - redis
 
   mysql:
     image: mysql:8.0

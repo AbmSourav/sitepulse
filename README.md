@@ -15,8 +15,14 @@ No more manually checking sites. No more finding out a site was down hours after
 [![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white)]()
 [![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)]()
 [![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?logo=mysql&logoColor=white)]()
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis&logoColor=white)]()
 [![Caddy](https://img.shields.io/badge/Caddy-2-1F88C0?logo=caddy&logoColor=white)]()
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)]()
+[![Supervisor](https://img.shields.io/badge/Supervisor-4-2B2B2B?logo=supervisord&logoColor=white)]()
+
+[![Terraform](https://img.shields.io/badge/Terraform-1-623CE4?logo=terraform&logoColor=white)]()
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white)]()
+[![AWS Cloud](https://img.shields.io/badge/AWS-Orange?logo=amazonaws&logoColor=white)]()
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)]()
