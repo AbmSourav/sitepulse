@@ -11,6 +11,7 @@ resource "aws_lightsail_instance" "app" {
   key_pair_name     = aws_lightsail_key_pair.deploy.name
   user_data         = templatefile("${path.module}/scripts/bootstrap.sh", {
     SITEPULSE_DB_PASSWORD = var.db_password
+    REDIS_PASSWORD        = var.redis_password
   })
 
   tags = {

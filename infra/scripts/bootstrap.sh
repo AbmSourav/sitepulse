@@ -105,7 +105,23 @@ GRANT ALL PRIVILEGES ON sitepulse.* TO 'sitepulse'@'127.0.0.1';
 FLUSH PRIVILEGES;
 SQL
 
-# ── 9. Caddy (standard binary from official apt repo) ────────────────────────
+# ── 9. Redis ─────────────────────────────────────────────────────────────────
+apt-get install -y redis-server php8.5-redis
+
+# Bind to localhost only
+sed -i 's/^bind .*/bind 127.0.0.1 -::1/' /etc/redis/redis.conf
+
+# Set password (append is reliable across Redis config versions)
+echo "requirepass ${REDIS_PASSWORD}" >> /etc/redis/redis.conf
+
+# Cap memory — appropriate for the small_3_0 Lightsail bundle
+echo "maxmemory 256mb" >> /etc/redis/redis.conf
+echo "maxmemory-policy allkeys-lru" >> /etc/redis/redis.conf
+
+systemctl enable redis-server
+systemctl start redis-server
+
+# ── 10. Caddy (standard binary from official apt repo) ───────────────────────
 apt-get install -y debian-keyring debian-archive-keyring apt-transport-https
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
     | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
@@ -114,7 +130,7 @@ curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
 apt-get update -y
 apt-get install -y caddy
 
-# ── 10. Caddy system user and service ────────────────────────────────────────
+# ── 11. Caddy system user and service ────────────────────────────────────────
 # The official Caddy apt package creates the caddy user and systemd service automatically.
 # Add caddy to www-data group so it can access the PHP-FPM socket.
 usermod -aG www-data caddy

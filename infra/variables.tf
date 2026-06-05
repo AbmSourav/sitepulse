@@ -63,6 +63,12 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "redis_password" {
+  description = "Redis requirepass password"
+  type        = string
+  sensitive   = true
+}
+
 variable "cloudflare_api_token" {
   description = "Cloudflare API token (Zone:DNS:Edit for sitepulsee.com)"
   type        = string
