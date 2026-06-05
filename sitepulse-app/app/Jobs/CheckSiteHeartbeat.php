@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -139,6 +140,7 @@ class CheckSiteHeartbeat implements ShouldQueue
 
             if ($incident) {
                 $incident->update(['resolved_at' => now()]);
+                Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
 
                 if ($this->website->consecutive_failures > 1) {
                     SendIncidentNotification::dispatch($incident->fresh(), 'up');
@@ -171,6 +173,7 @@ class CheckSiteHeartbeat implements ShouldQueue
                     'reason'      => $reason,
                     'http_status' => $httpStatus,
                 ]);
+                Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
             }
         } else if ($this->website->consecutive_failures === 2) {
             $incident = SiteIncident::where('website_id', $this->website->id)

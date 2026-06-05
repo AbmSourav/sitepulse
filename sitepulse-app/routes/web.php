@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\WebsiteController;
+use App\Http\Middleware\EnforceApiPlanLimit;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -25,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('websites/authorize', [WebsiteController::class, 'create'])->name('websites.authorize');
 
-    Route::post('websites/store', [WebsiteController::class, 'store'])->middleware('plan.limit:maxSites')->name('websites.store');
+    Route::post('websites/store', [WebsiteController::class, 'store'])->middleware(EnforceApiPlanLimit::class)->name('websites.store');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -102,8 +102,8 @@ class WebsiteController extends Controller
         CheckDomainExpiry::dispatch($website);
 
         $redirectUrl = rtrim($data['siteUrl'], '/') . '&' . http_build_query([
-            'spmApiKey'  => $website->api_key,
-            'spmNotice'  => 'Website is connected',
+            'spmApiKey'     => $website->api_key,
+            'spmNotice'     => 'Website is connected',
             'spmNoticeType' => 'success',
         ]);
 
