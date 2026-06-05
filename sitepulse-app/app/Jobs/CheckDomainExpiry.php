@@ -26,7 +26,7 @@ class CheckDomainExpiry implements ShouldQueue
         if (count($parts) !== 2) {
             $this->website->meta_data = array_merge(
                 $this->website->meta_data ?? [],
-                ['domain_expiry_checked_at' => now()->toDateTimeString()]
+                ['domain_expiry_checked_at' => now()->addYears(2)->toDateTimeString()]
             );
             $this->website->save();
             return;
