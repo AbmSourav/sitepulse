@@ -34,10 +34,19 @@ class ReportController extends Controller
     public function auditReports(Request $request): JsonResponse
     {
         $website = $request->attributes->get('website');
+        $page    = (int) $request->input('page', 1);
 
-        $reports = $website->auditReports()
-            ->orderByDesc('audited_at')
-            ->paginate(10);
+        if ($page === 1) {
+            $reports = Cache::store('api-cache')->remember(
+                "audit-reports:website:{$website->id}:page:1",
+                now()->addDays(7),
+                fn () => $website->auditReports()->orderByDesc('audited_at')->paginate(10)->toArray(),
+            );
+
+            return response()->json($reports);
+        }
+
+        $reports = $website->auditReports()->orderByDesc('audited_at')->paginate(10, page: $page);
 
         return response()->json($reports);
     }

@@ -6,6 +6,7 @@ use App\Models\AuditReport;
 use App\Models\Website;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class StoreAuditReport
@@ -55,6 +56,8 @@ class StoreAuditReport
                 'items'    => $themes,
             ],
         ]);
+
+        Cache::store('api-cache')->forget("audit-reports:website:{$website->id}:page:1");
 
         $website->last_audited_at = now();
         // $website->next_audit_at   = now()->addWeek();

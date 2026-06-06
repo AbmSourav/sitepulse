@@ -93,13 +93,14 @@ class WebsiteController extends Controller
                 'status'       => 'connected',
                 'connected_at' => now(),
             ]);
+
+            CheckDomainExpiry::dispatch($website);
+            FetchSiteAudit::dispatch($website);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to create website. ' . $e->getMessage()
             ], 500);
         }
-
-        CheckDomainExpiry::dispatch($website);
 
         $redirectUrl = rtrim($data['siteUrl'], '/') . '&' . http_build_query([
             'spmApiKey'     => $website->api_key,
