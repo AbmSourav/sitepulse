@@ -24,6 +24,24 @@ class AdminMenu implements BaseService
             'dashicons-chart-area',
             30
         );
+
+        add_submenu_page(
+            'sitepulse-monitor',
+            'Incidents',
+            'Incidents',
+            'manage_options',
+            'sitepulse-incidents',
+            [$this, 'renderAdminPage'],
+        );
+
+        add_submenu_page(
+            'sitepulse-monitor',
+            'Audit Reports',
+            'Audit Reports',
+            'manage_options',
+            'sitepulse-audit-reports',
+            [$this, 'renderAdminPage'],
+        );
     }
 
     public function renderAdminPage()

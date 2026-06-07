@@ -3,6 +3,7 @@
 namespace Sitepulse\SitepulseMonitor;
 
 use Sitepulse\SitepulseMonitor\Services\AdminMenu;
+use Sitepulse\SitepulseMonitor\Services\AjaxApi;
 use Sitepulse\SitepulseMonitor\Services\AssetsManager;
 use Sitepulse\SitepulseMonitor\Services\AuditReport;
 use Sitepulse\SitepulseMonitor\Services\RestApi;
@@ -28,6 +29,7 @@ final class Core
         return [
             AssetsManager::class,
             AdminMenu::class,
+            AjaxApi::class,
             RestApi::class,
             AuditReport::class,
         ];

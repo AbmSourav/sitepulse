@@ -22,12 +22,14 @@ interface PaginatedIncidents {
 }
 
 function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleString('en-US', {
+    const normalized = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+    return new Date(normalized).toLocaleString('en-US', {
         month: 'short',
         day: '2-digit',
         year: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: 'UTC',
     });
 }
 
@@ -41,8 +43,8 @@ function parseDomain(url: string) {
 
 function Duration({ startedAt, resolvedAt }: { startedAt: string; resolvedAt: string | null }) {
     if (!resolvedAt) {
-return <span className="text-yellow-600 dark:text-yellow-400">Ongoing</span>;
-}
+        return <span className="text-yellow-600 dark:text-yellow-400">Ongoing</span>;
+    }
 
     const ms = new Date(resolvedAt).getTime() - new Date(startedAt).getTime();
     const minutes = Math.floor(ms / 60000);
@@ -52,12 +54,12 @@ return <span className="text-yellow-600 dark:text-yellow-400">Ongoing</span>;
     let label = '';
 
     if (days > 0) {
-label = `${days}d ${hours % 24}h`;
-} else if (hours > 0) {
-label = `${hours}h ${minutes % 60}m`;
-} else {
-label = `${minutes}m`;
-}
+        label = `${days}d ${hours % 24}h`;
+    } else if (hours > 0) {
+        label = `${hours}h ${minutes % 60}m`;
+    } else {
+        label = `${minutes}m`;
+    }
 
     return <span>{label}</span>;
 }

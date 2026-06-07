@@ -7,11 +7,30 @@ use Sitepulse\SitepulseMonitor\Lib\Http;
 
 class AuditReport implements BaseService
 {
-    /** @var array<int, array{type: int, message: string, file: string, line: int}> */
-    private array $capturingPhpIssues = [];
+    /** @var array<int, array{type: string, message: string, file: string, line: int}> */
+    private array $capturedWarnings = [];
 
     public function register()
     {
+        // set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
+        //     $this->capturedWarnings[] = [
+        //         'type'    => $this->errorTypeName($errno),
+        //         'message' => $errstr,
+        //         'file'    => str_replace(ABSPATH, '', $errfile),
+        //         'line'    => $errline,
+        //     ];
+        //     return false;
+        // }, E_WARNING | E_NOTICE | E_DEPRECATED | E_USER_WARNING | E_USER_NOTICE | E_USER_DEPRECATED);
+    }
+
+    private function errorTypeName(int $errno): string
+    {
+        return match ($errno) {
+            E_WARNING, E_USER_WARNING       => 'warning',
+            E_NOTICE, E_USER_NOTICE         => 'notice',
+            E_DEPRECATED, E_USER_DEPRECATED => 'deprecated',
+            default                         => 'unknown',
+        };
     }
 
     public function send()

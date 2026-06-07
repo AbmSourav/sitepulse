@@ -5,8 +5,8 @@
     "main": "index.js",
     "scripts": {
         "format": "wp-scripts format resources/",
-        "dev:admin": "wp-scripts start resources/src/app.js --output-path=resources/build",
-        "build:admin": "wp-scripts build resources/src/app.js --output-path=resources/build"
+        "dev": "wp-scripts start resources/src/app.js --output-path=resources/build",
+        "build": "wp-scripts build resources/src/app.js --output-path=resources/build"
     },
     "author": "",
     "license": "MIT",
@@ -20,5 +20,8 @@
         "singleQuote": true,
         "semi": false,
         "trailingComma": "es5"
+    },
+    "dependencies": {
+        "@tanstack/react-table": "^8.21.3"
     }
 }
