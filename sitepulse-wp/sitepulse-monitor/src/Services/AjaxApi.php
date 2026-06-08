@@ -14,6 +14,7 @@ class AjaxApi implements BaseService
     {
         add_action('wp_ajax_spm_get_incidents',    [$this, 'getIncidents']);
         add_action('wp_ajax_spm_get_audit_reports', [$this, 'getAuditReports']);
+        add_action('wp_ajax_spm_get_stats',         [$this, 'getStats']);
     }
 
     public function getIncidents(): void
@@ -55,6 +56,27 @@ class AjaxApi implements BaseService
 
         if ($response->failed()) {
             wp_send_json_error(['message' => 'Failed to fetch audit reports.'], 502);
+        }
+
+        wp_send_json_success($response->body());
+    }
+
+    public function getStats(): void
+    {
+        check_ajax_referer('spm_admin_nonce', 'nonce');
+
+        $api_key = AppData::get('api_key');
+
+        if (! $api_key) {
+            wp_send_json_error(['message' => 'Not connected.'], 403);
+        }
+
+        $response = Http::post('/website/stats', [
+            'body' => ['api_key' => $api_key],
+        ]);
+
+        if ($response->failed()) {
+            wp_send_json_error(['message' => 'Failed to fetch stats.'], 502);
         }
 
         wp_send_json_success($response->body());

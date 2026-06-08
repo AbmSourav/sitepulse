@@ -50,4 +50,51 @@ class ReportController extends Controller
 
         return response()->json($reports);
     }
+
+    public function stats(Request $request): JsonResponse
+    {
+        $website = $request->attributes->get('website');
+
+        $cached = Cache::store('api-cache')->get("website:{$website->id}:stats");
+        if ($cached) {
+            return response()->json($cached);
+        }
+
+        $now   = now();
+        $since = $now->copy()->subDays(7);
+
+        $incidents7d = $website->incidents()
+            ->where('started_at', '>=', $since)
+            ->get();
+
+        $incidents30d = $website->incidents()
+            ->where('started_at', '>=', $now->copy()->subDays(30))
+            ->count();
+
+        $totalSeconds    = $since->diffInSeconds($now);
+        $downtimeSeconds = $incidents7d->sum(fn ($i) => $i->started_at->diffInSeconds($i->resolved_at ?? $now));
+        $uptimePct       = $totalSeconds > 0
+            ? round((max(0, $totalSeconds - $downtimeSeconds) / $totalSeconds) * 100, 2)
+            : 100.0;
+
+        $domainExpiresAt    = $website->meta_data['domain_expires_at'] ?? null;
+        $domainExpiringSoon = $domainExpiresAt
+            && now()->diffInDays($domainExpiresAt, false) <= 30
+            && now()->diffInDays($domainExpiresAt, false) >= 0;
+
+        $data = [
+            'uptime_7d'            => $uptimePct,
+            'downtime_minutes_7d'  => (int) round($downtimeSeconds / 60),
+            'incidents_7d'         => $incidents7d->count(),
+            'incidents_30d'        => $incidents30d,
+            'domain_expires_at'    => $domainExpiresAt,
+            'domain_expiring_soon' => $domainExpiringSoon,
+            'last_checked_at'      => $website->last_checked_at?->toIso8601String(),
+        ];
+
+        // set cache
+        Cache::store('api-cache')->put("website:{$website->id}:stats", $data, now()->addHours(24));
+
+        return response()->json($data);
+    }
 }

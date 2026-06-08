@@ -99,8 +99,6 @@ const AuditReports = () => {
             <div className="spm-content">
                 {loading && <p>Loading audit reports…</p>}
 
-                {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-
                 {!loading && !error && (
                     <div className="spm-table-wrap">
                         <table className="spm-table">

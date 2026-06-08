@@ -109,7 +109,7 @@ const Incidents = () => {
 
             <div className="spm-content">
                 {loading && <p>Loading incidents…</p>}
-                {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+
                 {!loading && !error && (
                     <div className="spm-table-wrap">
                         <table className="spm-table">

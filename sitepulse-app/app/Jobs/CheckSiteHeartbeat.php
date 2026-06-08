@@ -141,6 +141,7 @@ class CheckSiteHeartbeat implements ShouldQueue
             if ($incident) {
                 $incident->update(['resolved_at' => now()]);
                 Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
+                Cache::store('api-cache')->forget("website:{$this->website->id}:stats");
 
                 if ($this->website->consecutive_failures > 1) {
                     SendIncidentNotification::dispatch($incident->fresh(), 'up');
@@ -174,6 +175,7 @@ class CheckSiteHeartbeat implements ShouldQueue
                     'http_status' => $httpStatus,
                 ]);
                 Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
+                Cache::store('api-cache')->forget("website:{$this->website->id}:stats");
             }
         } else if ($this->website->consecutive_failures === 2) {
             $incident = SiteIncident::where('website_id', $this->website->id)

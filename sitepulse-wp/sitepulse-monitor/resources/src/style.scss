@@ -64,6 +64,42 @@
         }
     }
 
+    .spm-stats {
+        padding: 30px 50px;
+
+        .spm-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(150px, 1fr));
+            gap: 22px;
+        }
+
+        .spm-stat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 20px;
+            background: var(--main-bg);
+            border: 1px solid #efefef;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .spm-stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .spm-stat-value {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-color);
+
+            &.spm-stat-warning { color: #e6a817; }
+        }
+    }
+
     .spm-page-title {
         padding: 5px 12px 5px 18px;
         display: inline-block;
@@ -127,7 +163,7 @@
     justify-content: flex-end;
 
     .spm-sheet {
-        width: 50%;
+        width: 45%;
         max-width: 100%;
         height: 100%;
         background: #fff;

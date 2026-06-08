@@ -21,4 +21,7 @@ Route::prefix('v1')->middleware(AuthenticateApiRequest::class)->group(function (
 
     Route::post('/audit-reports', [ReportController::class, 'auditReports'])
         ->name('api.audit-reports.index');
+
+    Route::post('/website/stats', [ReportController::class, 'stats'])
+        ->name('api.website.stats');
 });
