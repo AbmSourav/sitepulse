@@ -29,7 +29,8 @@ sitepulse/
 | UI components | Radix UI, shadcn/ui pattern |
 | Auth | Laravel Fortify (2FA, email verification) |
 | Database | MySQL 8.0 |
-| Queue | Database driver |
+| Queue | Redis (database driver as fallback) |
+| Cache / store | Redis (`phpredis` client) |
 | Web server | Caddy 2 |
 | Runtime | PHP-FPM 8.5 (Docker) |
 | WP runtime | PHP 8.1, Nginx, MySQL (Docker) |
@@ -75,8 +76,12 @@ dc exec php composer dev
 | PHP-FPM | `sitepulse-php` | 9000 (internal) |
 | Caddy | `sitepulse-caddy` | `APP_PORT` (default 6080) |
 | MySQL | `sitepulse-mysql` | `DB_PORT` (default 3306) |
+| Redis | `sitepulse-redis` | `REDIS_PORT` (default 6379) |
+| RedisInsight | `sitepulse-redisinsight` | `REDIS_INSIGHT_PORT` (default 5540) |
 
-Dockerfile base: `php:8.5-fpm` (Debian). Extensions: `pdo_mysql`, `mbstring`, `exif`, `pcntl`, `bcmath`, `gd`, `zip`, `opcache`, `xdebug`.
+Dockerfile base: `php:8.5-fpm` (Debian). Extensions: `pdo_mysql`, `mbstring`, `exif`, `pcntl`, `bcmath`, `gd`, `zip`, `opcache`, `xdebug`, `redis`.
+
+Redis (`redis:7-alpine`) is password-protected via `--requirepass ${REDIS_PASSWORD:-secret}`. RedisInsight is a web GUI for inspecting keys at `http://localhost:5540`.
 
 Database files persist in `sitepulse-app/db/`. Caddy config at `docker-configs/caddy/Caddyfile`.
 
@@ -131,7 +136,12 @@ The plugin talks to the Laravel app at `http://sitepulse-app.test:6080` (and the
 - `POST /api/v1/websites/disconnect` — flag the site as disconnected
 - `POST /api/v1/websites/reconnect` — flag the site as connected again
 
-The `api_key` is sent in the **request body** (not URL — avoids leaking in logs/referrer headers). Keys are stored in the `websites` table of the Laravel app and in the `spm_app` WP option (read via `Sitepulse\SitepulseMonitor\Lib\AppData`).
+**Plugin → Laravel** (read endpoints, for the WP admin dashboard — Redis-cached):
+- `POST /api/v1/incidents` — paginated outage history
+- `POST /api/v1/audit-reports` — paginated audit report history
+- `POST /api/v1/website/stats` — uptime %, downtime, incident counts, domain expiry, last checked
+
+The `api_key` is sent in the **request body** (not URL — avoids leaking in logs/referrer headers). Keys are stored in the `websites` table of the Laravel app and in the `spm_app` WP option (read via `Sitepulse\SitepulseMonitor\Lib\AppData`). The browser never sees the `api_key`: the WP admin React UI calls WP AJAX actions, and the PHP `AjaxApi` service reads the stored key server-side and proxies to these endpoints (see "WordPress Plugin" below).
 
 **Laravel → Plugin** (uptime heartbeat):
 - `GET /index.php?rest_route=/sitepulse-monitor/v1/heartbeat` — returns `{ok: true, plugin: <version>, time: ...}`
@@ -151,11 +161,13 @@ app/
 │       └── CheckDueSites.php       # Dispatches heartbeat jobs for sites due for check
 ├── Http/
 │   ├── Controllers/
-│   │   ├── Api/                    # AuditController, SiteController (connect/disconnect)
+│   │   ├── Api/                    # AuditController, SiteController (connect/disconnect), ReportController (incidents/audit-reports/stats)
 │   │   ├── Settings/               # Profile, Security, NotificationChannel
 │   │   └── Teams/                  # Team CRUD, members, invitations
 │   └── Middleware/
 │       ├── AuthenticateApiRequest.php  # api_key + domain validation for plugin → Laravel
+│       ├── EnforcePlanLimit.php        # plan limits → Inertia dialog (web/SaaS UI)
+│       ├── EnforceApiPlanLimit.php     # plan limits → redirect back to WP (plugin connect flow)
 │       └── EnsureTeamMembership.php
 ├── Jobs/
 │   ├── CheckSiteHeartbeat.php      # GETs /heartbeat on one site, updates uptime state
@@ -188,13 +200,20 @@ Routes:
 
 All endpoints use `AuthenticateApiRequest` middleware: reads `api_key` from request body, looks up the `Website`, validates `Origin`/`Referer` host matches `website.url`, binds the resolved `Website` to `$request->attributes`. Status filter is `connected` (not `active`) — see "Website status values" below.
 
-| Route | Purpose |
-|---|---|
-| `POST /api/v1/sites/audit` | Plugin pushes audit report |
-| `POST /api/v1/websites/disconnect` | Plugin signals user disconnected the site |
-| `POST /api/v1/websites/reconnect` | Plugin signals user reconnected the site |
+| Route | Controller | Purpose |
+|---|---|---|
+| `POST /api/v1/sites/audit` | `AuditController@store` | Plugin pushes audit report |
+| `POST /api/v1/websites/disconnect` | `SiteController@disconnect` | Plugin signals user disconnected the site |
+| `POST /api/v1/websites/reconnect` | `SiteController@reconnect` | Plugin signals user reconnected the site |
+| `POST /api/v1/incidents` | `ReportController@incidents` | Paginated outage history (10/page) |
+| `POST /api/v1/audit-reports` | `ReportController@auditReports` | Paginated audit history (10/page) |
+| `POST /api/v1/website/stats` | `ReportController@stats` | Aggregated uptime/incident/domain stats |
+
+All read endpoints are `POST` (the `api_key` lives in the body); pagination page is read from the body via `?page=` query (`get_params` on the plugin `Http` helper). The three read endpoints are Redis-cached — see "Redis & API response caching" below.
 
 `AuditReport` stores data in 5 nullable JSON columns: `health`, `server`, `security`, `plugins`, `themes`. Reports are immutable — `updating` events are blocked in `boot()`.
+
+`ReportController@stats` returns: `uptime_7d` (percent), `downtime_minutes_7d`, `incidents_7d`, `incidents_30d`, `domain_expires_at`, `domain_expiring_soon` (≤ 30 days out), `last_checked_at`. Uptime % over the trailing 7 days is `(7d − total downtime) / 7d`, downtime summed from each incident's `started_at → resolved_at` (or `now()` if still open).
 
 ### Uptime monitoring pipeline
 
@@ -236,6 +255,38 @@ Team-scoped alert destinations stored in `notification_channels`. Each row has `
 - **Email**: stubbed — returns early until a mail template is wired up.
 
 Managed under `Settings → Notifications` (`GET/POST/PATCH/DELETE /settings/notifications`).
+
+### Redis & API response caching
+
+Redis backs three concerns, each on its own logical DB so they can be flushed independently:
+
+| Concern | Env DB | Cache store / connection | Notes |
+|---|---|---|---|
+| Queue | `REDIS_DB=0` | `default` connection | `QUEUE_CONNECTION=redis`. Heartbeat/notification/audit jobs run here. |
+| Framework cache | `REDIS_CACHE_DB=1` | `redis` store (`CACHE_STORE=redis`) | Default app cache (config, etc.). |
+| API responses | `REDIS_API_CACHE_DB=2` | `api-cache` store | Plugin-facing read endpoints. |
+
+The `api-cache` store is defined in both `config/cache.php` (`'api-cache' => ['driver' => 'redis', 'connection' => 'api-cache']`) and `config/database.php` (the `api-cache` Redis connection on DB 2). **Both must exist** — a missing `config/cache.php` entry throws *"Cache store [api-cache] is not defined."* Always access it explicitly: `Cache::store('api-cache')`.
+
+What's cached (all in DB 2):
+
+| Key | TTL | Written by | Invalidated by |
+|---|---|---|---|
+| `incidents:website:{id}:page:1` | 24h | `ReportController@incidents` | `CheckSiteHeartbeat` on incident create/resolve |
+| `audit-reports:website:{id}:page:1` | 7d | `ReportController@auditReports` | `StoreAuditReport` action after a new report |
+| `website:{id}:stats` | 24h | `ReportController@stats` | `CheckSiteHeartbeat` on incident create/resolve |
+
+Rules:
+- **Only page 1 is cached.** Pages > 1 hit the DB directly — they're rarely viewed and not worth invalidating.
+- **Cache the array, not the object.** Paginators are stored via `->paginate(...)->toArray()`. A raw `LengthAwarePaginator` can't be unserialized from Redis (`serializable_classes` is `false` in `config/cache.php`) and comes back as `__PHP_Incomplete_Class_Name`.
+- **Invalidation is `forget()` on state change**, not TTL expiry — `CheckSiteHeartbeat` forgets the incidents + stats keys whenever it opens or resolves a `SiteIncident`, so the long TTLs are just an upper bound. `stats` includes `last_checked_at` (which changes every check); this is an accepted staleness tradeoff since it's only refreshed on incident transitions.
+
+### Plan-limit enforcement: two middlewares
+
+Same limit check (`maxSites`), two different responses depending on who's calling:
+
+- **`EnforcePlanLimit`** (`plan.limit:*`) — for the SaaS web UI. Throws `ValidationException` (422) so Inertia's `onError` fires a `PlanLimitDialog`.
+- **`EnforceApiPlanLimit`** — for the WP plugin connect flow on `websites.store`. There's no Inertia client to catch a 422, so on limit it `Inertia::location()`-redirects back to the WordPress site URL with `spmNotice` / `spmNoticeType=error` query params, which the plugin's admin notice renders.
 
 ### Website status values
 
@@ -318,11 +369,17 @@ sitepulse-wp/sitepulse-monitor/
 │   │   ├── Http.php        # wp_remote_request wrapper, base URL = SPM_APP_URL
 │   │   └── Response.php    # Response wrapper
 │   └── Services/
-│       ├── AdminMenu.php       # WP admin menu page
-│       ├── AssetsManager.php   # Enqueue admin React bundle
+│       ├── AdminMenu.php       # WP admin menu + submenus (Incidents, Audit Reports)
+│       ├── AssetsManager.php   # Enqueue admin React bundle; exposes window.spmAdmin
 │       ├── AuditReport.php     # Collects + sends audit data, handles connect handshake
+│       ├── AjaxApi.php         # admin-ajax proxy → Laravel read endpoints (keeps api_key server-side)
 │       └── RestApi.php         # /heartbeat (public via api_key) + /disconnect, /reconnect (admin-only)
 └── resources/                  # React admin UI sources
+    └── src/
+        ├── app.js              # Mounts the page chosen by route() into #spm-container
+        ├── route.js            # Maps the `page` query param → page component
+        ├── pages/              # Home (stats dashboard), Incidents, AuditReports
+        └── components/         # Layout, Sheet (slide-in detail panel via createPortal)
 ```
 
 Each `Services/*` class implements `BaseService::register()` and is registered in `Core::services()`. The Core constructor instantiates each and calls `register()` — this is where `add_action`/`add_filter` hooks go.
@@ -333,6 +390,24 @@ Plugin REST routes (registered in `RestApi.php`):
 - `POST /sitepulse-monitor/v1/reconnect` — auth: `current_user_can('manage_options')`
 
 Plugin state (api_key, connection status) is stored in the `spm_app` WP option as JSON. Read/write via `AppData::get('api_key')` / `AppData::set($value, 'api_key')`.
+
+#### Admin dashboard (React) + AJAX proxy
+
+The plugin ships three admin pages, registered as menu/submenus in `AdminMenu.php` (slugs `sitepulse-monitor`, `sitepulse-incidents`, `sitepulse-audit-reports`). A single bundle (`app.js`) mounts into `#spm-container`; `route.js` reads the `page` query param and picks the component (`Home` / `Incidents` / `AuditReports`), defaulting to `Home`.
+
+Tables use `@tanstack/react-table` (a regular npm dependency). Do **not** use `@wordpress/dataviews` — `wp-scripts` externalizes all `@wordpress/*` packages, and dataviews pulls in `@wordpress/private-apis`, which throws *"You tried to opt-in to unstable APIs"* outside the block editor.
+
+**Why the AJAX proxy:** the `api_key` must never reach the browser. So the React UI never calls Laravel directly — it `fetch`es WordPress `admin-ajax.php` (`window.spmAdmin.ajaxUrl`, nonce in `spmAdmin.nonce`), and `AjaxApi` (PHP) reads the stored `api_key` server-side and proxies to the Laravel read endpoints via the `Http` lib:
+
+```
+React  →  wp_ajax_spm_get_{incidents|audit_reports|stats}  →  AjaxApi (PHP)  →  POST /api/v1/...  →  Laravel (Redis-cached)
+```
+
+`AjaxApi` actions verify the nonce (`check_ajax_referer('spm_admin_nonce', 'nonce')`), 403 if no `api_key`, and `wp_send_json_success($response->body())` on success.
+
+> Dates from the API arrive as UTC strings. In JS, normalize before display: `value.includes('T') ? value : value.replace(' ', 'T') + 'Z'`, then format with `timeZone: 'UTC'` — otherwise `new Date('2026-06-05 19:06:00')` is parsed as local time and shifts.
+
+> The bundle entry must stay named `app.js`. Renaming it (e.g. `app.jsx`) makes `wp-scripts` emit `app.jsx.js` + `app.jsx.asset.php`, which `AssetsManager` won't find.
 
 ---
 
@@ -433,10 +508,22 @@ dc exec php npm run format
 ## Environment Variables (key ones — Laravel app)
 
 ```
-APP_URL=http://localhost:8000
+APP_URL=http://sitepulse-app.test:6080
 DB_HOST=mysql
 DB_DATABASE=sitepulse
-QUEUE_CONNECTION=database
+QUEUE_CONNECTION=redis      # falls back to `database` if Redis is unavailable
+CACHE_STORE=redis
 MAIL_MAILER=log
-SESSION_DRIVER=database
+SESSION_DRIVER=database     # sessions still use the DB driver
+
+# Redis — one server, three logical DBs (see "Redis & API response caching")
+REDIS_CLIENT=phpredis
+REDIS_HOST=127.0.0.1        # Docker service name `redis` in local dev
+REDIS_PORT=6379
+REDIS_PASSWORD=...          # `secret` in local dev (docker-compose default)
+REDIS_DB=0                  # queue
+REDIS_CACHE_DB=1            # framework cache
+REDIS_API_CACHE_DB=2        # api-cache store
 ```
+
+> Per project policy, `.env` files are never read or modified directly — change the documented keys through whatever provisioning/deploy mechanism is in use. In production these are templated into `.env` from `env.prod` via `envsubst` in the GitHub Actions deploy (`REDIS_PASSWORD` is a repo secret).
