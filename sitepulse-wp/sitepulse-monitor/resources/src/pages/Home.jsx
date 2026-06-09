@@ -7,18 +7,21 @@ const Home = () => {
     const [error, setError]     = useState(null)
 
     useEffect(() => {
-        const body = new FormData()
-        body.append('action', 'spm_get_stats')
-        body.append('nonce', spmAdmin.nonce)
+        const form = new FormData()
+        form.append('action', 'spm_get_stats')
+        form.append('nonce', spmAdmin.nonce)
 
-        fetch(spmAdmin.ajaxUrl, { method: 'POST', body })
-            .then((res) => res.json())
-            .then((json) => {
-                if (!json.success) throw new Error(json.data?.message ?? 'Unknown error')
-                setStats(json.data)
-            })
-            .catch((e) => setError(e.message))
-            .finally(() => setLoading(false))
+        if (spmAdmin?.connected) {
+            fetch(spmAdmin.ajaxUrl, { method: 'POST', body: form })
+                .then((res) => res.json())
+                .then((json) => {
+                    console.log('Fetched stats:', json)
+                    if (!json.success) throw new Error(json.data?.message ?? 'Unknown error')
+                    setStats(json.data)
+                })
+                .catch((e) => setError(e.message))
+                .finally(() => setLoading(false))
+        }
     }, [])
 
     const formatDowntime = (minutes) => {
@@ -31,7 +34,7 @@ const Home = () => {
     return (
         <Layout>
             <div className="spm-stats">
-                {loading && <p>Loading stats…</p>}
+                {spmAdmin?.connected && loading && <p>Loading stats…</p>}
 
                 {stats   && (
                     <div className="spm-stats-grid">

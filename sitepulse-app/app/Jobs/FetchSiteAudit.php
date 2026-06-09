@@ -25,9 +25,8 @@ class FetchSiteAudit implements ShouldQueue
 
     public function handle(StoreAuditReport $action): void
     {
-        $parts = parse_url($this->website->url);
-        $origin = $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
-        $endpoint = $origin.'/index.php?rest_route=/sitepulse-monitor/v1/audit';
+        $baseUrl = $this->website->meta_data['siteBaseUrl'];
+        $endpoint = $baseUrl . 'index.php?rest_route=/sitepulse-monitor/v1/audit';
 
         $response = Http::timeout(25)->post($endpoint, [
             'api_key' => $this->website->api_key,

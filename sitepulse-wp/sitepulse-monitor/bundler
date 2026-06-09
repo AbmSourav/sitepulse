@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+
+use CodesVault\Bundle\Bundler;
+
+require __DIR__ . "/vendor/autoload.php";
+
+$env = CodesVault\Bundle\Setup::loadEnv(__DIR__, '.env');
+$bundler = new Bundler(__DIR__);
+
+$intended_data = [
+    'app_url'  => 'https://sitepulsee.com',
+    'dev_mode' => 'false',
+    'version'  => $env->getenv('PLUGIN_VERSION') ?? '1.0.0',
+];
+
+$bundler
+    ->createProductionRepo('sitepulse-monitor')
+    ->command("composer install --no-dev")
+    ->command("npm install")
+    ->command("npm run build")
+    ->cleanUp()
+    ->updateFileContent($intended_data)
+    ->zip('sitepulse-monitor')
+    ->executionTime();

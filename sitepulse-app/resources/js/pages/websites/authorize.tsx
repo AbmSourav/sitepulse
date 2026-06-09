@@ -13,7 +13,11 @@ import { store } from '@/routes/websites';
 
 export default function WebsiteAuthorize() {
     const [loading, setLoading] = useState(false);
-    const { teams, siteUrl } = usePage().props;
+    const { teams, siteUrl, siteBaseUrl } = usePage<{
+        teams: { id: number; name: string }[];
+        siteUrl: string;
+        siteBaseUrl: string;
+    }>().props;
     const hostName = new URL(siteUrl ?? '').hostname;
 
     function handleTeamChange(id: string) {
@@ -21,6 +25,7 @@ export default function WebsiteAuthorize() {
         router.post(store.url(), {
             teamId: Number(id),
             siteUrl,
+            siteBaseUrl,
         });
     }
 

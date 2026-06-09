@@ -94,7 +94,9 @@ const Incidents = () => {
     }, [])
 
     useEffect(() => {
-        fetchIncidents()
+        if (spmAdmin?.connected) {
+            fetchIncidents()
+        }
     }, [])
 
     const table = useReactTable({
@@ -108,7 +110,7 @@ const Incidents = () => {
             <h2 className="spm-page-title">Incidents</h2>
 
             <div className="spm-content">
-                {loading && <p>Loading incidents…</p>}
+                {spmAdmin?.connected && loading && <p>Loading incidents…</p>}
 
                 {!loading && !error && (
                     <div className="spm-table-wrap">

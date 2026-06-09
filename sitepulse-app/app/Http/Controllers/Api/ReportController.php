@@ -93,7 +93,7 @@ class ReportController extends Controller
         ];
 
         // set cache
-        Cache::store('api-cache')->put("website:{$website->id}:stats", $data, now()->addHours(24));
+        Cache::store('api-cache')->put("website:{$website->id}:stats", $data, now()->addMinutes(10));
 
         return response()->json($data);
     }

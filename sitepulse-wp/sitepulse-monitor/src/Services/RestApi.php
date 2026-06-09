@@ -56,7 +56,6 @@ class RestApi
 
     public function heartbeat(): \WP_REST_Response
     {
-        update_option('spm_test', (get_option('spm_test') + 1));
         return new \WP_REST_Response([
             'ok'         => true,
             'plugin'     => SPM_VERSION,

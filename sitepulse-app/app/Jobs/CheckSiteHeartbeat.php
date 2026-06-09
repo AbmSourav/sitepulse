@@ -30,7 +30,6 @@ class CheckSiteHeartbeat implements ShouldQueue
     {
         $parts = parse_url($this->website->url);
         $origin = $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
-        $endpoint = $origin.'/index.php?rest_route=/sitepulse-monitor/v1/heartbeat';
 
         $response = null;
         $reason = null;
@@ -39,6 +38,9 @@ class CheckSiteHeartbeat implements ShouldQueue
 
         try {
             if ($this->website->api_key) {
+                $baseUrl = $this->website->meta_data['siteBaseUrl'];
+                $endpoint = $baseUrl . 'index.php?rest_route=/sitepulse-monitor/v1/heartbeat';
+
                 // WordPress plugin mode
                 $response = $this->httpClient()
                     ->withHeaders(['X-SPM-API-Key' => $this->website->api_key])
@@ -139,13 +141,17 @@ class CheckSiteHeartbeat implements ShouldQueue
 
             if ($incident) {
                 $incident->update(['resolved_at' => now()]);
-                Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
-                Cache::store('api-cache')->forget("website:{$this->website->id}:stats");
+
+                $this->clearCache();
 
                 if ($this->website->consecutive_failures > 1) {
                     SendIncidentNotification::dispatch($incident->fresh(), 'up');
                 }
             }
+        }
+
+        if ($this->website->api_key) {
+            $this->clearCache();
         }
 
         $this->website->consecutive_failures = 0;
@@ -173,8 +179,8 @@ class CheckSiteHeartbeat implements ShouldQueue
                     'reason'      => $reason,
                     'http_status' => $httpStatus,
                 ]);
-                Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
-                Cache::store('api-cache')->forget("website:{$this->website->id}:stats");
+
+                $this->clearCache();
             }
         } elseif ($this->website->consecutive_failures === 2) {
             $incident = SiteIncident::where('website_id', $this->website->id)
@@ -201,5 +207,11 @@ class CheckSiteHeartbeat implements ShouldQueue
             // so next request after 20 minutes
             $intervalTime = 19;
         }
+    }
+
+    private function clearCache(): void
+    {
+        Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
+        Cache::store('api-cache')->forget("website:{$this->website->id}:stats");
     }
 }

@@ -58,10 +58,12 @@ class WebsiteController extends Controller
     {
         $data = $request->validate([
             'siteUrl' => 'required|url',
+            'siteBaseUrl' => 'required|url',
         ]);
 
         return Inertia::render('websites/authorize', [
             'siteUrl' => $data['siteUrl'],
+            'siteBaseUrl' => $data['siteBaseUrl'],
         ]);
     }
 
@@ -80,6 +82,7 @@ class WebsiteController extends Controller
     {
         $data = $request->validate([
             'siteUrl' => 'required|url|unique:websites,url',
+            'siteBaseUrl' => 'required|url',
             'teamId'  => 'required|exists:teams,id',
         ]);
 
@@ -93,6 +96,7 @@ class WebsiteController extends Controller
                 'api_key'      => Str::random(32),
                 'status'       => 'connected',
                 'connected_at' => now(),
+                'meta_data'    => ['siteBaseUrl' => $data['siteBaseUrl']],
             ]);
 
             CheckDomainExpiry::dispatch($website);

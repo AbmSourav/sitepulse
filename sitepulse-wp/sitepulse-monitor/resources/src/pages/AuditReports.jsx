@@ -83,7 +83,9 @@ const AuditReports = () => {
     }, [])
 
     useEffect(() => {
-        fetchReports()
+        if (spmAdmin?.connected) {
+            fetchReports()
+        }
     }, [])
 
     const table = useReactTable({
@@ -97,7 +99,7 @@ const AuditReports = () => {
             <h2 className="spm-page-title">Audit Reports</h2>
 
             <div className="spm-content">
-                {loading && <p>Loading audit reports…</p>}
+                {spmAdmin?.connected && loading && <p>Loading audit reports…</p>}
 
                 {!loading && !error && (
                     <div className="spm-table-wrap">

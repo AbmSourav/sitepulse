@@ -66,7 +66,8 @@ class AssetsManager implements BaseService
                 'hasApiKey' => AppData::get('api_key') ? true : false,
                 'connected' => AppData::get('status') === 'connected' ? true : false,
                 'notice'    => $notice,
-                'noticeType' => $noticeType
+                'noticeType' => $noticeType,
+                'siteBaseUrl'   => home_url('/'),
             ]
         );
     }

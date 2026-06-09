@@ -1,0 +1,28 @@
+{
+    "sitepulse": {
+        "path": "",
+        "extension": "php",
+        "schema": [
+            {
+                "target": "@version 1.0.0",
+                "template": "@version {{version}}"
+            },
+            {
+                "target": "Version: 1.0.0",
+                "template": "Version: {{version}}"
+            },
+            {
+                "target": "define('SPM_APP_URL', 'http://sitepulse-app.test:6080');",
+                "template": "define('SPM_APP_URL', '{{app_url}}');"
+            },
+            {
+                "target": "define('SPM_DEV_MODE', true);",
+                "template": "define('SPM_DEV_MODE', {{dev_mode}});"
+            },
+            {
+                "target": "define('SPM_VERSION', '1.0.0');",
+                "template": "define('SPM_VERSION', '{{version}}');"
+            }
+        ]
+    }
+}

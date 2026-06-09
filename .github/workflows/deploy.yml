@@ -53,6 +53,25 @@ jobs:
             sitepulse-app/env.prod
           retention-days: 1
 
+      - name: Prepare plugin .env
+        working-directory: sitepulse-wp/sitepulse-monitor
+        run: cp .env-example .env
+
+      - name: Install plugin bundler dependencies
+        working-directory: sitepulse-wp/sitepulse-monitor
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Bundle WordPress plugin
+        working-directory: sitepulse-wp/sitepulse-monitor
+        run: php bundler
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin
+          path: sitepulse-wp/sitepulse-monitor/prod/sitepulse-monitor.zip
+          retention-days: 1
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -63,6 +82,12 @@ jobs:
         with:
           name: release
           path: release/
+
+      - name: Download Plugin Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin
+          path: plugin/
 
       - name: Write .env
         env:
@@ -134,6 +159,17 @@ jobs:
             -o StrictHostKeyChecking=yes \
             ubuntu@${{ secrets.LIGHTSAIL_HOST }} \
             "sudo mv /tmp/sitepulse.conf /etc/supervisor/conf.d/sitepulse.conf"
+
+      - name: Deploy plugin zip to public
+        run: |
+          scp -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            plugin/sitepulse-monitor.zip \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/tmp/sitepulse-monitor.zip
+          ssh -i ~/.ssh/deploy_key \
+            -o StrictHostKeyChecking=yes \
+            ubuntu@${{ secrets.LIGHTSAIL_HOST }} \
+            "sudo mv /tmp/sitepulse-monitor.zip /var/www/sitepulse/public/sitepulse-monitor.zip && sudo chown www-data:www-data /var/www/sitepulse/public/sitepulse-monitor.zip"
 
       - name: Post-deploy
         run: |

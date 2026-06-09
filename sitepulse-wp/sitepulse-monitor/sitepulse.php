@@ -5,11 +5,11 @@
  * @version 1.0.0
  *
  * Plugin Name: SitePulse Monitor
- * Plugin URI: https://sitepulse.com
+ * Plugin URI: https://sitepulsee.com
  * Description: A plugin to monitor the health of your WordPress site and send audit report to website owners.
  * Author: Keramot UL Islam
  * Version: 1.0.0
- * Author URI: https://abmsourav.com
+ * Author URI: https://sitepulsee.com
  * Text Domain: sitepulse-monitor
  */
 
