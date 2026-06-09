@@ -23,7 +23,6 @@ export function TeamSwitcher({ inHeader = false }: TeamSwitcherProps) {
     const isMobile = useIsMobile();
     const currentTeam = page.props.currentTeam;
     const teams = page.props.teams ?? [];
-    console.log(page);
 
     const switchTeam = (team: Team) => {
         if (!team.slug) {

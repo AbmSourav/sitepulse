@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, Download } from 'lucide-react';
 import { useState } from 'react';
 import { AuditReportDetail } from '@/components/audit-report/audit-report-detail';
 import { Button } from '@/components/ui/button';
@@ -81,6 +81,45 @@ export default function AuditReports() {
         <>
             <Head title="Audit Reports" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 sm:mx-5 md:mx-12 dark:border-gray-700 dark:bg-gray-800">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                                Start auditing your WordPress site
+                            </h2>
+                            <p className="mt-1 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
+                                Download the SitePulse Monitor plugin, install
+                                it on your WordPress site, then connect it to
+                                SitePulse. Once connected, audit reports will
+                                appear here automatically.
+                            </p>
+                            <ol className="mt-2 list-inside list-decimal text-xs leading-normal text-gray-500 dark:text-gray-400">
+                                <li>Download the plugin (.zip) below.</li>
+                                <li>
+                                    In WordPress, go to{' '}
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                                        Plugins → Add New → Upload Plugin
+                                    </span>
+                                    , upload the .zip, and activate it.
+                                </li>
+                                <li>
+                                    Go to 'SitePulse Monitor' menu page and click{' '}
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                                        Connect
+                                    </span>{' '}
+                                    to link it to your account.
+                                </li>
+                            </ol>
+                        </div>
+                        <Button asChild className="shrink-0">
+                            <a href="/sitepulse-monitor.zip" download>
+                                <Download className="size-4" />
+                                Download plugin
+                            </a>
+                        </Button>
+                    </div>
+                </div>
+
                 <div className="pt-4 sm:px-5 md:px-12">
                     <div className="mb-3 flex items-center gap-3 rounded-sm border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800">
                         <select
@@ -148,8 +187,6 @@ export default function AuditReports() {
                                             <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
                                                 SSL
                                             </th>
-                                            {/* <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Plugins</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Themes</th> */}
                                             <th className="px-4 py-3"></th>
                                         </tr>
                                     </thead>
