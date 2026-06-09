@@ -26,7 +26,7 @@ test('teams can be created', function () {
     $response->assertRedirect();
 
     $this->assertDatabaseHas('teams', [
-        'name' => 'Test Team',
+        'name'        => 'Test Team',
         'is_personal' => false,
     ]);
 });
@@ -78,7 +78,7 @@ test('teams can be updated by owners', function () {
     $response->assertRedirect(route('teams.edit', $team->fresh()));
 
     $this->assertDatabaseHas('teams', [
-        'id' => $team->id,
+        'id'   => $team->id,
         'name' => 'Updated Name',
     ]);
 });
@@ -134,7 +134,7 @@ test('team deletion requires name confirmation', function () {
     $response->assertSessionHasErrors('name');
 
     $this->assertDatabaseHas('teams', [
-        'id' => $team->id,
+        'id'         => $team->id,
         'deleted_at' => null,
     ]);
 });
@@ -250,7 +250,7 @@ test('personal teams cannot be deleted', function () {
     $response->assertForbidden();
 
     $this->assertDatabaseHas('teams', [
-        'id' => $personalTeam->id,
+        'id'         => $personalTeam->id,
         'deleted_at' => null,
     ]);
 });

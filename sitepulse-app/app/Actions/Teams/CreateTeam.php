@@ -16,13 +16,13 @@ class CreateTeam
     {
         return DB::transaction(function () use ($user, $name, $isPersonal) {
             $team = Team::create([
-                'name' => $name,
+                'name'        => $name,
                 'is_personal' => $isPersonal,
             ]);
 
             $membership = $team->memberships()->create([
                 'user_id' => $user->id,
-                'role' => TeamRole::Owner,
+                'role'    => TeamRole::Owner,
             ]);
 
             $user->switchTeam($team);

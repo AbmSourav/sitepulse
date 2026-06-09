@@ -49,8 +49,8 @@ enum TeamRole: string
     public function level(): int
     {
         return match ($this) {
-            self::Owner => 3,
-            self::Admin => 2,
+            self::Owner  => 3,
+            self::Admin  => 2,
             self::Member => 1,
         };
     }

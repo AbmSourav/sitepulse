@@ -5,11 +5,11 @@ namespace App\Jobs;
 use App\Enums\UptimeStatus;
 use App\Models\SiteIncident;
 use App\Models\Website;
-use App\Jobs\SendIncidentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
@@ -21,22 +21,21 @@ class CheckSiteHeartbeat implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 1;
+
     public int $timeout = 15;
 
-    public function __construct(public Website $website)
-    {
-    }
+    public function __construct(public Website $website) {}
 
     public function handle(): void
     {
-        $parts  = parse_url($this->website->url);
-        $origin = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '');
-        $endpoint = $origin . '/index.php?rest_route=/sitepulse-monitor/v1/heartbeat';
+        $parts = parse_url($this->website->url);
+        $origin = $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
+        $endpoint = $origin.'/index.php?rest_route=/sitepulse-monitor/v1/heartbeat';
 
-        $response   = null;
-        $reason     = null;
+        $response = null;
+        $reason = null;
         $httpStatus = null;
-        $isUp       = false;
+        $isUp = false;
 
         try {
             if ($this->website->api_key) {
@@ -46,7 +45,7 @@ class CheckSiteHeartbeat implements ShouldQueue
                     ->get($endpoint);
 
                 $httpStatus = $response->status();
-                $body       = $response->body();
+                $body = $response->body();
 
                 if ($this->bodyHasPhpError($body)) {
                     $reason = 'php_error';
@@ -57,17 +56,17 @@ class CheckSiteHeartbeat implements ShouldQueue
                 } elseif ($response->successful()) {
                     $reason = 'invalid_response';
                 } else {
-                    $reason = 'http_' . $httpStatus;
+                    $reason = 'http_'.$httpStatus;
                 }
             } else {
                 // Plain monitoring mode — any 2xx = up
-                $response   = $this->httpClient()->get($origin . '/');
+                $response = $this->httpClient()->get($origin.'/');
                 $httpStatus = $response->status();
 
                 if ($response->successful()) {
                     $isUp = true;
                 } else {
-                    $reason = 'http_' . $httpStatus;
+                    $reason = 'http_'.$httpStatus;
                 }
             }
         } catch (ConnectionException $e) {
@@ -89,7 +88,7 @@ class CheckSiteHeartbeat implements ShouldQueue
         $this->website->save();
     }
 
-    private function httpClient(): \Illuminate\Http\Client\PendingRequest
+    private function httpClient(): PendingRequest
     {
         $client = Http::timeout(10);
 
@@ -177,7 +176,7 @@ class CheckSiteHeartbeat implements ShouldQueue
                 Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
                 Cache::store('api-cache')->forget("website:{$this->website->id}:stats");
             }
-        } else if ($this->website->consecutive_failures === 2) {
+        } elseif ($this->website->consecutive_failures === 2) {
             $incident = SiteIncident::where('website_id', $this->website->id)
                 ->whereNull('resolved_at')
                 ->first();

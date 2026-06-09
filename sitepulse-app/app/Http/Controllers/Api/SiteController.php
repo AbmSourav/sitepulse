@@ -17,7 +17,7 @@ class SiteController extends Controller
         $website->update(['status' => 'disconnected']);
 
         return response()->json([
-            'message'   => 'Site disconnected successfully',
+            'message' => 'Site disconnected successfully',
         ], 200);
     }
 
@@ -28,14 +28,14 @@ class SiteController extends Controller
 
         if (! $website) {
             return response()->json([
-                'message'   => 'Site not found',
+                'message' => 'Site not found',
             ], 404);
         }
 
         $website->update(['status' => 'connected']);
 
         return response()->json([
-            'message'   => 'Site reconnected successfully',
+            'message' => 'Site reconnected successfully',
         ], 200);
     }
 }

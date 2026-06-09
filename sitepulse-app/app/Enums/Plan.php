@@ -4,8 +4,8 @@ namespace App\Enums;
 
 enum Plan: string
 {
-    case Free       = 'free';
-    case Pro        = 'pro';
+    case Free = 'free';
+    case Pro = 'pro';
     case Enterprise = 'enterprise';
 
     public function limits(): array

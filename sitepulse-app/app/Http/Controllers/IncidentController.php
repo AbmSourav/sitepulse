@@ -18,11 +18,11 @@ class IncidentController extends Controller
             ->orderBy('url')
             ->get(['id', 'url']);
 
-        $websiteIds  = $websites->pluck('id');
+        $websiteIds = $websites->pluck('id');
         $websiteList = $websites->map(fn ($site) => ['id' => $site->id, 'url' => $site->url]);
 
         $websiteId = $request->integer('website_id') ?: null;
-        $month     = $request->filled('month') ? $request->string('month') : null;
+        $month = $request->filled('month') ? $request->string('month') : null;
 
         $incidents = SiteIncident::whereIn('website_id', $websiteIds)
             ->when($websiteId, fn ($q) => $q->where('website_id', $websiteId))

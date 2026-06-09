@@ -25,8 +25,8 @@ class TeamInvitationController extends Controller
         Gate::authorize('inviteMember', $team);
 
         $invitation = $team->invitations()->create([
-            'email' => $request->validated('email'),
-            'role' => TeamRole::from($request->validated('role')),
+            'email'      => $request->validated('email'),
+            'role'       => TeamRole::from($request->validated('role')),
             'invited_by' => $request->user()->id,
             'expires_at' => now()->addDays(3),
         ]);

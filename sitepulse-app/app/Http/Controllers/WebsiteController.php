@@ -9,8 +9,9 @@ use App\Models\Website;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
+
 class WebsiteController extends Controller
 {
     /**
@@ -33,7 +34,7 @@ class WebsiteController extends Controller
     public function addMonitor(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'url'    => 'required|url|unique:websites,url'
+            'url' => 'required|url|unique:websites,url',
         ]);
 
         $website = Website::create([
@@ -60,7 +61,7 @@ class WebsiteController extends Controller
         ]);
 
         return Inertia::render('websites/authorize', [
-            'siteUrl'   => $data['siteUrl'],
+            'siteUrl' => $data['siteUrl'],
         ]);
     }
 
@@ -78,8 +79,8 @@ class WebsiteController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'siteUrl'   => 'required|url|unique:websites,url',
-            'teamId'    => 'required|exists:teams,id',
+            'siteUrl' => 'required|url|unique:websites,url',
+            'teamId'  => 'required|exists:teams,id',
         ]);
 
         $this->authorizeTeam($data['teamId']);
@@ -98,11 +99,11 @@ class WebsiteController extends Controller
             FetchSiteAudit::dispatch($website);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Failed to create website. ' . $e->getMessage()
+                'error' => 'Failed to create website. '.$e->getMessage(),
             ], 500);
         }
 
-        $redirectUrl = rtrim($data['siteUrl'], '/') . '&' . http_build_query([
+        $redirectUrl = rtrim($data['siteUrl'], '/').'&'.http_build_query([
             'spmApiKey'     => $website->api_key,
             'spmNotice'     => 'Website is connected',
             'spmNoticeType' => 'success',
@@ -118,7 +119,7 @@ class WebsiteController extends Controller
     {
         $data = $request->validate([
             'websiteId' => 'required|exists:websites,id',
-            'status'    => 'required|in:connected,disconnected'
+            'status'    => 'required|in:connected,disconnected',
         ]);
 
         $website = Website::find($data['websiteId']);
@@ -145,8 +146,8 @@ class WebsiteController extends Controller
     private function formatWebsites(Collection $websites): Collection
     {
         return $websites->map(function (Website $website) {
-            $url    = parse_url($website->url);
-            $domain = $url['host'] . (! empty($url['port']) ? ':' . $url['port'] : '');
+            $url = parse_url($website->url);
+            $domain = $url['host'].(! empty($url['port']) ? ':'.$url['port'] : '');
 
             $latestIncident = $website->latestIncident ?? [];
             if ($latestIncident) {
@@ -160,16 +161,16 @@ class WebsiteController extends Controller
             }
 
             return [
-                'id'              => $website->id,
-                'url'             => $domain,
-                'full_url'        => $website->url,
-                'status'          => $website->status,
-                'uptime_status'   => $website->uptime_status,
-                'last_checked_at' => $website->last_checked_at?->toIso8601String(),
-                'connected_at'    => $website->connected_at?->toIso8601String(),
-                'created_at'      => $website->created_at->toIso8601String(),
-                'recentIncident'   => $latestIncident,
-                'created_by'       => $website->user ? ['id' => $website->user->id, 'name' => $website->user->name] : null,
+                'id'                => $website->id,
+                'url'               => $domain,
+                'full_url'          => $website->url,
+                'status'            => $website->status,
+                'uptime_status'     => $website->uptime_status,
+                'last_checked_at'   => $website->last_checked_at?->toIso8601String(),
+                'connected_at'      => $website->connected_at?->toIso8601String(),
+                'created_at'        => $website->created_at->toIso8601String(),
+                'recentIncident'    => $latestIncident,
+                'created_by'        => $website->user ? ['id' => $website->user->id, 'name' => $website->user->name] : null,
                 'domain_expires_at' => $website->meta_data['domain_expires_at'] ?? null,
             ];
         });
@@ -184,7 +185,7 @@ class WebsiteController extends Controller
                 return [$website->id => null];
             }
 
-            $since        = $website->created_at;
+            $since = $website->created_at;
             $totalSeconds = $since->diffInSeconds($now);
 
             $downtimeSeconds = $website->incidents
@@ -192,15 +193,15 @@ class WebsiteController extends Controller
                 ->sum(fn (SiteIncident $i) => $i->started_at->diffInSeconds($i->resolved_at ?? $now));
 
             $uptimeSeconds = max(0, $totalSeconds - $downtimeSeconds);
-            $uptimePct     = $totalSeconds > 0 ? round(($uptimeSeconds / $totalSeconds) * 100, 2) : 100.0;
+            $uptimePct = $totalSeconds > 0 ? round(($uptimeSeconds / $totalSeconds) * 100, 2) : 100.0;
 
             return [$website->id => [
-                'uptime_seconds'      => $uptimeSeconds,
-                'total_seconds'       => $totalSeconds,
-                'uptime_percentage'   => $uptimePct,
-                'incident_count'      => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($since))->count(),
-                'incidents_7_days'    => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($now->copy()->subDays(7)))->count(),
-                'incidents_30_days'   => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($now->copy()->subDays(30)))->count(),
+                'uptime_seconds'    => $uptimeSeconds,
+                'total_seconds'     => $totalSeconds,
+                'uptime_percentage' => $uptimePct,
+                'incident_count'    => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($since))->count(),
+                'incidents_7_days'  => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($now->copy()->subDays(7)))->count(),
+                'incidents_30_days' => $website->incidents->filter(fn (SiteIncident $i) => $i->started_at->gte($now->copy()->subDays(30)))->count(),
             ]];
         });
     }

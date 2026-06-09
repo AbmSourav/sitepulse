@@ -21,11 +21,11 @@ class TeamInvitationFactory extends Factory
     public function definition(): array
     {
         return [
-            'team_id' => Team::factory(),
-            'email' => fake()->unique()->safeEmail(),
-            'role' => TeamRole::Member,
-            'invited_by' => User::factory(),
-            'expires_at' => null,
+            'team_id'     => Team::factory(),
+            'email'       => fake()->unique()->safeEmail(),
+            'role'        => TeamRole::Member,
+            'invited_by'  => User::factory(),
+            'expires_at'  => null,
             'accepted_at' => null,
         ];
     }

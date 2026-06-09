@@ -8,7 +8,6 @@ use App\Enums\Plan;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 
@@ -40,7 +39,7 @@ class GoogleController extends Controller
         if ($user) {
             if (! $user->auth_id) {
                 $user->auth_provider = 'google';
-                $user->auth_id       = $googleUser->getId();
+                $user->auth_id = $googleUser->getId();
             }
 
             if (! $user->email_verified_at) {
@@ -50,10 +49,10 @@ class GoogleController extends Controller
             $user->save();
         } else {
             $user = $createNewUser->storeUserAndTeam([
-                'name'          => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
-                'email'         => $googleUser->getEmail(),
-                'auth_provider' => 'google',
-                'auth_id'       => $googleUser->getId(),
+                'name'                => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
+                'email'               => $googleUser->getEmail(),
+                'auth_provider'       => 'google',
+                'auth_id'             => $googleUser->getId(),
                 'email_verified_at'   => now(),
                 'subscription_detail' => [
                     'plan'   => Plan::Free->value,

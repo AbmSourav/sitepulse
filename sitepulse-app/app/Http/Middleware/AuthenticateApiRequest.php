@@ -28,7 +28,7 @@ class AuthenticateApiRequest
 
         if (! $requestHost || ! $websiteHost || $requestHost !== $websiteHost) {
             return response()->json([
-                'error' => 'Request origin does not match registered site.'
+                'error' => 'Request origin does not match registered site.',
             ], 403);
         }
 

@@ -18,15 +18,15 @@ test('team invitations can be created', function () {
         ->actingAs($owner)
         ->post(route('teams.invitations.store', $team), [
             'email' => 'invited@example.com',
-            'role' => TeamRole::Member->value,
+            'role'  => TeamRole::Member->value,
         ]);
 
     $response->assertRedirect(route('teams.edit', $team));
 
     $this->assertDatabaseHas('team_invitations', [
         'team_id' => $team->id,
-        'email' => 'invited@example.com',
-        'role' => TeamRole::Member->value,
+        'email'   => 'invited@example.com',
+        'role'    => TeamRole::Member->value,
     ]);
 });
 
@@ -44,7 +44,7 @@ test('team invitations can be created by admins', function () {
         ->actingAs($admin)
         ->post(route('teams.invitations.store', $team), [
             'email' => 'invited@example.com',
-            'role' => TeamRole::Member->value,
+            'role'  => TeamRole::Member->value,
         ]);
 
     $response->assertRedirect(route('teams.edit', $team));
@@ -64,7 +64,7 @@ test('existing team members cannot be invited', function () {
         ->actingAs($owner)
         ->post(route('teams.invitations.store', $team), [
             'email' => 'member@example.com',
-            'role' => TeamRole::Member->value,
+            'role'  => TeamRole::Member->value,
         ]);
 
     $response->assertSessionHasErrors('email');
@@ -78,8 +78,8 @@ test('duplicate invitations cannot be created', function () {
     $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
 
     TeamInvitation::factory()->create([
-        'team_id' => $team->id,
-        'email' => 'invited@example.com',
+        'team_id'    => $team->id,
+        'email'      => 'invited@example.com',
         'invited_by' => $owner->id,
     ]);
 
@@ -87,7 +87,7 @@ test('duplicate invitations cannot be created', function () {
         ->actingAs($owner)
         ->post(route('teams.invitations.store', $team), [
             'email' => 'invited@example.com',
-            'role' => TeamRole::Member->value,
+            'role'  => TeamRole::Member->value,
         ]);
 
     $response->assertSessionHasErrors('email');
@@ -105,7 +105,7 @@ test('team invitations cannot be created by members', function () {
         ->actingAs($member)
         ->post(route('teams.invitations.store', $team), [
             'email' => 'invited@example.com',
-            'role' => TeamRole::Member->value,
+            'role'  => TeamRole::Member->value,
         ]);
 
     $response->assertForbidden();
@@ -118,7 +118,7 @@ test('team invitations can be cancelled by owners', function () {
     $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
 
     $invitation = TeamInvitation::factory()->create([
-        'team_id' => $team->id,
+        'team_id'    => $team->id,
         'invited_by' => $owner->id,
     ]);
 
@@ -141,9 +141,9 @@ test('team invitations can be accepted', function () {
     $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
 
     $invitation = TeamInvitation::factory()->create([
-        'team_id' => $team->id,
-        'email' => 'invited@example.com',
-        'role' => TeamRole::Member,
+        'team_id'    => $team->id,
+        'email'      => 'invited@example.com',
+        'role'       => TeamRole::Member,
         'invited_by' => $owner->id,
     ]);
 
@@ -165,8 +165,8 @@ test('team invitations cannot be accepted by uninvited user', function () {
     $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
 
     $invitation = TeamInvitation::factory()->create([
-        'team_id' => $team->id,
-        'email' => 'invited@example.com',
+        'team_id'    => $team->id,
+        'email'      => 'invited@example.com',
         'invited_by' => $owner->id,
     ]);
 
@@ -187,8 +187,8 @@ test('expired invitations cannot be accepted', function () {
     $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
 
     $invitation = TeamInvitation::factory()->expired()->create([
-        'team_id' => $team->id,
-        'email' => 'invited@example.com',
+        'team_id'    => $team->id,
+        'email'      => 'invited@example.com',
         'invited_by' => $owner->id,
     ]);
 

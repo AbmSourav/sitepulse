@@ -12,7 +12,7 @@ class ReportController extends Controller
     public function incidents(Request $request): JsonResponse
     {
         $website = $request->attributes->get('website');
-        $page    = (int) $request->input('page', 1);
+        $page = (int) $request->input('page', 1);
 
         if ($page === 1) {
             // Cache the first page of incidents for 24 hours to reduce database load,
@@ -34,7 +34,7 @@ class ReportController extends Controller
     public function auditReports(Request $request): JsonResponse
     {
         $website = $request->attributes->get('website');
-        $page    = (int) $request->input('page', 1);
+        $page = (int) $request->input('page', 1);
 
         if ($page === 1) {
             $reports = Cache::store('api-cache')->remember(
@@ -60,7 +60,7 @@ class ReportController extends Controller
             return response()->json($cached);
         }
 
-        $now   = now();
+        $now = now();
         $since = $now->copy()->subDays(7);
 
         $incidents7d = $website->incidents()
@@ -71,13 +71,13 @@ class ReportController extends Controller
             ->where('started_at', '>=', $now->copy()->subDays(30))
             ->count();
 
-        $totalSeconds    = $since->diffInSeconds($now);
+        $totalSeconds = $since->diffInSeconds($now);
         $downtimeSeconds = $incidents7d->sum(fn ($i) => $i->started_at->diffInSeconds($i->resolved_at ?? $now));
-        $uptimePct       = $totalSeconds > 0
+        $uptimePct = $totalSeconds > 0
             ? round((max(0, $totalSeconds - $downtimeSeconds) / $totalSeconds) * 100, 2)
             : 100.0;
 
-        $domainExpiresAt    = $website->meta_data['domain_expires_at'] ?? null;
+        $domainExpiresAt = $website->meta_data['domain_expires_at'] ?? null;
         $domainExpiringSoon = $domainExpiresAt
             && now()->diffInDays($domainExpiresAt, false) <= 30
             && now()->diffInDays($domainExpiresAt, false) >= 0;

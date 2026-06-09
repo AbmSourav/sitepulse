@@ -38,7 +38,7 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
         $avatarUrl = '';
         if ($user) {
-            $avatarUrl = 'https://www.gravatar.com/avatar/' . hash('sha256', strtolower(trim($user->email))) . '?s=64&d=mp';
+            $avatarUrl = 'https://www.gravatar.com/avatar/'.hash('sha256', strtolower(trim($user->email))).'?s=64&d=mp';
         }
 
         return [
@@ -51,7 +51,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'currentTeam' => fn () => $user?->currentTeam ? $user->toUserTeam($user->currentTeam) : null,
-            'teams' => fn () => $user?->toUserTeams(includeCurrent: true) ?? [],
+            'teams'       => fn () => $user?->toUserTeams(includeCurrent: true) ?? [],
             'currentPlan' => fn () => $user ? [
                 'value'  => $user->plan()->value,
                 'label'  => $user->plan()->label(),

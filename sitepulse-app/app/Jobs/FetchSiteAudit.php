@@ -18,20 +18,19 @@ class FetchSiteAudit implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $backoff = 60;
+
     public int $timeout = 30;
 
-    public function __construct(public Website $website)
-    {
-    }
+    public function __construct(public Website $website) {}
 
     public function handle(StoreAuditReport $action): void
     {
-        $parts    = parse_url($this->website->url);
-        $origin   = $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '');
-        $endpoint = $origin . '/index.php?rest_route=/sitepulse-monitor/v1/audit';
+        $parts = parse_url($this->website->url);
+        $origin = $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
+        $endpoint = $origin.'/index.php?rest_route=/sitepulse-monitor/v1/audit';
 
         $response = Http::timeout(25)->post($endpoint, [
-            'api_key' => $this->website->api_key
+            'api_key' => $this->website->api_key,
         ]);
 
         if (! $response->successful()) {
@@ -46,13 +45,13 @@ class FetchSiteAudit implements ShouldQueue
             $data = $response->json();
             $action->handle($this->website, [
                 'audited_at' => now()->format('Y-m-d H:i:s'),
-                'server' => [
+                'server'     => [
                     'php_errors' => [
-                        'status' => $data['data']['status'] ?? 0,
+                        'status'  => $data['data']['status'] ?? 0,
                         'message' => $data['data']['error']['message'] ?? '',
-                        'file' => $data['data']['error']['file'] ?? '',
-                    ]
-                ]
+                        'file'    => $data['data']['error']['file'] ?? '',
+                    ],
+                ],
             ]);
 
             return;

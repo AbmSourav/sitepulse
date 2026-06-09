@@ -39,12 +39,12 @@ class TeamInvitation extends Notification implements ShouldQueue
         $inviter = $this->invitation->inviter;
 
         return (new MailMessage)
-            ->from('no-reply@sitepulsee.com', "SitePulse")
+            ->from('no-reply@sitepulsee.com', 'SitePulse')
             ->subject("You've been invited to join {$team->name} on SitePulse")
             ->markdown('emails.team-invitation', [
-                'inviterName'   => $inviter->name,
-                'teamName'      => $team->name,
-                'acceptUrl'     => url("/invitations/{$this->invitation->code}/accept"),
+                'inviterName' => $inviter->name,
+                'teamName'    => $team->name,
+                'acceptUrl'   => url("/invitations/{$this->invitation->code}/accept"),
             ]);
     }
 
@@ -57,9 +57,9 @@ class TeamInvitation extends Notification implements ShouldQueue
     {
         return [
             'invitation_id' => $this->invitation->id,
-            'team_id' => $this->invitation->team_id,
-            'team_name' => $this->invitation->team->name,
-            'role' => $this->invitation->role->value,
+            'team_id'       => $this->invitation->team_id,
+            'team_name'     => $this->invitation->team->name,
+            'role'          => $this->invitation->role->value,
         ];
     }
 }

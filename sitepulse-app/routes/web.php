@@ -8,7 +8,6 @@ use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Middleware\EnforceApiPlanLimit;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 // Health check endpoint for load balancer and uptime monitoring

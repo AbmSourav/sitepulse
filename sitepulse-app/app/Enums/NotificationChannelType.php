@@ -4,8 +4,8 @@ namespace App\Enums;
 
 enum NotificationChannelType: string
 {
-    case Email   = 'email';
-    case Slack   = 'slack';
+    case Email = 'email';
+    case Slack = 'slack';
     case Discord = 'discord';
     case Webhook = 'webhook';
 

@@ -58,11 +58,12 @@ class SendIncidentNotification implements ShouldQueue
     private function message(string $siteUrl): string
     {
         $parsedUrl = parse_url($siteUrl);
-        $domain = $parsedUrl['host'] . (!empty($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '');
-        $baseUrl = $parsedUrl['scheme'] . '://' . $domain;
+        $domain = $parsedUrl['host'].(! empty($parsedUrl['port']) ? ':'.$parsedUrl['port'] : '');
+        $baseUrl = $parsedUrl['scheme'].'://'.$domain;
 
         if ($this->event === 'down') {
             $reason = $this->incident->reason ? " Reason: {$this->incident->reason}" : '';
+
             return "🔴 *{$domain} website is DOWN*\n{$reason} \n<{$baseUrl}|{$domain}>";
         }
 
@@ -72,11 +73,11 @@ class SendIncidentNotification implements ShouldQueue
             if ($totalMinutes < 60) {
                 $duration = "after {$totalMinutes}m";
             } elseif ($totalMinutes < 1440) {
-                $hours   = (int) ($totalMinutes / 60);
+                $hours = (int) ($totalMinutes / 60);
                 $minutes = $totalMinutes % 60;
                 $duration = $minutes > 0 ? "after {$hours}h {$minutes}m" : "after {$hours}h";
             } else {
-                $days  = (int) ($totalMinutes / 1440);
+                $days = (int) ($totalMinutes / 1440);
                 $hours = (int) (($totalMinutes % 1440) / 60);
                 $duration = $hours > 0 ? "after {$days} day {$hours}h" : "after {$days} day";
             }
@@ -115,10 +116,10 @@ class SendIncidentNotification implements ShouldQueue
         $domain = parse_url($siteUrl, PHP_URL_HOST) ?? $siteUrl;
 
         $payload = [
-            'event'      => $this->event,
-            'site'       => $domain,
-            'reason'     => $this->incident->reason,
-            'started_at' => $this->incident->started_at->toIso8601String(),
+            'event'       => $this->event,
+            'site'        => $domain,
+            'reason'      => $this->incident->reason,
+            'started_at'  => $this->incident->started_at->toIso8601String(),
             'resolved_at' => $this->incident->resolved_at?->toIso8601String(),
         ];
 
@@ -137,10 +138,10 @@ class SendIncidentNotification implements ShouldQueue
             return;
         }
 
-        $website  = $this->incident->website;
-        $siteUrl  = $website?->url ?? '';
-        $parsed   = parse_url($siteUrl);
-        $domain   = ($parsed['host'] ?? $siteUrl) . (! empty($parsed['port']) ? ':' . $parsed['port'] : '');
+        $website = $this->incident->website;
+        $siteUrl = $website?->url ?? '';
+        $parsed = parse_url($siteUrl);
+        $domain = ($parsed['host'] ?? $siteUrl).(! empty($parsed['port']) ? ':'.$parsed['port'] : '');
 
         $subject = $this->event === 'down' ? "🔴 {$domain} is DOWN" : "✅ {$domain} is back Online";
 
@@ -177,7 +178,7 @@ class SendIncidentNotification implements ShouldQueue
             'invalid_response'   => 'Invalid response from server',
             'request_failed'     => 'Request failed',
             default              => $this->incident->reason
-                ? 'HTTP ' . ltrim($this->incident->reason, 'http_')
+                ? 'HTTP '.ltrim($this->incident->reason, 'http_')
                 : 'Unknown',
         };
 

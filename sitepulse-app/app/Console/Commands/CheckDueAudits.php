@@ -8,7 +8,8 @@ use Illuminate\Console\Command;
 
 class CheckDueAudits extends Command
 {
-    protected $signature   = 'sites:audit-due';
+    protected $signature = 'sites:audit-due';
+
     protected $description = 'Dispatch audit fetch jobs for sites whose next_audit_at is due';
 
     private const LOCAL_TLD_PATTERN = '/\.(test|local|localhost|example|invalid|internal|dev)$/i';
@@ -16,8 +17,8 @@ class CheckDueAudits extends Command
     public function handle(): int
     {
         $isProduction = app()->isProduction();
-        $count        = 0;
-        $skipped      = 0;
+        $count = 0;
+        $skipped = 0;
 
         Website::where('status', 'connected')
             ->where(function ($query) {
@@ -29,6 +30,7 @@ class CheckDueAudits extends Command
                 foreach ($sites as $site) {
                     if ($isProduction && $this->isLocalDomain($site->url)) {
                         $skipped++;
+
                         continue;
                     }
 
@@ -37,7 +39,7 @@ class CheckDueAudits extends Command
                 }
             });
 
-        $this->info("Dispatched {$count} audit fetch jobs." . ($skipped ? " Skipped {$skipped} local domains." : ''));
+        $this->info("Dispatched {$count} audit fetch jobs.".($skipped ? " Skipped {$skipped} local domains." : ''));
 
         return self::SUCCESS;
     }

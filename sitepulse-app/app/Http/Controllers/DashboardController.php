@@ -12,17 +12,17 @@ class DashboardController extends Controller
 {
     public function index(Request $request): Response
     {
-        $user   = $request->user();
+        $user = $request->user();
         $teamId = $user->currentTeam->id;
-        $now    = now();
+        $now = now();
         $since7 = $now->copy()->subDays(7);
 
         $websites = Website::where('team_id', $teamId)
             ->with(['incidents' => fn ($q) => $q->where('started_at', '>=', $since7->toDateTimeString())])
             ->get();
 
-        $sitesOnline     = $websites->where('uptime_status', 'up')->count();
-        $sitesTotal      = $websites->count();
+        $sitesOnline = $websites->where('uptime_status', 'up')->count();
+        $sitesTotal = $websites->count();
         $activeIncidents = $websites
             ->where('status', 'connected')
             ->sum(fn (Website $site) => $site->incidents->whereNull('resolved_at')->count());
@@ -39,15 +39,16 @@ class DashboardController extends Controller
 
             if ($website->status === 'disconnected') {
                 $siteStat['uptime_7d'] = null;
+
                 return $siteStat;
             }
 
-            $windowStart   = $website->created_at->gt($since7) ? $website->created_at : $since7;
+            $windowStart = $website->created_at->gt($since7) ? $website->created_at : $since7;
             $windowSeconds = $windowStart->diffInSeconds($now);
 
             $downtimeSeconds = $website->incidents->sum(function (SiteIncident $i) use ($now, $since7) {
                 $start = $i->started_at->gt($since7) ? $i->started_at : $since7;
-                $end   = $i->resolved_at ?? $now;
+                $end = $i->resolved_at ?? $now;
 
                 return max(0, $start->diffInSeconds($end));
             });
@@ -62,7 +63,7 @@ class DashboardController extends Controller
             return $siteStat;
         });
 
-        $connected  = $siteStats->whereNotNull('uptime_7d');
+        $connected = $siteStats->whereNotNull('uptime_7d');
         $avgUptime7d = $connected->count() > 0
             ? round($connected->avg('uptime_7d'), 2)
             : null;

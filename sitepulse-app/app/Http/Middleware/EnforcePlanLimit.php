@@ -13,7 +13,7 @@ class EnforcePlanLimit
 {
     public function handle(Request $request, Closure $next, string $limit): mixed
     {
-        $user   = $request->user();
+        $user = $request->user();
         $limits = $user->planLimits();
 
         match ($limit) {
@@ -55,7 +55,7 @@ class EnforcePlanLimit
     private function checkNotificationChannel(Request $request, array $allowed): void
     {
         $type = $request->input('type');
-        if (!in_array($type, $allowed, true)) {
+        if (! in_array($type, $allowed, true)) {
             throw ValidationException::withMessages([
                 'plan' => 'This channel type is not available on your plan.',
             ]);

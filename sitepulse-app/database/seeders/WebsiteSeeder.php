@@ -17,6 +17,7 @@ class WebsiteSeeder extends Seeder
 
         if (! $user || ! $team) {
             $this->command->warn('No user or team found. Run DatabaseSeeder first.');
+
             return;
         }
 

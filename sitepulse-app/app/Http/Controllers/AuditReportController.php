@@ -14,12 +14,12 @@ class AuditReportController extends Controller
     {
         $teamId = $request->user()->team_id;
 
-        $websites    = Website::where('team_id', $teamId)->orderBy('url')->get(['id', 'url']);
-        $websiteIds  = $websites->pluck('id');
+        $websites = Website::where('team_id', $teamId)->orderBy('url')->get(['id', 'url']);
+        $websiteIds = $websites->pluck('id');
         $websiteList = $websites->map(fn ($site) => ['id' => $site->id, 'url' => $site->url]);
 
         $websiteId = $request->integer('website_id') ?: null;
-        $month     = $request->filled('month') ? $request->string('month') : null;
+        $month = $request->filled('month') ? $request->string('month') : null;
 
         $reports = AuditReport::whereIn('website_id', $websiteIds)
             ->when($websiteId, fn ($q) => $q->where('website_id', $websiteId))
@@ -44,7 +44,7 @@ class AuditReportController extends Controller
         $report = AuditReport::findOrFail($auditReport);
         $website = $report->website?->only('url');
         $parsed = parse_url($website['url']);
-        $domain = $parsed['host'] . (!empty($parsed['port']) ? ':' . $parsed['port'] : '');
+        $domain = $parsed['host'].(! empty($parsed['port']) ? ':'.$parsed['port'] : '');
 
         return Inertia::render('audit-reports/show', [
             'report'  => $report,

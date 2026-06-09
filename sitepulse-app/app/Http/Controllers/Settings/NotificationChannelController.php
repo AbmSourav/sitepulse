@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Settings;
 use App\Enums\NotificationChannelType;
 use App\Http\Controllers\Controller;
 use App\Models\NotificationChannel;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,11 +30,11 @@ class NotificationChannelController extends Controller
         $allowedChannels = $request->user()->planLimits()['notificationChannels'];
 
         $availableTypes = array_map(fn (NotificationChannelType $type) => [
-            'value'        => $type->value,
-            'label'        => $type->label(),
-            'description'  => $type->description(),
+            'value'         => $type->value,
+            'label'         => $type->label(),
+            'description'   => $type->description(),
             'config_fields' => $type->configFields(),
-            'allowed'      => in_array($type->value, $allowedChannels, true),
+            'allowed'       => in_array($type->value, $allowedChannels, true),
         ], NotificationChannelType::cases());
 
         return Inertia::render('notifications', [

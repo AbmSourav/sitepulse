@@ -13,7 +13,7 @@ class VerifyEmailNotification extends VerifyEmail
 
         return (new MailMessage)
             ->subject('Verify your SitePulse email address')
-            ->from('no-reply@sitepulsee.com', "SitePulse")
+            ->from('no-reply@sitepulsee.com', 'SitePulse')
             ->markdown('emails.verify-email', [
                 'url'  => $url,
                 'name' => $notifiable->name ?? 'there',

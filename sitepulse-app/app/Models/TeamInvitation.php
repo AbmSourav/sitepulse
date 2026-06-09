@@ -82,8 +82,8 @@ class TeamInvitation extends Model
     protected function casts(): array
     {
         return [
-            'role' => TeamRole::class,
-            'expires_at' => 'datetime',
+            'role'        => TeamRole::class,
+            'expires_at'  => 'datetime',
             'accepted_at' => 'datetime',
         ];
     }

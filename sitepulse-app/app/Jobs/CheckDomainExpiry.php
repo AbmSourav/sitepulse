@@ -12,14 +12,15 @@ class CheckDomainExpiry implements ShouldQueue
 {
     use Queueable;
 
-    public int $tries   = 1;
+    public int $tries = 1;
+
     public int $timeout = 30;
 
     public function __construct(public Website $website) {}
 
     public function handle(): void
     {
-        $host  = strtolower(parse_url($this->website->url, PHP_URL_HOST) ?? '');
+        $host = strtolower(parse_url($this->website->url, PHP_URL_HOST) ?? '');
         $parts = explode('.', $host);
 
         // Skip subdomains — only check base domains (2 labels, e.g. example.com)
@@ -29,13 +30,14 @@ class CheckDomainExpiry implements ShouldQueue
                 ['domain_expiry_checked_at' => now()->addYears(2)->toDateTimeString()]
             );
             $this->website->save();
+
             return;
         }
 
         $expiry = null;
 
         try {
-            $info   = Factory::get()->createWhois()->loadDomainInfo($host);
+            $info = Factory::get()->createWhois()->loadDomainInfo($host);
             $expiry = $info?->expirationDate
                 ? Carbon::createFromTimestamp($info->expirationDate)->toDateString()
                 : null;
