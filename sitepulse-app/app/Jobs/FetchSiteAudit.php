@@ -7,6 +7,7 @@ use App\Models\Website;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
@@ -26,9 +27,9 @@ class FetchSiteAudit implements ShouldQueue
     public function handle(StoreAuditReport $action): void
     {
         $baseUrl = $this->website->meta_data['siteBaseUrl'];
-        $endpoint = $baseUrl . 'index.php?rest_route=/sitepulse-monitor/v1/audit';
+        $endpoint = $baseUrl.'index.php?rest_route=/sitepulse-monitor/v1/audit';
 
-        $response = Http::timeout(25)->post($endpoint, [
+        $response = $this->httpClient()->post($endpoint, [
             'api_key' => $this->website->api_key,
         ]);
 
@@ -69,6 +70,25 @@ class FetchSiteAudit implements ShouldQueue
 
         // store data in audit_reports
         $action->handle($this->website, $data);
+    }
+
+    private function httpClient(): PendingRequest
+    {
+        $client = Http::timeout(25);
+
+        if (config('services.proxy.enabled')) {
+            $client = $client->withOptions([
+                'proxy' => sprintf(
+                    'https://%s:%s@%s:%d',
+                    config('services.proxy.username'),
+                    config('services.proxy.password'),
+                    parse_url(config('services.proxy.url'), PHP_URL_HOST),
+                    (int) config('services.proxy.port'),
+                ),
+            ]);
+        }
+
+        return $client;
     }
 
     public function tries(): int

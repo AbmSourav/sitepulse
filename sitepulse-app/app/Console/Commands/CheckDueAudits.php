@@ -21,6 +21,7 @@ class CheckDueAudits extends Command
         $skipped = 0;
 
         Website::where('status', 'connected')
+            ->whereNotNull('api_key')
             ->where(function ($query) {
                 $query->whereNull('next_audit_at')
                     ->orWhere('next_audit_at', '<=', now());
