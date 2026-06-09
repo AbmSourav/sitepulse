@@ -55,22 +55,31 @@ export default function ResetPassword({ token, email }: Props) {
                             autoFocus
                             placeholder="Password"
                             value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                         />
                         <InputError message={errors.password} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm password</Label>
+                        <Label htmlFor="password_confirmation">
+                            Confirm password
+                        </Label>
                         <PasswordInput
                             id="password_confirmation"
                             autoComplete="new-password"
                             className="mt-1 block w-full"
                             placeholder="Confirm password"
                             value={data.password_confirmation}
-                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            onChange={(e) =>
+                                setData('password_confirmation', e.target.value)
+                            }
                         />
-                        <InputError message={errors.password_confirmation} className="mt-2" />
+                        <InputError
+                            message={errors.password_confirmation}
+                            className="mt-2"
+                        />
                     </div>
 
                     <Button

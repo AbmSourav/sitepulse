@@ -48,7 +48,9 @@ export default function Register() {
 
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email address</Label>
-                        <span className="text-[10px] text-gray-500 italic">A verification email will be sent</span>
+                        <span className="text-[10px] text-gray-500 italic">
+                            A verification email will be sent
+                        </span>
                         <Input
                             id="email"
                             type="email"
@@ -71,13 +73,17 @@ export default function Register() {
                             autoComplete="new-password"
                             placeholder="Password"
                             value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                         />
                         <InputError message={errors.password} />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm password</Label>
+                        <Label htmlFor="password_confirmation">
+                            Confirm password
+                        </Label>
                         <PasswordInput
                             id="password_confirmation"
                             required
@@ -85,7 +91,9 @@ export default function Register() {
                             autoComplete="new-password"
                             placeholder="Confirm password"
                             value={data.password_confirmation}
-                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            onChange={(e) =>
+                                setData('password_confirmation', e.target.value)
+                            }
                         />
                         <InputError message={errors.password_confirmation} />
                     </div>
@@ -106,7 +114,11 @@ export default function Register() {
 
                 <div className="text-center text-sm text-muted-foreground">
                     Already have an account?{' '}
-                    <TextLink className="cursor-pointer text-primary" href={login()} tabIndex={6}>
+                    <TextLink
+                        className="cursor-pointer text-primary"
+                        href={login()}
+                        tabIndex={6}
+                    >
                         Log in
                     </TextLink>
                 </div>

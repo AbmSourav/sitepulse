@@ -27,14 +27,16 @@ export default function TwoFactorChallenge() {
         if (showRecoveryInput) {
             return {
                 title: 'Recovery code',
-                description: 'Please confirm access to your account by entering one of your emergency recovery codes.',
+                description:
+                    'Please confirm access to your account by entering one of your emergency recovery codes.',
                 toggleText: 'login using an authentication code',
             };
         }
 
         return {
             title: 'Authentication code',
-            description: 'Enter the authentication code provided by your authenticator application.',
+            description:
+                'Enter the authentication code provided by your authenticator application.',
             toggleText: 'login using a recovery code',
         };
     }, [showRecoveryInput]);
@@ -54,14 +56,16 @@ export default function TwoFactorChallenge() {
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
         setProcessing(true);
-        const payload = showRecoveryInput ? { recovery_code: recoveryCode } : { code };
+        const payload = showRecoveryInput
+            ? { recovery_code: recoveryCode }
+            : { code };
         router.post(store.url(), payload, {
             onError: (errs) => {
                 setErrors(errs as Record<string, string>);
 
                 if (!showRecoveryInput) {
-setCode('');
-}
+                    setCode('');
+                }
             },
             onFinish: () => setProcessing(false),
         });
@@ -81,7 +85,9 @@ setCode('');
                                 autoFocus={showRecoveryInput}
                                 required
                                 value={recoveryCode}
-                                onChange={(e) => setRecoveryCode(e.target.value)}
+                                onChange={(e) =>
+                                    setRecoveryCode(e.target.value)
+                                }
                             />
                             <InputError message={errors.recovery_code} />
                         </>
@@ -97,9 +103,15 @@ setCode('');
                                     autoFocus
                                 >
                                     <InputOTPGroup>
-                                        {Array.from({ length: OTP_MAX_LENGTH }, (_, index) => (
-                                            <InputOTPSlot key={index} index={index} />
-                                        ))}
+                                        {Array.from(
+                                            { length: OTP_MAX_LENGTH },
+                                            (_, index) => (
+                                                <InputOTPSlot
+                                                    key={index}
+                                                    index={index}
+                                                />
+                                            ),
+                                        )}
                                     </InputOTPGroup>
                                 </InputOTP>
                             </div>
@@ -107,7 +119,11 @@ setCode('');
                         </div>
                     )}
 
-                    <Button type="submit" className="w-full" disabled={processing}>
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={processing}
+                    >
                         Continue
                     </Button>
 

@@ -23,16 +23,20 @@ export function TeamSwitcher({ inHeader = false }: TeamSwitcherProps) {
     const isMobile = useIsMobile();
     const currentTeam = page.props.currentTeam;
     const teams = page.props.teams ?? [];
-    console.log(page)
+    console.log(page);
 
     const switchTeam = (team: Team) => {
         if (!team.slug) {
-return;
-}
+            return;
+        }
 
-        router.post(switchMethod.url(team.slug), {}, {
-            preserveScroll: false,
-        });
+        router.post(
+            switchMethod.url(team.slug),
+            {},
+            {
+                preserveScroll: false,
+            },
+        );
     };
 
     return (
@@ -43,8 +47,8 @@ return;
                     data-test="team-switcher-trigger"
                     className={
                         inHeader
-                            ? 'h-8 gap-1 px-2 cursor-pointer'
-                            : 'cursor-pointer w-full justify-start px-2 has-[>svg]:px-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+                            ? 'h-8 cursor-pointer gap-1 px-2'
+                            : 'w-full cursor-pointer justify-start px-2 has-[>svg]:px-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
                     }
                 >
                     <Users
@@ -84,7 +88,7 @@ return;
                 className={
                     inHeader
                         ? 'w-56'
-                        : 'w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg mr-5'
+                        : 'mr-5 w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
                 }
                 side={'bottom'}
                 align={inHeader ? 'end' : 'start'}

@@ -2,7 +2,11 @@ import { Button } from '@/components/ui/button';
 
 function GoogleIcon() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-4 w-4">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+        >
             <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -31,12 +35,18 @@ export function GoogleAuthButton() {
                     <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or</span>
+                    <span className="bg-background px-2 text-muted-foreground">
+                        Or
+                    </span>
                 </div>
             </div>
 
             <a href="/auth/google/redirect">
-                <Button type="button" variant="outline" className="w-full cursor-pointer gap-2 hover:bg-primary/50">
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full cursor-pointer gap-2 hover:bg-primary/50"
+                >
                     <GoogleIcon />
                     Continue with Google
                 </Button>

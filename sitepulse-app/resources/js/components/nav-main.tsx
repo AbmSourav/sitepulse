@@ -12,7 +12,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
     const { isCurrentUrl } = useCurrentUrl();
 
     return (
-        <SidebarGroup className="px-2 py-0 mt-6">
+        <SidebarGroup className="mt-6 px-2 py-0">
             <SidebarMenu>
                 {items.map((item) => (
                     <SidebarMenuItem key={item.title}>

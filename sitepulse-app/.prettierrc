@@ -14,6 +14,7 @@
     ],
     "tailwindStylesheet": "resources/css/app.css",
     "tabWidth": 4,
+    "useTabs": false,
     "overrides": [
         {
             "files": "**/*.yml",

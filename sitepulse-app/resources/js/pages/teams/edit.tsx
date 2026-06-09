@@ -52,7 +52,13 @@ export default function TeamEdit({
 }: Props) {
     const getInitials = useInitials();
 
-    const { data, setData, patch, processing, errors: formErrors } = useForm({ name: team.name });
+    const {
+        data,
+        setData,
+        patch,
+        processing,
+        errors: formErrors,
+    } = useForm({ name: team.name });
 
     function handleUpdateTeam(e: React.SyntheticEvent) {
         e.preventDefault();
@@ -101,7 +107,7 @@ export default function TeamEdit({
 
             <h1 className="sr-only">{pageTitle}</h1>
 
-            <div className="flex flex-col space-y-10 px-12 py-4 mt-5 max-w-2xl">
+            <div className="mt-5 flex max-w-2xl flex-col space-y-10 px-12 py-4">
                 <div className="space-y-6">
                     {permissions.canUpdateTeam ? (
                         <>
@@ -111,7 +117,10 @@ export default function TeamEdit({
                                 description="Update your team name and settings"
                             />
 
-                            <form onSubmit={handleUpdateTeam} className="space-y-6">
+                            <form
+                                onSubmit={handleUpdateTeam}
+                                className="space-y-6"
+                            >
                                 <div className="grid gap-2">
                                     <Label htmlFor="name">Team name</Label>
                                     <Input
@@ -119,7 +128,9 @@ export default function TeamEdit({
                                         name="name"
                                         data-test="team-name-input"
                                         value={data.name}
-                                        onChange={(e) => setData('name', e.target.value)}
+                                        onChange={(e) =>
+                                            setData('name', e.target.value)
+                                        }
                                         required
                                     />
                                     <InputError message={formErrors.name} />

@@ -78,7 +78,7 @@ export default function Security({
 
             <h1 className="sr-only">Security settings</h1>
 
-            <div className="px-12 py-4 mt-5 max-w-2xl space-y-6">
+            <div className="mt-5 max-w-2xl space-y-6 px-12 py-4">
                 <Heading
                     variant="small"
                     title="Update password"
@@ -87,13 +87,17 @@ export default function Security({
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="current_password">Current password</Label>
+                        <Label htmlFor="current_password">
+                            Current password
+                        </Label>
                         <PasswordInput
                             id="current_password"
                             ref={currentPasswordInput}
                             name="current_password"
                             value={data.current_password}
-                            onChange={(e) => setData('current_password', e.target.value)}
+                            onChange={(e) =>
+                                setData('current_password', e.target.value)
+                            }
                             className="mt-1 block w-full"
                             autoComplete="current-password"
                             placeholder="Current password"
@@ -108,7 +112,9 @@ export default function Security({
                             ref={passwordInput}
                             name="password"
                             value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                             className="mt-1 block w-full"
                             autoComplete="new-password"
                             placeholder="New password"
@@ -117,12 +123,16 @@ export default function Security({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm password</Label>
+                        <Label htmlFor="password_confirmation">
+                            Confirm password
+                        </Label>
                         <PasswordInput
                             id="password_confirmation"
                             name="password_confirmation"
                             value={data.password_confirmation}
-                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            onChange={(e) =>
+                                setData('password_confirmation', e.target.value)
+                            }
                             className="mt-1 block w-full"
                             autoComplete="new-password"
                             placeholder="Confirm password"

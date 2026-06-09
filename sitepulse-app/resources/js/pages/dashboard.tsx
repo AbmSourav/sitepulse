@@ -39,19 +39,38 @@ function uptimeColor(pct: number) {
     return 'text-red-600 dark:text-red-400';
 }
 
-function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+function StatCard({
+    label,
+    value,
+    sub,
+}: {
+    label: string;
+    value: string | number;
+    sub?: string;
+}) {
     return (
-        <div className="flex flex-col gap-1 rounded-xl border-2 border-sidebar-border/60 dark:border-sidebar-border p-5">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
+        <div className="flex flex-col gap-1 rounded-xl border-2 border-sidebar-border/60 p-5 dark:border-sidebar-border">
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                {label}
+            </span>
             <span className="text-3xl font-semibold">{value}</span>
-            {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+            {sub && (
+                <span className="text-xs text-muted-foreground">{sub}</span>
+            )}
         </div>
     );
 }
 
 export default function Dashboard() {
-    const { emailVerified, sitesOnline, sitesTotal, activeIncidents, avgUptime7d, domainsExpiringSoon, siteStats } =
-        usePage<Props & Record<string, unknown>>().props;
+    const {
+        emailVerified,
+        sitesOnline,
+        sitesTotal,
+        activeIncidents,
+        avgUptime7d,
+        domainsExpiringSoon,
+        siteStats,
+    } = usePage<Props & Record<string, unknown>>().props;
 
     return (
         <>
@@ -61,22 +80,34 @@ export default function Dashboard() {
                 <div className="mx-4 mt-4">
                     <AlertError
                         title="Email not verified"
-                        errors={['Please check your mail inbox and verify your email address.']}
+                        errors={[
+                            'Please check your mail inbox and verify your email address.',
+                        ]}
                     />
                 </div>
             )}
 
-            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl py-10 px-10">
+            <div className="flex h-full flex-1 flex-col gap-6 overflow-x-auto rounded-xl px-10 py-10">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-4">
                     <StatCard
                         label="Sites Online"
                         value={`${sitesOnline} / ${sitesTotal}`}
-                        sub={sitesTotal === 0 ? 'No sites monitored yet' : sitesOnline === sitesTotal ? 'All sites up' : `${sitesTotal - sitesOnline} site${sitesTotal - sitesOnline !== 1 ? 's' : ''} offline`}
+                        sub={
+                            sitesTotal === 0
+                                ? 'No sites monitored yet'
+                                : sitesOnline === sitesTotal
+                                  ? 'All sites up'
+                                  : `${sitesTotal - sitesOnline} site${sitesTotal - sitesOnline !== 1 ? 's' : ''} offline`
+                        }
                     />
                     <StatCard
                         label="Active Incidents"
                         value={activeIncidents}
-                        sub={activeIncidents === 0 ? 'No ongoing outages' : `${activeIncidents} site${activeIncidents !== 1 ? 's' : ''} currently down`}
+                        sub={
+                            activeIncidents === 0
+                                ? 'No ongoing outages'
+                                : `${activeIncidents} site${activeIncidents !== 1 ? 's' : ''} currently down`
+                        }
                     />
                     <StatCard
                         label="Avg 7-day Uptime"
@@ -91,16 +122,21 @@ export default function Dashboard() {
                 </div>
 
                 <div className="flex-1 overflow-hidden rounded-xl border-2 border-sidebar-border/60 dark:border-sidebar-border">
-                    <div className="flex items-center justify-between border-b border-border bg-gray-50 dark:bg-gray-800 px-5 py-2">
-                        <span className="text-xs font-medium">Sites — last 7 days</span>
-                        <Link href={websiteRoutes.index.url()} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    <div className="flex items-center justify-between border-b border-border bg-gray-50 px-5 py-2 dark:bg-gray-800">
+                        <span className="text-xs font-medium">
+                            Sites — last 7 days
+                        </span>
+                        <Link
+                            href={websiteRoutes.index.url()}
+                            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                        >
                             Manage sites →
                         </Link>
                     </div>
 
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="h-[45px] border-b border-border bg-gray-50 dark:bg-gray-800 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            <tr className="h-[45px] border-b border-border bg-gray-50 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase dark:bg-gray-800">
                                 <th className="px-5 py-3">Site</th>
                                 <th className="px-5 py-3">Status</th>
                                 <th className="px-5 py-3">Uptime</th>
@@ -109,50 +145,84 @@ export default function Dashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {siteStats.length > 0 ? siteStats.map((site) => (
-                                <tr
-                                    key={site.id}
-                                    className="h-[55px] border-b border-border last:border-0 hover:bg-muted/20 transition-colors"
-                                >
-                                    <td className="px-5 py-3 font-medium">{site.url}</td>
+                            {siteStats.length > 0 ? (
+                                siteStats.map((site) => (
+                                    <tr
+                                        key={site.id}
+                                        className="h-[55px] border-b border-border transition-colors last:border-0 hover:bg-muted/20"
+                                    >
+                                        <td className="px-5 py-3 font-medium">
+                                            {site.url}
+                                        </td>
 
-                                    <td className="px-5 py-3">
-                                        {site.status === 'disconnected' ? (
-                                            <Badge variant="secondary">Disabled</Badge>
-                                        ) : site.uptime_status === 'up' ? (
-                                            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0">Online</Badge>
-                                        ) : site.uptime_status === 'down' ? (
-                                            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0">Down</Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="text-muted-foreground">Pending</Badge>
-                                        )}
-                                    </td>
+                                        <td className="px-5 py-3">
+                                            {site.status === 'disconnected' ? (
+                                                <Badge variant="secondary">
+                                                    Disabled
+                                                </Badge>
+                                            ) : site.uptime_status === 'up' ? (
+                                                <Badge className="border-0 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                                    Online
+                                                </Badge>
+                                            ) : site.uptime_status ===
+                                              'down' ? (
+                                                <Badge className="border-0 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                                    Down
+                                                </Badge>
+                                            ) : (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="text-muted-foreground"
+                                                >
+                                                    Pending
+                                                </Badge>
+                                            )}
+                                        </td>
 
-                                    <td className="px-5 py-3">
-                                        {site.uptime_7d != null ? (
-                                            <span className={`font-medium ${uptimeColor(site.uptime_7d)}`}>
-                                                {site.uptime_7d}%
-                                            </span>
-                                        ) : (
-                                            <span className="text-muted-foreground">—</span>
-                                        )}
-                                    </td>
+                                        <td className="px-5 py-3">
+                                            {site.uptime_7d != null ? (
+                                                <span
+                                                    className={`font-medium ${uptimeColor(site.uptime_7d)}`}
+                                                >
+                                                    {site.uptime_7d}%
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted-foreground">
+                                                    —
+                                                </span>
+                                            )}
+                                        </td>
 
-                                    <td className="px-5 py-3 text-muted-foreground">
-                                        {site.incidents_7d > 0 ? (
-                                            <span className="text-red-600 dark:text-red-400 font-medium">{site.incidents_7d}</span>
-                                        ) : '0'}
-                                    </td>
+                                        <td className="px-5 py-3 text-muted-foreground">
+                                            {site.incidents_7d > 0 ? (
+                                                <span className="font-medium text-red-600 dark:text-red-400">
+                                                    {site.incidents_7d}
+                                                </span>
+                                            ) : (
+                                                '0'
+                                            )}
+                                        </td>
 
-                                    <td className="px-5 py-3 text-muted-foreground">
-                                        {formatRelativeTime(site.last_checked_at)}
-                                    </td>
-                                </tr>
-                            )) : (
+                                        <td className="px-5 py-3 text-muted-foreground">
+                                            {formatRelativeTime(
+                                                site.last_checked_at,
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
                                 <tr>
-                                    <td colSpan={5} className="px-5 py-12 text-center text-muted-foreground">
-                                        <span className="mb-2 block">No sites monitored yet.</span>
-                                        <Link href={websiteRoutes.index.url()} className="bg-primary text-white px-2 py-1 rounded hover:bg-primary/90 transition-colors">
+                                    <td
+                                        colSpan={5}
+                                        className="px-5 py-12 text-center text-muted-foreground"
+                                    >
+                                        <span className="mb-2 block">
+                                            No sites monitored yet.
+                                        </span>
+                                        <Link
+                                            href={websiteRoutes.index.url()}
+                                            className="rounded bg-primary px-2 py-1 text-white transition-colors hover:bg-primary/90"
+                                        >
                                             Add a site
                                         </Link>
                                     </td>
@@ -167,8 +237,10 @@ export default function Dashboard() {
 }
 
 Dashboard.layout = () => ({
-    breadcrumbs: [{
-        title: 'Dashboard',
-        href: dashboard(),
-    }],
+    breadcrumbs: [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+        },
+    ],
 });

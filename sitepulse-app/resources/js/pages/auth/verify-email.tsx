@@ -12,9 +12,13 @@ export default function VerifyEmail({ status }: { status?: string }) {
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
         setProcessing(true);
-        router.post(send.url(), {}, {
-            onFinish: () => setProcessing(false),
-        });
+        router.post(
+            send.url(),
+            {},
+            {
+                onFinish: () => setProcessing(false),
+            },
+        );
     }
 
     return (

@@ -13,9 +13,17 @@ interface PlanLimitDialogProps {
     onClose: () => void;
 }
 
-export default function PlanLimitDialog({ message, onClose }: PlanLimitDialogProps) {
+export default function PlanLimitDialog({
+    message,
+    onClose,
+}: PlanLimitDialogProps) {
     return (
-        <Dialog open={!!message} onOpenChange={(open) => { if (!open) onClose(); }}>
+        <Dialog
+            open={!!message}
+            onOpenChange={(open) => {
+                if (!open) onClose();
+            }}
+        >
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Plan limit reached</DialogTitle>

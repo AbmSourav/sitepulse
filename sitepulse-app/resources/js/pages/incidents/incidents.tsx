@@ -22,7 +22,9 @@ interface PaginatedIncidents {
 }
 
 function formatDate(dateStr: string) {
-    const normalized = dateStr.includes('T') ? dateStr : dateStr.replace(' ', 'T') + 'Z';
+    const normalized = dateStr.includes('T')
+        ? dateStr
+        : dateStr.replace(' ', 'T') + 'Z';
     return new Date(normalized).toLocaleString('en-US', {
         month: 'short',
         day: '2-digit',
@@ -41,9 +43,19 @@ function parseDomain(url: string) {
     }
 }
 
-function Duration({ startedAt, resolvedAt }: { startedAt: string; resolvedAt: string | null }) {
+function Duration({
+    startedAt,
+    resolvedAt,
+}: {
+    startedAt: string;
+    resolvedAt: string | null;
+}) {
     if (!resolvedAt) {
-        return <span className="text-yellow-600 dark:text-yellow-400">Ongoing</span>;
+        return (
+            <span className="text-yellow-600 dark:text-yellow-400">
+                Ongoing
+            </span>
+        );
     }
 
     const ms = new Date(resolvedAt).getTime() - new Date(startedAt).getTime();
@@ -65,29 +77,38 @@ function Duration({ startedAt, resolvedAt }: { startedAt: string; resolvedAt: st
 }
 
 export default function Incidents() {
-    const { incidents, websiteList, filters } = usePage<{
-        incidents: PaginatedIncidents;
-        websiteList: Pick<Website, 'id' | 'url'>[];
-        filters: { website_id: number | null; month: string | null };
-    } & Record<string, unknown>>().props;
+    const { incidents, websiteList, filters } = usePage<
+        {
+            incidents: PaginatedIncidents;
+            websiteList: Pick<Website, 'id' | 'url'>[];
+            filters: { website_id: number | null; month: string | null };
+        } & Record<string, unknown>
+    >().props;
 
     function applyFilters(overrides: Record<string, string | number | null>) {
         const params: Record<string, string | number> = {};
-        const merged: Record<string, string | number | null> = { website_id: filters?.website_id, month: filters?.month, ...overrides };
+        const merged: Record<string, string | number | null> = {
+            website_id: filters?.website_id,
+            month: filters?.month,
+            ...overrides,
+        };
 
         if (merged.website_id) {
-params.website_id = merged.website_id;
-}
+            params.website_id = merged.website_id;
+        }
 
         if (merged.month) {
-params.month = merged.month;
-}
+            params.month = merged.month;
+        }
 
         if (merged.page) {
-params.page = merged.page;
-}
+            params.page = merged.page;
+        }
 
-        router.get(incidentsIndex(), params, { preserveState: true, replace: true });
+        router.get(incidentsIndex(), params, {
+            preserveState: true,
+            replace: true,
+        });
     }
 
     function handleWebsiteFilter(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -106,12 +127,12 @@ params.page = merged.page;
         <>
             <Head title="Incidents" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="md:px-12 sm:px-5 pt-4">
-                    <div className="flex items-center gap-3 mb-3 bg-gray-50 dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 p-2">
+                <div className="pt-4 sm:px-5 md:px-12">
+                    <div className="mb-3 flex items-center gap-3 rounded-sm border border-gray-200 bg-gray-50 p-2 dark:border-gray-700 dark:bg-gray-800">
                         <select
                             value={filters.month ?? ''}
                             onChange={handleMonthFilter}
-                            className="text-sm border border-gray-200 dark:border-gray-700 rounded-md px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                            className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                         >
                             <option value="">All months</option>
                             {Array.from({ length: 12 }, (_, i) => {
@@ -119,15 +140,22 @@ params.page = merged.page;
                                 date.setDate(1);
                                 date.setMonth(date.getMonth() - i);
                                 const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                                const label = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                                const label = date.toLocaleString('en-US', {
+                                    month: 'long',
+                                    year: 'numeric',
+                                });
 
-                                return <option key={value} value={value}>{label}</option>;
+                                return (
+                                    <option key={value} value={value}>
+                                        {label}
+                                    </option>
+                                );
                             })}
                         </select>
                         <select
                             value={filters.website_id ?? ''}
                             onChange={handleWebsiteFilter}
-                            className="text-sm border border-gray-200 dark:border-gray-700 rounded-md px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300"
+                            className="rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                         >
                             <option value="">All websites</option>
                             {websiteList.map((site) => (
@@ -140,7 +168,7 @@ params.page = merged.page;
 
                     {incidents.data.length === 0 ? (
                         <div className="flex flex-col items-center justify-center pt-12">
-                            <AlertTriangle className="size-10 mb-3 opacity-40" />
+                            <AlertTriangle className="mb-3 size-10 opacity-40" />
                             <p className="text-gray-500 dark:text-gray-400">
                                 No incidents found
                             </p>
@@ -149,47 +177,83 @@ params.page = merged.page;
                         <>
                             <div className="overflow-x-auto rounded-sm">
                                 <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 dark:bg-gray-800 text-left">
+                                    <thead className="bg-gray-50 text-left dark:bg-gray-800">
                                         <tr className="h-[55px]">
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Website</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Status</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">HTTP</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Started</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Resolved</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Duration</th>
-                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">Reason</th>
+                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
+                                                Website
+                                            </th>
+                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
+                                                Status
+                                            </th>
+                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
+                                                HTTP
+                                            </th>
+                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
+                                                Started
+                                            </th>
+                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
+                                                Resolved
+                                            </th>
+                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
+                                                Duration
+                                            </th>
+                                            <th className="px-4 py-3 font-medium text-gray-600 dark:text-gray-300">
+                                                Reason
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {incidents.data.map((incident) => (
-                                            <tr key={incident.id} className="h-[55px] hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <tr
+                                                key={incident.id}
+                                                className="h-[55px] hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                            >
                                                 <td className="px-4 py-3 font-medium">
-                                                    {incident.website ? parseDomain(incident.website.url) : '—'}
+                                                    {incident.website
+                                                        ? parseDomain(
+                                                              incident.website
+                                                                  .url,
+                                                          )
+                                                        : '—'}
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     {incident.resolved_at ? (
-                                                        <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                                                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
                                                             Resolved
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400">
+                                                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
                                                             Down
                                                         </span>
                                                     )}
                                                 </td>
                                                 <td className="px-4 py-3 text-gray-500 dark:text-gray-400">
-                                                    {incident.http_status ?? '—'}
+                                                    {incident.http_status ??
+                                                        '—'}
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                                                    {formatDate(incident.started_at)}
+                                                <td className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                                    {formatDate(
+                                                        incident.started_at,
+                                                    )}
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                                                    {incident.resolved_at ? formatDate(incident.resolved_at) : '—'}
+                                                <td className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-300">
+                                                    {incident.resolved_at
+                                                        ? formatDate(
+                                                              incident.resolved_at,
+                                                          )
+                                                        : '—'}
                                                 </td>
                                                 <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                                    <Duration startedAt={incident.started_at} resolvedAt={incident.resolved_at} />
+                                                    <Duration
+                                                        startedAt={
+                                                            incident.started_at
+                                                        }
+                                                        resolvedAt={
+                                                            incident.resolved_at
+                                                        }
+                                                    />
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-500 dark:text-gray-400 max-w-xs truncate">
+                                                <td className="max-w-xs truncate px-4 py-3 text-gray-500 dark:text-gray-400">
                                                     {incident.reason ?? '—'}
                                                 </td>
                                             </tr>
@@ -199,20 +263,31 @@ params.page = merged.page;
                             </div>
 
                             {incidents.last_page > 1 && (
-                                <div className="flex items-center justify-between mt-4 text-sm text-gray-600 dark:text-gray-400">
-                                    <span>Page {incidents.current_page} of {incidents.last_page}</span>
+                                <div className="mt-4 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+                                    <span>
+                                        Page {incidents.current_page} of{' '}
+                                        {incidents.last_page}
+                                    </span>
                                     <div className="flex gap-2">
                                         <button
-                                            onClick={() => goToPage(incidents.current_page - 1)}
+                                            onClick={() =>
+                                                goToPage(
+                                                    incidents.current_page - 1,
+                                                )
+                                            }
                                             disabled={!incidents.prev_page_url}
-                                            className="cursor-pointer px-3 py-1 rounded border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                            className="cursor-pointer rounded border border-gray-200 px-3 py-1 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800"
                                         >
                                             Previous
                                         </button>
                                         <button
-                                            onClick={() => goToPage(incidents.current_page + 1)}
+                                            onClick={() =>
+                                                goToPage(
+                                                    incidents.current_page + 1,
+                                                )
+                                            }
                                             disabled={!incidents.next_page_url}
-                                            className="cursor-pointer px-3 py-1 rounded border border-gray-200 dark:border-gray-700 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                            className="cursor-pointer rounded border border-gray-200 px-3 py-1 hover:bg-gray-50 disabled:opacity-40 dark:border-gray-700 dark:hover:bg-gray-800"
                                         >
                                             Next
                                         </button>
@@ -228,8 +303,10 @@ params.page = merged.page;
 }
 
 Incidents.layout = () => ({
-    breadcrumbs: [{
-        title: 'Incidents',
-        href: incidentsIndex(),
-    }],
+    breadcrumbs: [
+        {
+            title: 'Incidents',
+            href: incidentsIndex(),
+        },
+    ],
 });

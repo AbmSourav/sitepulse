@@ -55,18 +55,26 @@ export default function InviteMemberModal({
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
         setProcessing(true);
-        router.post(storeInvitation.url(team.slug), { email, role: inviteRole }, {
-            preserveScroll: true,
-            onSuccess: () => onOpenChange(false),
-            onError: (errs) => setErrors(errs as Record<string, string>),
-            onFinish: () => setProcessing(false),
-        });
+        router.post(
+            storeInvitation.url(team.slug),
+            { email, role: inviteRole },
+            {
+                preserveScroll: true,
+                onSuccess: () => onOpenChange(false),
+                onError: (errs) => setErrors(errs as Record<string, string>),
+                onFinish: () => setProcessing(false),
+            },
+        );
     }
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent>
-                <form key={String(open)} onSubmit={handleSubmit} className="space-y-6">
+                <form
+                    key={String(open)}
+                    onSubmit={handleSubmit}
+                    className="space-y-6"
+                >
                     <DialogHeader>
                         <DialogTitle>Invite a team member</DialogTitle>
                         <DialogDescription>
@@ -104,7 +112,10 @@ export default function InviteMemberModal({
                                 </SelectTrigger>
                                 <SelectContent>
                                     {availableRoles.map((role) => (
-                                        <SelectItem key={role.value} value={role.value}>
+                                        <SelectItem
+                                            key={role.value}
+                                            value={role.value}
+                                        >
                                             {role.label}
                                         </SelectItem>
                                     ))}
@@ -118,7 +129,11 @@ export default function InviteMemberModal({
                         <DialogClose asChild>
                             <Button variant="secondary">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit" data-test="invite-submit" disabled={processing}>
+                        <Button
+                            type="submit"
+                            data-test="invite-submit"
+                            disabled={processing}
+                        >
                             Send invitation
                         </Button>
                     </DialogFooter>

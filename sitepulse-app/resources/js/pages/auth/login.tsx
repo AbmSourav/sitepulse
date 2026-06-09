@@ -18,7 +18,11 @@ type Props = {
     canRegister: boolean;
 };
 
-export default function Login({ status, canResetPassword, canRegister }: Props) {
+export default function Login({
+    status,
+    canResetPassword,
+    canRegister,
+}: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -58,7 +62,11 @@ export default function Login({ status, canResetPassword, canRegister }: Props) 
                         <div className="flex items-center">
                             <Label htmlFor="password">Password</Label>
                             {canResetPassword && (
-                                <TextLink href={request()} className="ml-auto text-sm" tabIndex={5}>
+                                <TextLink
+                                    href={request()}
+                                    className="ml-auto text-sm"
+                                    tabIndex={5}
+                                >
                                     Forgot password?
                                 </TextLink>
                             )}
@@ -70,7 +78,9 @@ export default function Login({ status, canResetPassword, canRegister }: Props) 
                             autoComplete="current-password"
                             placeholder="Password"
                             value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
+                            onChange={(e) =>
+                                setData('password', e.target.value)
+                            }
                         />
                         <InputError message={errors.password} />
                     </div>
@@ -80,7 +90,9 @@ export default function Login({ status, canResetPassword, canRegister }: Props) 
                             id="remember"
                             tabIndex={3}
                             checked={data.remember}
-                            onCheckedChange={(checked) => setData('remember', !!checked)}
+                            onCheckedChange={(checked) =>
+                                setData('remember', !!checked)
+                            }
                         />
                         <Label htmlFor="remember">Remember me</Label>
                     </div>
@@ -102,7 +114,11 @@ export default function Login({ status, canResetPassword, canRegister }: Props) 
                 {canRegister && (
                     <div className="text-center text-sm text-muted-foreground">
                         Don't have an account?{' '}
-                        <TextLink className="cursor-pointer text-primary" href={register()} tabIndex={5}>
+                        <TextLink
+                            className="cursor-pointer text-primary"
+                            href={register()}
+                            tabIndex={5}
+                        >
                             Sign up
                         </TextLink>
                     </div>

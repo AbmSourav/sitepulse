@@ -49,47 +49,54 @@ export default function CreateTeamModal({ children }: PropsWithChildren) {
 
     return (
         <>
-        <PlanLimitDialog message={planError} onClose={() => setPlanError(null)} />
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
-                <form key={String(open)} onSubmit={handleSubmit} className="space-y-6">
-                    <DialogHeader>
-                        <DialogTitle>Create a new team</DialogTitle>
-                        <DialogDescription>
-                            Create a new team to collaborate with others.
-                        </DialogDescription>
-                    </DialogHeader>
+            <PlanLimitDialog
+                message={planError}
+                onClose={() => setPlanError(null)}
+            />
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>{children}</DialogTrigger>
+                <DialogContent>
+                    <form
+                        key={String(open)}
+                        onSubmit={handleSubmit}
+                        className="space-y-6"
+                    >
+                        <DialogHeader>
+                            <DialogTitle>Create a new team</DialogTitle>
+                            <DialogDescription>
+                                Create a new team to collaborate with others.
+                            </DialogDescription>
+                        </DialogHeader>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Team name</Label>
-                        <Input
-                            id="name"
-                            name="name"
-                            ref={nameRef}
-                            data-test="create-team-name"
-                            placeholder="My team"
-                            required
-                        />
-                        <InputError message={nameError} />
-                    </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Team name</Label>
+                            <Input
+                                id="name"
+                                name="name"
+                                ref={nameRef}
+                                data-test="create-team-name"
+                                placeholder="My team"
+                                required
+                            />
+                            <InputError message={nameError} />
+                        </div>
 
-                    <DialogFooter className="gap-2">
-                        <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
-                        </DialogClose>
+                        <DialogFooter className="gap-2">
+                            <DialogClose asChild>
+                                <Button variant="secondary">Cancel</Button>
+                            </DialogClose>
 
-                        <Button
-                            type="submit"
-                            data-test="create-team-submit"
-                            disabled={processing}
-                        >
-                            Create team
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
+                            <Button
+                                type="submit"
+                                data-test="create-team-submit"
+                                disabled={processing}
+                            >
+                                Create team
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

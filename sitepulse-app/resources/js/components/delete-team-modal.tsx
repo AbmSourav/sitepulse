@@ -52,12 +52,16 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent>
-                <form key={String(open)} onSubmit={handleSubmit} className="space-y-6">
+                <form
+                    key={String(open)}
+                    onSubmit={handleSubmit}
+                    className="space-y-6"
+                >
                     <DialogHeader>
                         <DialogTitle>Are you sure?</DialogTitle>
                         <DialogDescription>
-                            This action cannot be undone. This will permanently delete the team{' '}
-                            <strong>"{team.name}"</strong>.
+                            This action cannot be undone. This will permanently
+                            delete the team <strong>"{team.name}"</strong>.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -70,7 +74,9 @@ export default function DeleteTeamModal({ team, open, onOpenChange }: Props) {
                                 id="confirmation-name"
                                 data-test="delete-team-name"
                                 value={confirmationName}
-                                onChange={(e) => setConfirmationName(e.target.value)}
+                                onChange={(e) =>
+                                    setConfirmationName(e.target.value)
+                                }
                                 placeholder="Enter team name"
                                 autoComplete="off"
                             />
