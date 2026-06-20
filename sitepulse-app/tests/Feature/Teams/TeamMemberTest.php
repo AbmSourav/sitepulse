@@ -119,11 +119,11 @@ test('removed member current team is set to personal team', function () {
     $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
     $team->members()->attach($member, ['role' => TeamRole::Member->value]);
 
-    $member->update(['current_team_id' => $team->id]);
+    $member->update(['team_id' => $team->id]);
 
     $this
         ->actingAs($owner)
         ->delete(route('teams.members.destroy', [$team, $member]));
 
-    expect($member->fresh()->current_team_id)->toEqual($personalTeam->id);
+    expect($member->fresh()->team_id)->toEqual($personalTeam->id);
 });

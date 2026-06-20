@@ -12,42 +12,36 @@ test('profile page is displayed', function () {
     $response->assertOk();
 });
 
-test('profile information can be updated', function () {
+test('profile name can be updated', function () {
     $user = User::factory()->create();
 
     $response = $this
         ->actingAs($user)
         ->patch(route('profile.update'), [
-            'name'  => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Test User',
         ]);
 
     $response
         ->assertSessionHasNoErrors()
         ->assertRedirect(route('profile.edit'));
 
-    $user->refresh();
-
-    expect($user->name)->toBe('Test User');
-    expect($user->email)->toBe('test@example.com');
-    expect($user->email_verified_at)->toBeNull();
+    expect($user->refresh()->name)->toBe('Test User');
 });
 
-test('email verification status is unchanged when the email address is unchanged', function () {
+test('email cannot be changed through the profile update', function () {
     $user = User::factory()->create();
+    $originalEmail = $user->email;
 
-    $response = $this
+    $this
         ->actingAs($user)
         ->patch(route('profile.update'), [
             'name'  => 'Test User',
-            'email' => $user->email,
+            'email' => 'new-email@example.com',
         ]);
 
-    $response
-        ->assertSessionHasNoErrors()
-        ->assertRedirect(route('profile.edit'));
-
-    expect($user->refresh()->email_verified_at)->not->toBeNull();
+    // Email is not part of the profile update rules, so it is ignored.
+    expect($user->refresh()->email)->toBe($originalEmail);
+    expect($user->email_verified_at)->not->toBeNull();
 });
 
 test('user can delete their account', function () {
