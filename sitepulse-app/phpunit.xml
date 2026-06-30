@@ -23,9 +23,16 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <!-- DB connection/host/credentials come from the loaded .env
-             (env.test locally and in CI), so tests run on MySQL for
-             production parity (JSON_* functions, etc.). -->
+        <!-- Tests run on a dedicated MySQL database (production parity for
+             JSON_* functions, etc.). These are NOT forced, so GitHub Actions
+             overrides DB_HOST=127.0.0.1 via the job-level `env:` while local
+             runs use the Docker `mysql` service name. Never points at the dev DB. -->
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="mysql"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="sitepulse_testing"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value="secret"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

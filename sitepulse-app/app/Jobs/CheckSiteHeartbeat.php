@@ -20,9 +20,12 @@ class CheckSiteHeartbeat implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 1;
+    public int $tries = 2;
 
     public int $timeout = 15;
+
+    // Wait 1s before retrying
+    public int $backoff = 1;
 
     public function __construct(public Website $website) {}
 
@@ -31,6 +34,7 @@ class CheckSiteHeartbeat implements ShouldQueue
         $parts = parse_url($this->website->url);
         $origin = $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : '');
 
+        $error = null;
         $response = null;
         $reason = null;
         $httpStatus = null;
@@ -73,8 +77,25 @@ class CheckSiteHeartbeat implements ShouldQueue
             }
         } catch (ConnectionException $e) {
             $reason = 'connection_refused';
+            $error = $e;
         } catch (Throwable $e) {
             $reason = 'request_failed';
+            $error = $e;
+        }
+
+        // A site that was up last check and now fails is only a candidate for downtime.
+        // Retry (via $tries) to rule out a transient blip before we
+        // touch the DB — re-checking on the next attempt instead of trusting one failed request.
+        // We persist nothing here so the state stays "up" and the
+        // retry re-evaluates the same transition.
+        $isTransitionFromUp = $this->website->uptime_status === UptimeStatus::Up->value && ! $isUp;
+
+        if (
+            $isTransitionFromUp &&
+            in_array($reason, ['connection_refused', 'request_failed']) &&
+            $this->attempts() === 1
+        ) {
+            throw new \RuntimeException($this->failureMessage($reason, $httpStatus, $error));
         }
 
         $this->website->last_checked_at = now();
@@ -88,11 +109,25 @@ class CheckSiteHeartbeat implements ShouldQueue
 
         $this->website->next_check_at = now()->addMinutes($intervalTime);
         $this->website->save();
+
+        // On the final attempt of a confirmed down transition, throw so the job
+        // lands in failed_jobs and is visible in Horizon. State is already saved
+        // above, so the recorded failure does not lose any bookkeeping.
+        if ($isTransitionFromUp) {
+            throw new \RuntimeException($this->failureMessage($reason, $httpStatus, $error));
+        }
+    }
+
+    private function failureMessage(?string $reason, ?int $httpStatus, ?Throwable $error): string
+    {
+        return "Heartbeat failed for website {$this->website->id} ({$this->website->url}) "
+            ."\nReason: {$reason}. \nHTTP status: {$httpStatus} "
+            ."\nError: ".($error?->getMessage() ?? 'N/A');
     }
 
     private function httpClient(): PendingRequest
     {
-        $client = Http::timeout(10);
+        $client = Http::timeout(15);
 
         if (config('services.proxy.enabled')) {
             $client = $client->withOptions([
