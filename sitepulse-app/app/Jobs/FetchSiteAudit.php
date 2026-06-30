@@ -79,7 +79,7 @@ class FetchSiteAudit implements ShouldQueue
         if (config('services.proxy.enabled')) {
             $client = $client->withOptions([
                 'proxy' => sprintf(
-                    'https://%s:%s@%s:%d',
+                    'http://%s:%s@%s:%d',
                     config('services.proxy.username'),
                     config('services.proxy.password'),
                     parse_url(config('services.proxy.url'), PHP_URL_HOST),
