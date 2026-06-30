@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Iodev\Whois\Factory;
+use Throwable;
 
 class CheckDomainExpiry implements ShouldQueue
 {
@@ -14,7 +15,11 @@ class CheckDomainExpiry implements ShouldQueue
 
     public int $tries = 1;
 
-    public int $timeout = 30;
+    public int $timeout = 25;
+
+    // A WHOIS lookup that exceeds the timeout should fail the job (surfacing
+    // in failed_jobs / Horizon), not be silently retried or swallowed.
+    public bool $failOnTimeout = true;
 
     public function __construct(public Website $website) {}
 
@@ -50,6 +55,23 @@ class CheckDomainExpiry implements ShouldQueue
             [
                 'domain_expires_at'        => $expiry,
                 'domain_expiry_checked_at' => now()->toDateTimeString(),
+            ]
+        );
+
+        $this->website->save();
+    }
+
+    public function failed(?Throwable $e): void
+    {
+        if (! $this->website) {
+            return;
+        }
+
+        $this->website->meta_data = array_merge(
+            $this->website->meta_data ?? [],
+            [
+                'domain_expires_at'        => '',
+                'domain_expiry_checked_at' => now()->addDay()->toDateTimeString()
             ]
         );
 

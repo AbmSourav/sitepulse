@@ -22,7 +22,7 @@ class CheckSiteHeartbeat implements ShouldQueue
 
     public int $tries = 2;
 
-    public int $timeout = 15;
+    public int $timeout = 20;
 
     // Wait 1s before retrying
     public int $backoff = 1;

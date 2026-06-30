@@ -18,9 +18,9 @@ class FetchSiteAudit implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $backoff = 60;
+    public int $tries = 1;
 
-    public int $timeout = 30;
+    public int $timeout = 25;
 
     public function __construct(public Website $website) {}
 
