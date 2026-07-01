@@ -11,7 +11,9 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     {
         parent::boot();
 
-        Telescope::auth(fn ($request) => (bool) $request->user('web'));
+        // Open freely on local; require an authenticated web user elsewhere
+        // (e.g. staging — Telescope is registered in any non-production env).
+        Telescope::auth(fn ($request) => app()->environment('local') || (bool) $request->user('web'));
     }
 
     public function register(): void

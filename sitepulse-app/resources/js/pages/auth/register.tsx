@@ -20,16 +20,16 @@ export default function Register() {
 
     function handleSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
-        post(store.url(), {
-            onError: () => reset('password', 'password_confirmation'),
-        });
+        // post(store.url(), {
+        //     onError: () => reset('password', 'password_confirmation'),
+        // });
     }
 
     return (
         <>
             <Head title="Register" />
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                <div className="grid gap-6">
+                {/* <div className="grid gap-6">
                     <div className="grid gap-2">
                         <Label htmlFor="name">Name</Label>
                         <Input
@@ -108,7 +108,7 @@ export default function Register() {
                         {processing && <Spinner />}
                         Create account
                     </Button>
-                </div>
+                </div> */}
 
                 <GoogleAuthButton />
 

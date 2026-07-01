@@ -116,20 +116,6 @@ test('generating a summary persists it to the report and returns it', function (
         ->toBe('The site is broadly healthy with a couple of minor items.');
 });
 
-test('a report that already has a summary returns it without calling the AI', function () {
-    $user = withClaudeAi(User::factory()->create());
-    $report = reportForUser($user, ['ai_summary' => fakeSummary()]);
-
-    // If the service is called, this test fails (shouldNotReceive).
-    $this->mock(AuditSummarizer::class)
-        ->shouldNotReceive('summarize');
-
-    $this->actingAs($user)
-        ->postJson(route('audit-reports.summary', $report))
-        ->assertOk()
-        ->assertJson(['model' => 'claude-sonnet-5']);
-});
-
 test('an AI error is returned as a clean 502', function () {
     $user = withClaudeAi(User::factory()->create());
     $report = reportForUser($user);

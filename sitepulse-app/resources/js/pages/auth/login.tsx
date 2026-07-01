@@ -42,6 +42,8 @@ export default function Login({
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 <div className="grid gap-6">
+                    <GoogleAuthButton />
+
                     <div className="grid gap-2">
                         <Label htmlFor="email">Email address</Label>
                         <Input
@@ -108,8 +110,6 @@ export default function Login({
                         Log in
                     </Button>
                 </div>
-
-                <GoogleAuthButton />
 
                 {canRegister && (
                     <div className="text-center text-sm text-muted-foreground">

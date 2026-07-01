@@ -30,6 +30,17 @@ function GoogleIcon() {
 export function GoogleAuthButton() {
     return (
         <div className="flex flex-col gap-4">
+            <a href="/auth/google/redirect">
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full cursor-pointer py-5 gap-2 bg-primary hover:bg-primary/80 font-medium shadow-md"
+                >
+                    <GoogleIcon />
+                    Continue with Google
+                </Button>
+            </a>
+
             <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
@@ -40,17 +51,6 @@ export function GoogleAuthButton() {
                     </span>
                 </div>
             </div>
-
-            <a href="/auth/google/redirect">
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full cursor-pointer gap-2 hover:bg-primary/50"
-                >
-                    <GoogleIcon />
-                    Continue with Google
-                </Button>
-            </a>
         </div>
     );
 }

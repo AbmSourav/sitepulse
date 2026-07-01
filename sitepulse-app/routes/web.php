@@ -17,6 +17,13 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
+// TEMPORARY: registration page stays visible, but block new sign-ups by
+// overriding Fortify's POST /register. App route files load after Fortify's
+// provider, so this definition wins for the same URI+verb. Remove to re-enable.
+Route::post('register', fn () => abort(403, 'Registration is currently closed.'))
+    ->middleware('guest')
+    ->name('register.store');
+
 Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 
