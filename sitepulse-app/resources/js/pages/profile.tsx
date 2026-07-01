@@ -117,12 +117,10 @@ export default function Profile({
                                             type="text"
                                             className="pt-1 block w-full text-gray-700"
                                             name="ai_settings[apiKey]"
-                                            autoComplete="off"
-                                            value={aiSettings.hasApiKey ? 'sk-ant-################' : ''}
                                             placeholder={
                                                 aiSettings.hasApiKey
-                                                    ? ''
-                                                    : 'API key'
+                                                    ? 'sk-ant-################'
+                                                    : 'Add API key'
                                             }
                                         />
 

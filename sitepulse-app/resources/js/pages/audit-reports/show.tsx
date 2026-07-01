@@ -173,6 +173,8 @@ type SummaryState =
     | { status: 'error'; message: string };
 
 function AiSummaryPanel({ report }: { report: AuditReport }) {
+    const { hasAiApiKey } = usePage<Props>().props;
+
     const [state, setState] = useState<SummaryState>(
         report.ai_summary
             ? { status: 'ready', data: report.ai_summary }
@@ -183,6 +185,10 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
     const [open, setOpen] = useState<boolean>(!!report.ai_summary);
 
     async function generate() {
+        if (state?.status === 'loading') {
+            return;
+        }
+
         setState({ status: 'loading' });
 
         try {
@@ -213,6 +219,7 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
                 setState({ status: 'error', message: body.error });
             } else {
                 setState({ status: 'ready', data: body as AiSummary });
+                setOpen(true);
             }
         } catch {
             setState({
@@ -228,7 +235,7 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
             onOpenChange={setOpen}
             className="rounded-lg border border-border bg-muted/30"
         >
-            <CollapsibleTrigger className="group flex w-full cursor-pointer justify-between gap-4 p-5 text-left">
+            <div className="group flex w-full justify-between gap-4 p-5 text-left">
                 <div className="flex flex-col gap-4">
                     <div>
                         <h2 className="text-lg font-semibold text-foreground">
@@ -240,30 +247,35 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
                         </p>
                     </div>
 
-                    <Button
-                        onClick={generate}
-                        disabled={state.status === 'loading'}
-                        className="cursor-pointer h-9 w-[200px] px-3 text-sm shadow-md"
-                    >
-                        {state.status === 'loading'
-                            ? 'Analyzing…'
-                            : 'Explain with AI'}
-                    </Button>
+                    {!hasAiApiKey && (
+                        <p className="text-sm text-muted-foreground">
+                            Add your Claude API key in{' '}
+                            <Link href={profileEdit.url()} className="underline">
+                                Profile settings
+                            </Link>{' '}
+                            to enable AI summaries.
+                        </p>
+                    )}
+
+                    {hasAiApiKey == true && (
+                        <div className="relative">
+                            <div
+                            onClick={generate}
+                            className="cursor-pointer w-[150px] px-3 py-3 text-sm shadow-md rounded bg-primary text-white font-medium text-center"
+                            >
+                                {state.status === 'loading'
+                                    ? 'Analyzing…'
+                                    : 'Explain with AI'}
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-            </CollapsibleTrigger>
+                <CollapsibleTrigger className="group/chevron h-fit shrink-0 cursor-pointer p-5">
+                    <ChevronDown className="size-5 text-muted-foreground transition-transform duration-200 group-data-[state=open]/chevron:rotate-180" />
+                </CollapsibleTrigger>
+            </div>
 
             <CollapsibleContent className="space-y-4 px-5 pb-5">
-                {state.status === 'needs_setup' && (
-                    <p className="text-sm text-muted-foreground">
-                        Add your Claude API key in{' '}
-                        <Link href={profileEdit.url()} className="underline">
-                            Profile settings
-                        </Link>{' '}
-                        to enable AI summaries.
-                    </p>
-                )}
-
                 {state.status === 'error' && (
                     <div className="flex items-center justify-between gap-4">
                         <p className="text-sm text-red-600 dark:text-red-400">
@@ -280,8 +292,9 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
                 )}
 
                 {state.status === 'ready' && (
-                    <div className="space-y-4">
-                        <p className="text-sm text-foreground">
+                    <div className="space-y-4 pt-3">
+                        <div className='px-10'><hr className="border-border" /></div>
+                        <p className="text-sm text-foreground pt-3 leading-relaxed">
                             {state.data.summary}
                         </p>
 

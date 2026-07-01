@@ -55,6 +55,7 @@ class AuditReportController extends Controller
         return Inertia::render('audit-reports/show', [
             'report'  => $report,
             'website' => $domain,
+            'hasAiApiKey'    => $request->user()->hasClaudeAi(),
         ]);
     }
 
@@ -68,9 +69,9 @@ class AuditReportController extends Controller
         $this->authorizeReport($request, $report);
 
         // Persisted column IS the cache — reports are immutable, generated once.
-        if (! empty($report->ai_summary)) {
-            return response()->json($report->ai_summary);
-        }
+        // if (! empty($report->ai_summary)) {
+        //     return response()->json($report->ai_summary);
+        // }
 
         $user = $request->user();
 
