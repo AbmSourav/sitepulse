@@ -177,7 +177,7 @@ app/
 │   ├── User.php                 # Has 2FA, belongs to teams
 │   ├── Team.php                 # Slug-routed, soft-deletes; has notificationChannels
 │   ├── Website.php              # WP site registered by a team — also holds uptime state + connected_at
-│   ├── AuditReport.php          # Immutable audit snapshot (5 JSON columns)
+│   ├── AuditReport.php          # Immutable audit snapshot (5 JSON columns) + ai_summary
 │   ├── SiteIncident.php         # Outage record (one row per outage, not per check)
 │   ├── NotificationChannel.php  # Team-scoped alert destination (Slack, Discord, Webhook, Email)
 │   ├── Membership.php
@@ -255,6 +255,50 @@ Team-scoped alert destinations stored in `notification_channels`. Each row has `
 - **Email**: stubbed — returns early until a mail template is wired up.
 
 Managed under `Settings → Notifications` (`GET/POST/PATCH/DELETE /settings/notifications`).
+
+### AI audit summaries (BYOK)
+
+On-demand, plain-English summary + severity-ranked recommendations for an
+`AuditReport`, generated from the report detail page. **Bring-your-own-key**:
+each user stores their own Anthropic API key + chosen model in Profile settings,
+so there is no LLM cost to SitePulse — each user pays Anthropic directly.
+
+- **SDK**: `anthropic-ai/sdk` (official PHP SDK). `new Client(apiKey: ...)` →
+  `$client->messages->create(...)` with `outputConfig` (raw `json_schema`) and a
+  cached `system` block (`cacheControl: ephemeral`). Wrapped in
+  `app/Services/AuditSummarizer.php`.
+- **User key storage**: `users.ai_settings` — nullable JSON `{ provider, apiKey, model }`.
+  A custom cast (`app/Casts/AiSettings.php`) encrypts **only** the `apiKey` sub-key
+  at rest; `provider`/`model` stay plain. Reads return ciphertext — plaintext is
+  produced **only** by `User::claudeApiKey()` (explicit decrypt, called just before
+  the SDK request). `ai_settings` is in the model's `#[Hidden]` so it never
+  serializes to Inertia props. `User::hasClaudeAi()` is a presence check (no decrypt).
+- **Model allow-list**: `config('services.anthropic.models')` = `claude-sonnet-5`,
+  `claude-sonnet-4-6`, `claude-opus-4-8`. Single source of truth — reused by the
+  profile validation rule. All three share the modern API surface (adaptive
+  thinking; no Fable-5 breaking changes). Model pick is **required when a key is set**.
+- **Profile flow**: `ProfileUpdateRequest` validates `ai_settings.*` (rules live in
+  the request, **not** the shared `ProfileValidationRules` concern — that concern is
+  reused by registration). `ProfileController@edit` exposes only
+  `{ provider, model, hasApiKey }` (never the key). `@update` preserves the existing
+  encrypted key when the submitted `apiKey` is blank (change model without re-entering).
+- **Result storage**: `audit_reports.ai_summary` — nullable JSON
+  `{ summary, recommendations: [{ title, severity, action }], model, generated_at }`.
+  This column **is** the cache: reports are immutable, so a summary is generated once
+  and returned on subsequent requests without another AI call. `AuditReport::boot()`'s
+  `updating` guard is relaxed to allow an update **only when `ai_summary` is the sole
+  dirty column** — audit data stays immutable.
+- **Endpoint**: `POST /audit-reports/{auditReport}/summary`
+  (`AuditReportController@summary`, `auth,verified`). Flow: `findOrFail` →
+  team-auth (`website.team_id === user.team_id`; also added to `show()`) → return
+  persisted `ai_summary` if set → `{ needs_setup: true }` if no key → call
+  `AuditSummarizer`, persist, return. Anthropic auth/rate/other errors → clean
+  `{ error }` with HTTP 502.
+- **UI**: `resources/js/pages/audit-reports/show.tsx` — "Explain with AI" button
+  POSTs via `fetch` (sends the `XSRF-TOKEN` cookie as `X-XSRF-TOKEN`, since raw
+  fetch doesn't do it automatically like axios/Inertia). Renders summary + severity
+  badges (critical=red, warning=amber, info=gray). A previously-generated
+  `report.ai_summary` renders immediately on load.
 
 ### Redis & API response caching
 

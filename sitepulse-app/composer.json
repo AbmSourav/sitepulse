@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "anthropic-ai/sdk": "^0.34.0",
         "inertiajs/inertia-laravel": "^3.0",
         "io-developer/php-whois": "^4.1",
         "laravel/fortify": "^1.34",

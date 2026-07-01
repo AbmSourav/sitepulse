@@ -42,6 +42,21 @@ export interface AuditReportTheme {
     require_update: boolean;
 }
 
+export type AiSeverity = 'critical' | 'warning' | 'info';
+
+export interface AiRecommendation {
+    title: string;
+    severity: AiSeverity;
+    action: string;
+}
+
+export interface AiSummary {
+    summary: string;
+    recommendations: AiRecommendation[];
+    model: string;
+    generated_at: string;
+}
+
 export interface AuditReport {
     id: number;
     website_id: number;
@@ -60,6 +75,7 @@ export interface AuditReport {
         outdated: number;
         items: AuditReportTheme[];
     } | null;
+    ai_summary: AiSummary | null;
     created_at: string;
     updated_at: string;
 }

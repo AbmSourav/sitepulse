@@ -1,7 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Activity, Bell, Globe, PlugZap, ShieldCheck, Zap } from 'lucide-react';
-import { dashboard, login, register } from '@/routes';
 import AppLogo from '@/components/app-logo';
+import { dashboard, login, register } from '@/routes';
 
 export default function Welcome({
     canRegister = true,

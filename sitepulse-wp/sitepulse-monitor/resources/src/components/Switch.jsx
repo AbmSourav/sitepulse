@@ -11,7 +11,7 @@ const Switch = () => {
         const appUrl = new URL(spmAdmin?.appUrl + '/websites/authorize')
         appUrl.searchParams.append('siteUrl', currentUrl)
         appUrl.searchParams.append('siteBaseUrl', spmAdmin?.siteBaseUrl)
-        console.log(appUrl.toString())
+        // console.log(appUrl.toString())
 
         window.location.href = appUrl.toString()
     }

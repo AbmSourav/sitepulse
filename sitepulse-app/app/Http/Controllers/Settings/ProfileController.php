@@ -18,8 +18,15 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $settings = $request->user()->ai_settings ?? [];
+
         return Inertia::render('profile', [
-            'status' => $request->session()->get('status'),
+            'status'     => $request->session()->get('status'),
+            'aiSettings' => [
+                'provider'  => $settings['provider'] ?? 'claude',
+                'model'     => $settings['model'] ?? null,
+                'hasApiKey' => ! empty($settings['apiKey']),
+            ],
         ]);
     }
 
@@ -28,8 +35,29 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-        $request->user()->save();
+        $user = $request->user();
+
+        $validated = $request->validated();
+
+        // Handle ai_settings separately: if the submitted apiKey is blank but one
+        // is already stored, preserve the existing (encrypted) key so the user can
+        // change the model without re-entering the key.
+        $incoming = $validated['ai_settings'] ?? null;
+        unset($validated['ai_settings']);
+
+        $user->fill($validated);
+
+        if (! is_null($incoming)) {
+            $existing = $user->ai_settings ?? [];
+
+            if (empty($incoming['apiKey']) && ! empty($existing['apiKey'])) {
+                $incoming['apiKey'] = $existing['apiKey']; // already ciphertext
+            }
+
+            $user->ai_settings = ! empty($incoming['apiKey']) ? $incoming : null;
+        }
+
+        $user->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 

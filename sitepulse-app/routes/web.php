@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('websites/monitor', [WebsiteController::class, 'addMonitor'])->middleware('plan.limit:maxSites')->name('websites.monitor');
     Route::get('audit-reports', [AuditReportController::class, 'index'])->name('audit-reports.index');
     Route::get('audit-reports/{auditReport}', [AuditReportController::class, 'show'])->name('audit-reports.show');
+    Route::post('audit-reports/{auditReport}/summary', [AuditReportController::class, 'summary'])->name('audit-reports.summary');
 
     Route::post('websites/update', [WebsiteController::class, 'update'])->name('websites.update');
 

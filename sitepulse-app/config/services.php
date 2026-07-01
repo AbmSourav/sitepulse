@@ -41,6 +41,13 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'anthropic' => [
+        // Allow-list of Claude models a user may pick for BYOK audit summaries.
+        // Single source of truth — reused by the profile validation rule.
+        'models'  => ['claude-sonnet-5', 'claude-sonnet-4-6', 'claude-opus-4-8'],
+        'version' => '2023-06-01',
+    ],
+
     'proxy' => [
         'enabled'  => env('PROXY_ENABLED', false),
         'url'      => env('PROXY_URL', 'http://dc.oxylabs.io'),

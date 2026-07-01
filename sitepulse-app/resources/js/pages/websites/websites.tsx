@@ -1,4 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { Globe } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import PlanLimitDialog from '@/components/plan-limit-dialog';
@@ -22,7 +23,6 @@ import {
 import WebsiteStats from '@/components/websites/website-stats';
 import type { WebsiteStatsProps } from '@/components/websites/website-stats';
 import websiteRoutes from '@/routes/websites';
-import { Globe } from 'lucide-react';
 
 interface UptimeStat {
     uptime_seconds: number;
@@ -94,7 +94,10 @@ export default function Websites() {
                         setPlanError(errors.plan);
                     } else {
                         const first = Object.values(errors)[0];
-                        if (first) toast.error(first as string);
+
+                        if (first) {
+toast.error(first as string);
+}
                     }
                 },
                 onFinish: () => setSubmitting(false),
@@ -210,6 +213,7 @@ export default function Websites() {
                                                                       Date.now()) /
                                                                       86400000,
                                                               );
+
                                                           return (
                                                               <span
                                                                   className={

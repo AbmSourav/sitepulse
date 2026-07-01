@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditReport;
 use App\Models\Website;
+use App\Services\AuditSummarizer;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 
 class AuditReportController extends Controller
 {
@@ -41,7 +44,10 @@ class AuditReportController extends Controller
 
     public function show(Request $request, int $auditReport): Response
     {
-        $report = AuditReport::findOrFail($auditReport);
+        $report = AuditReport::with('website:id,url,team_id')->findOrFail($auditReport);
+
+        $this->authorizeReport($request, $report);
+
         $website = $report->website?->only('url');
         $parsed = parse_url($website['url']);
         $domain = $parsed['host'].(! empty($parsed['port']) ? ':'.$parsed['port'] : '');
@@ -50,5 +56,48 @@ class AuditReportController extends Controller
             'report'  => $report,
             'website' => $domain,
         ]);
+    }
+
+    /**
+     * Generate (or return the already-persisted) AI summary for a report.
+     */
+    public function summary(Request $request, int $auditReport, AuditSummarizer $summarizer): JsonResponse
+    {
+        $report = AuditReport::with('website:id,team_id')->findOrFail($auditReport);
+
+        $this->authorizeReport($request, $report);
+
+        // Persisted column IS the cache — reports are immutable, generated once.
+        if (! empty($report->ai_summary)) {
+            return response()->json($report->ai_summary);
+        }
+
+        $user = $request->user();
+
+        if (! $user->hasClaudeAi()) {
+            return response()->json(['needs_setup' => true]);
+        }
+
+        try {
+            $data = $summarizer->summarize($user, $report);
+        } catch (RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 502);
+        }
+
+        $report->ai_summary = $data;
+        $report->save();
+
+        return response()->json($data);
+    }
+
+    /**
+     * Ensure the report belongs to the current user's team.
+     */
+    private function authorizeReport(Request $request, AuditReport $report): void
+    {
+        abort_unless(
+            $report->website?->team_id === $request->user()->team_id,
+            403
+        );
     }
 }

@@ -25,6 +25,7 @@ function formatDate(dateStr: string) {
     const normalized = dateStr.includes('T')
         ? dateStr
         : dateStr.replace(' ', 'T') + 'Z';
+
     return new Date(normalized).toLocaleString('en-US', {
         month: 'short',
         day: '2-digit',
