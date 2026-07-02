@@ -59,8 +59,7 @@ class StoreAuditReport
         Cache::store('api-cache')->forget("audit-reports:website:{$website->id}:page:1");
 
         $website->last_audited_at = now();
-        // $website->next_audit_at   = now()->addWeek();
-        $website->next_audit_at = now()->addHours(6);
+        $website->next_audit_at   = app()->isProduction() ? now()->addWeek() : now()->addMinutes(3);
         $website->save();
 
         return $report;

@@ -34,7 +34,7 @@ class FetchSiteAudit implements ShouldQueue
         ]);
 
         if (! $response->successful()) {
-            $this->website->next_audit_at = now()->addDays(7);
+            $this->website->next_audit_at = now()->addHours(6);
             $this->website->save();
 
             $data = $response->json();
@@ -57,7 +57,8 @@ class FetchSiteAudit implements ShouldQueue
         if (empty($data) || ! isset($data['audited_at'])) {
             Log::warning('FetchSiteAudit: invalid payload', ['website_id' => $this->website->id]);
 
-            $this->website->next_audit_at = now()->addHours(6);
+            $this->website->last_audited_at = now();
+            $this->website->next_audit_at = now()->addWeek();
             $this->website->save();
 
             return;
