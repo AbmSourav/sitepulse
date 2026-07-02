@@ -34,12 +34,7 @@ class FetchSiteAudit implements ShouldQueue
         ]);
 
         if (! $response->successful()) {
-            Log::warning('FetchSiteAudit: non-2xx response', [
-                'website_id' => $this->website->id,
-                'status'     => $response->status(),
-            ]);
-
-            $this->website->next_audit_at = now()->addHours(6);
+            $this->website->next_audit_at = now()->addDays(7);
             $this->website->save();
 
             $data = $response->json();
@@ -93,16 +88,11 @@ class FetchSiteAudit implements ShouldQueue
 
     public function tries(): int
     {
-        return app()->isProduction() ? 3 : 1;
+        return app()->isProduction() ? 2 : 1;
     }
 
     public function failed(Throwable $e): void
     {
-        Log::error('FetchSiteAudit: job failed', [
-            'website_id' => $this->website->id,
-            'error'      => $e->getMessage(),
-        ]);
-
         $this->website->next_audit_at = now()->addHours(6);
         $this->website->save();
     }

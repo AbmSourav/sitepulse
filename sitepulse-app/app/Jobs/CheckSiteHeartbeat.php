@@ -24,8 +24,8 @@ class CheckSiteHeartbeat implements ShouldQueue
 
     public int $timeout = 20;
 
-    // Wait 1s before retrying
-    public int $backoff = 1;
+    // Wait 2s before retrying
+    public int $backoff = 2;
 
     public function __construct(public Website $website) {}
 
@@ -76,6 +76,12 @@ class CheckSiteHeartbeat implements ShouldQueue
                 }
             }
         } catch (ConnectionException $e) {
+            // A timeout (cURL 28) is inconclusive, not proof the site is down,
+            // so we don't flap a healthy site into an incident on a timeout alone.
+            if ($this->isTimeout($e)) {
+                $this->handleTimeOut($e);
+            }
+
             $reason = 'connection_refused';
             $error = $e;
         } catch (Throwable $e) {
@@ -118,10 +124,20 @@ class CheckSiteHeartbeat implements ShouldQueue
         }
     }
 
+    /**
+     * A ConnectionException caused by a timeout (as opposed to a refused/failed
+     * connection). Guzzle surfaces timeouts as cURL error 28.
+     */
+    private function isTimeout(Throwable $e): bool
+    {
+        return str_contains(strtolower($e->getMessage()), 'timed out')
+            || str_contains($e->getMessage(), 'cURL error 28');
+    }
+
     private function failureMessage(?string $reason, ?int $httpStatus, ?Throwable $error): string
     {
         return "Heartbeat failed for website {$this->website->id} ({$this->website->url}) "
-            ."\nReason: {$reason}. \nHTTP status: {$httpStatus} "
+            ."\nReason: {$reason} \nHTTP status: {$httpStatus} "
             ."\nError: ".($error?->getMessage() ?? 'N/A');
     }
 
@@ -174,6 +190,7 @@ class CheckSiteHeartbeat implements ShouldQueue
                 ->whereNull('resolved_at')
                 ->first();
 
+            // incident resolved.
             if ($incident) {
                 $incident->update(['resolved_at' => now()]);
 
@@ -186,7 +203,7 @@ class CheckSiteHeartbeat implements ShouldQueue
         }
 
         if ($this->website->api_key) {
-            $this->clearCache();
+            $this->clearCache(false);
         }
 
         $this->website->consecutive_failures = 0;
@@ -244,9 +261,25 @@ class CheckSiteHeartbeat implements ShouldQueue
         }
     }
 
-    private function clearCache(): void
+    private function handleTimeOut(Throwable $error): void
     {
-        Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
+        $intervalTime = $this->website->user->planLimits()['minInterval'];
+        if ($this->website->uptime_status === UptimeStatus::Down->value) {
+            $intervalTime = 2;
+        }
+
+        $this->website->last_checked_at = now();
+        $this->website->next_check_at = now()->addMinutes($intervalTime);
+        $this->website->save();
+
+        throw new \RuntimeException($this->failureMessage('time_out', null, $error));
+    }
+
+    private function clearCache($listCache = true): void
+    {
+        if ($listCache) {
+            Cache::store('api-cache')->forget("incidents:website:{$this->website->id}:page:1");
+        }
         Cache::store('api-cache')->forget("website:{$this->website->id}:stats");
     }
 }
