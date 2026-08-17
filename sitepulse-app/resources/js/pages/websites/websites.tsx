@@ -96,8 +96,8 @@ export default function Websites() {
                         const first = Object.values(errors)[0];
 
                         if (first) {
-toast.error(first as string);
-}
+                            toast.error(first as string);
+                        }
                     }
                 },
                 onFinish: () => setSubmitting(false),

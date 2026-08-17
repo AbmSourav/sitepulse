@@ -28,8 +28,10 @@ interface Props {
 }
 
 const SEVERITY_STYLES: Record<string, string> = {
-    critical: 'border-transparent bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    warning: 'border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    critical:
+        'border-transparent bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    warning:
+        'border-transparent bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     info: 'border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
 };
 
@@ -201,15 +203,18 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
                     ?.split('=')[1] ?? '',
             );
 
-            const res = await fetch(summaryRoute.url({ auditReport: report.id }), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-XSRF-TOKEN': xsrf,
-                    'X-Requested-With': 'XMLHttpRequest',
+            const res = await fetch(
+                summaryRoute.url({ auditReport: report.id }),
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-XSRF-TOKEN': xsrf,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
                 },
-            });
+            );
 
             const body = await res.json();
 
@@ -250,7 +255,10 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
                     {!hasAiApiKey && (
                         <p className="text-sm text-muted-foreground">
                             Add your Claude API key in{' '}
-                            <Link href={profileEdit.url()} className="underline">
+                            <Link
+                                href={profileEdit.url()}
+                                className="underline"
+                            >
                                 Profile settings
                             </Link>{' '}
                             to enable AI summaries.
@@ -260,8 +268,8 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
                     {hasAiApiKey == true && (
                         <div className="relative">
                             <div
-                            onClick={generate}
-                            className="cursor-pointer w-[150px] px-3 py-3 text-sm shadow-md rounded bg-primary text-white font-medium text-center"
+                                onClick={generate}
+                                className="w-[150px] cursor-pointer rounded bg-primary px-3 py-3 text-center text-sm font-medium text-white shadow-md"
                             >
                                 {state.status === 'loading'
                                     ? 'Analyzing…'
@@ -293,8 +301,10 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
 
                 {state.status === 'ready' && (
                     <div className="space-y-4 pt-3">
-                        <div className='px-10'><hr className="border-border" /></div>
-                        <p className="text-sm text-foreground pt-3 leading-relaxed">
+                        <div className="px-10">
+                            <hr className="border-border" />
+                        </div>
+                        <p className="pt-3 text-sm leading-relaxed text-foreground">
                             {state.data.summary}
                         </p>
 
@@ -316,7 +326,8 @@ function AiSummaryPanel({ report }: { report: AuditReport }) {
                                                     className={
                                                         SEVERITY_STYLES[
                                                             rec.severity
-                                                        ] ?? SEVERITY_STYLES.info
+                                                        ] ??
+                                                        SEVERITY_STYLES.info
                                                     }
                                                 >
                                                     {rec.severity}

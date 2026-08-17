@@ -103,7 +103,8 @@ export default function AuditReports() {
                                     , upload the .zip, and activate it.
                                 </li>
                                 <li>
-                                    Go to 'SitePulse Monitor' menu page and click{' '}
+                                    Go to 'SitePulse Monitor' menu page and
+                                    click{' '}
                                     <span className="font-medium text-gray-700 dark:text-gray-300">
                                         Connect
                                     </span>{' '}

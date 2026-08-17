@@ -1,5 +1,15 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Activity, Bell, Globe, PlugZap, ShieldCheck, Zap } from 'lucide-react';
+import {
+    Activity,
+    Bell,
+    Bot,
+    Globe,
+    PlugZap,
+    SendHorizonal,
+    ShieldCheck,
+    Sparkles,
+    Zap,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { dashboard, login, register } from '@/routes';
 
@@ -53,7 +63,7 @@ export default function Welcome({
                     </header>
 
                     {/* Hero */}
-                    <section className="relative overflow-hidden px-6 py-24 text-center lg:py-28">
+                    <section className="relative overflow-hidden px-4 py-24 text-center lg:py-28">
                         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-white to-white dark:from-primary/10 dark:via-gray-950 dark:to-gray-950" />
                         <div className="mx-auto max-w-3xl">
                             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary">
@@ -61,7 +71,8 @@ export default function Welcome({
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                                     <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                                 </span>
-                                Uptime monitoring + WordPress audits
+                                Uptime monitoring + WordPress audits + AI
+                                assistant
                             </div>
                             <h1 className="mb-6 flex flex-col text-5xl leading-tight font-extrabold tracking-tight lg:text-6xl">
                                 <span>Monitor any Website</span>
@@ -69,14 +80,19 @@ export default function Welcome({
                                     Deep-dive WordPress website
                                 </span>
                             </h1>
-                            <p className="mx-auto mb-10 max-w-xl text-lg text-gray-500 dark:text-gray-400">
+                            <p className="mx-auto mb-10 max-w-xl text-md text-gray-500 dark:text-gray-300">
                                 SitePulse checks uptime for any website — and
                                 goes deeper for WordPress with plugin audits,
-                                SSL tracking, PHP error detection,
+                                SSL tracking, PHP error detection, and instant
+                                alerts.
                                 <br />
-                                and instant alerts.
+                                Then just{' '}
+                                <span className="font-medium text-gray-700 dark:text-gray-100">
+                                    ask the AI assistant
+                                </span>{' '}
+                                about it in plain English.
                             </p>
-                            <p className="mb-8 text-gray-500 dark:text-gray-400">
+                            <p className="mb-3 text-gray-400">
                                 Monitor up to 3 sites for free. No credit card
                                 required.
                             </p>
@@ -119,8 +135,8 @@ export default function Welcome({
                                     label: 'Proxy IPs to prevent false alerts',
                                 },
                                 {
-                                    value: '99.9%',
-                                    label: 'Uptime report accuracy',
+                                    value: 'Ask AI',
+                                    label: 'Plain-English answers about your sites',
                                 },
                                 {
                                     value: 'Instant',
@@ -129,7 +145,7 @@ export default function Welcome({
                             ].map((stat) => (
                                 <div
                                     key={stat.label}
-                                    className="px-8 py-6 text-center"
+                                    className="px-5 py-6 text-center"
                                 >
                                     <p className="text-2xl font-bold text-primary">
                                         {stat.value}
@@ -144,7 +160,7 @@ export default function Welcome({
                 </div>
 
                 {/* Two modes */}
-                <section id="how-it-works" className="px-6 py-24">
+                <section id="how-it-works" className="px-6 py-12 sm:py-24">
                     <div className="mx-auto max-w-5xl">
                         <div className="mb-16 text-center">
                             <h2 className="text-3xl font-bold tracking-tight lg:text-4xl">
@@ -242,7 +258,7 @@ export default function Welcome({
                 </section>
 
                 {/* WordPress features */}
-                <section className="bg-gray-50 px-6 py-24 dark:bg-gray-900/50">
+                <section className="bg-gray-50 px-6 py-12 sm:py-24 dark:bg-gray-900/50">
                     <div className="mx-auto max-w-6xl">
                         <div className="mb-4 text-center text-xs font-semibold tracking-widest text-primary uppercase">
                             WordPress plugin features
@@ -315,8 +331,116 @@ export default function Welcome({
                     </div>
                 </section>
 
+                {/* AI assistant showcase */}
+                <section className="relative overflow-hidden px-6 py-12 sm:py-24">
+                    <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent dark:from-primary/10" />
+                    <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2">
+                        {/* Copy */}
+                        <div>
+                            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                                <Sparkles className="h-3.5 w-3.5" />
+                                New · AI assistant
+                            </div>
+                            <h2 className="mb-4 text-3xl font-bold tracking-tight lg:text-4xl">
+                                Ask your sites anything
+                            </h2>
+                            <p className="mb-8 text-gray-500 dark:text-gray-400">
+                                Skip the dashboards. Ask in plain English and
+                                get straight answers about your own sites&rsquo;
+                                uptime, incidents, and audit health — pulled
+                                live from your data, never made up.
+                            </p>
+                            <ul className="space-y-4">
+                                {[
+                                    {
+                                        title: 'Natural language',
+                                        desc: '“How many times did abc.com go down last week?” — just ask.',
+                                    },
+                                    {
+                                        title: 'Grounded in your data',
+                                        desc: 'Answers come from your real incidents, stats, and audit reports — with exact numbers.',
+                                    },
+                                    {
+                                        title: 'Your key, your data',
+                                        desc: 'Bring your own Claude API key. Your questions and site data stay tied to your account.',
+                                    },
+                                ].map((item) => (
+                                    <li key={item.title} className="flex gap-3">
+                                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                            <Sparkles className="h-3.5 w-3.5" />
+                                        </span>
+                                        <div>
+                                            <p className="text-sm font-semibold">
+                                                {item.title}
+                                            </p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {item.desc}
+                                            </p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        {/* Static chat mock */}
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50 shadow-xl dark:border-gray-800 dark:bg-gray-900">
+                            {/* Mock header */}
+                            <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+                                <Bot className="h-5 w-5 text-primary" />
+                                <span className="text-sm font-semibold">
+                                    SitePulse Assistant
+                                </span>
+                            </div>
+
+                            {/* Mock transcript */}
+                            <div className="space-y-4 px-5 py-6">
+                                <div className="flex justify-end">
+                                    <div className="max-w-[85%] rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
+                                        How many incidents did abc.com have in
+                                        the last 7 days?
+                                    </div>
+                                </div>
+                                <div className="flex justify-start">
+                                    <div className="max-w-[85%] rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-800 dark:bg-gray-800 dark:text-gray-100">
+                                        abc.com had{' '}
+                                        <span className="font-semibold">
+                                            3 incidents
+                                        </span>{' '}
+                                        in the last 7 days, totalling about 24
+                                        minutes of downtime. The longest was 18
+                                        minutes on Tuesday (HTTP 500).
+                                    </div>
+                                </div>
+                                <div className="flex justify-end">
+                                    <div className="max-w-[85%] rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground">
+                                        Any plugins I should worry about?
+                                    </div>
+                                </div>
+                                <div className="flex justify-start">
+                                    <div className="max-w-[85%] rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-800 dark:bg-gray-800 dark:text-gray-100">
+                                        Yes — 2 plugins are outdated and 1 has a
+                                        known vulnerability. Want the list?
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Mock composer (non-interactive) */}
+                            <div className="border-t border-gray-100 p-4 dark:border-gray-800">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1 rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-400 dark:border-gray-700">
+                                        Ask about your sites…
+                                    </div>
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                                        <SendHorizonal className="h-4 w-4" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* CTA */}
-                <section className="px-6 py-24 text-center">
+                <section className="px-6 py-12 sm:py-24 text-center bg-gray-50 dark:bg-gray-900/50">
                     <div className="mx-auto max-w-2xl">
                         <h2 className="mb-4 flex flex-col text-3xl font-bold tracking-tight lg:text-4xl">
                             <span>Your sites deserve better than</span>

@@ -125,23 +125,21 @@ export function AiAssistantSheet() {
                 <button
                     type="button"
                     aria-label="Ask the SitePulse assistant"
-                    className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="fixed right-6 bottom-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition hover:scale-105 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                     <Sparkles className="h-5 w-5" />
                 </button>
             </SheetTrigger>
 
-            <SheetContent
-                side="right"
-                className="w-full gap-0 sm:max-w-lg"
-            >
+            <SheetContent side="right" className="w-full gap-0 sm:max-w-lg">
                 <SheetHeader className="border-b border-border">
                     <SheetTitle className="flex items-center gap-2">
                         <Bot className="h-5 w-5 text-primary" />
                         SitePulse Assistant
                     </SheetTitle>
                     <SheetDescription>
-                        Ask about your sites&rsquo; uptime, incidents, and audits.
+                        Ask about your sites&rsquo; uptime, incidents, and
+                        audits.
                     </SheetDescription>
                 </SheetHeader>
 
@@ -156,9 +154,17 @@ export function AiAssistantSheet() {
                                 Try asking:
                             </p>
                             <ul className="space-y-1">
-                                <li>&ldquo;How many incidents did abc.com have in the last 7 days?&rdquo;</li>
-                                <li>&ldquo;What&rsquo;s the uptime of my sites?&rdquo;</li>
-                                <li>&ldquo;When does my domain expire?&rdquo;</li>
+                                <li>
+                                    &ldquo;How many incidents did abc.com have
+                                    in the last 7 days?&rdquo;
+                                </li>
+                                <li>
+                                    &ldquo;What&rsquo;s the uptime of my
+                                    sites?&rdquo;
+                                </li>
+                                <li>
+                                    &ldquo;When does my domain expire?&rdquo;
+                                </li>
                             </ul>
                         </div>
                     )}
@@ -168,12 +174,14 @@ export function AiAssistantSheet() {
                             key={i}
                             className={cn(
                                 'flex',
-                                m.role === 'user' ? 'justify-end' : 'justify-start',
+                                m.role === 'user'
+                                    ? 'justify-end'
+                                    : 'justify-start',
                             )}
                         >
                             <div
                                 className={cn(
-                                    'max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm',
+                                    'max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap',
                                     m.role === 'user'
                                         ? 'bg-primary text-primary-foreground'
                                         : 'bg-muted text-foreground',
@@ -198,11 +206,13 @@ export function AiAssistantSheet() {
                                 Add your Claude API key to use the assistant.
                             </p>
                             <p className="mb-3 text-muted-foreground">
-                                The assistant uses your own Anthropic key. Add it in
-                                your profile settings to start chatting.
+                                The assistant uses your own Anthropic key. Add
+                                it in your profile settings to start chatting.
                             </p>
                             <Button asChild size="sm" variant="outline">
-                                <Link href={profileEdit().url}>Go to profile settings</Link>
+                                <Link href={profileEdit().url}>
+                                    Go to profile settings
+                                </Link>
                             </Button>
                         </div>
                     )}
@@ -222,13 +232,17 @@ export function AiAssistantSheet() {
                                     : 'Ask about your sites…'
                             }
                             disabled={status === 'loading' || showSetup}
-                            className="max-h-32 flex-1 resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                            className="max-h-32 flex-1 resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         <Button
                             type="button"
                             size="icon"
                             onClick={send}
-                            disabled={status === 'loading' || showSetup || input.trim() === ''}
+                            disabled={
+                                status === 'loading' ||
+                                showSetup ||
+                                input.trim() === ''
+                            }
                             aria-label="Send"
                         >
                             <SendHorizonal className="h-4 w-4" />

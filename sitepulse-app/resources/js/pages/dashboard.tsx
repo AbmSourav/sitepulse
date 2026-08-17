@@ -26,34 +26,34 @@ interface Props {
 
 function formatRelativeTime(dateStr: string | null): string {
     if (!dateStr) {
-return '—';
-}
+        return '—';
+    }
 
     const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
 
     if (diff < 60) {
-return `${diff}s ago`;
-}
+        return `${diff}s ago`;
+    }
 
     if (diff < 3600) {
-return `${Math.floor(diff / 60)}m ago`;
-}
+        return `${Math.floor(diff / 60)}m ago`;
+    }
 
     if (diff < 86400) {
-return `${Math.floor(diff / 3600)}h ago`;
-}
+        return `${Math.floor(diff / 3600)}h ago`;
+    }
 
     return `${Math.floor(diff / 86400)}d ago`;
 }
 
 function uptimeColor(pct: number) {
     if (pct >= 97) {
-return 'text-green-600 dark:text-green-400';
-}
+        return 'text-green-600 dark:text-green-400';
+    }
 
     if (pct >= 90) {
-return 'text-yellow-600 dark:text-yellow-400';
-}
+        return 'text-yellow-600 dark:text-yellow-400';
+    }
 
     return 'text-red-600 dark:text-red-400';
 }

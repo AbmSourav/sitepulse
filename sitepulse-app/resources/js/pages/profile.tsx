@@ -54,7 +54,7 @@ export default function Profile({
                     >
                         {({ processing, errors }) => (
                             <>
-                                <div className="grid gap-2 mt-6">
+                                <div className="mt-6 grid gap-2">
                                     <Label htmlFor="name">Name</Label>
 
                                     <Input
@@ -79,7 +79,7 @@ export default function Profile({
                                         <Label className="text-base">
                                             Claude AI (optional)
                                         </Label>
-                                        <p className="text-muted-foreground mt-1 text-sm">
+                                        <p className="mt-1 text-sm text-muted-foreground">
                                             Add your own Anthropic API key to
                                             enable AI audit summaries. You'll
                                             need an{' '}
@@ -115,7 +115,7 @@ export default function Profile({
                                         <Input
                                             id="ai_api_key"
                                             type="text"
-                                            className="pt-1 block w-full text-gray-700"
+                                            className="block w-full pt-1 text-gray-700"
                                             name="ai_settings[apiKey]"
                                             placeholder={
                                                 aiSettings.hasApiKey
@@ -138,8 +138,10 @@ export default function Profile({
                                         <select
                                             id="ai_model"
                                             name="ai_settings[model]"
-                                            defaultValue={aiSettings.model ?? ''}
-                                            className="border-input bg-background mt-1 block w-full rounded-md border px-3 py-2 text-sm"
+                                            defaultValue={
+                                                aiSettings.model ?? ''
+                                            }
+                                            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                         >
                                             <option value="" disabled>
                                                 Select a model

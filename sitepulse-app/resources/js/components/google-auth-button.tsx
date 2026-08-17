@@ -34,7 +34,7 @@ export function GoogleAuthButton() {
                 <Button
                     type="button"
                     variant="outline"
-                    className="w-full cursor-pointer py-5 gap-2 bg-primary hover:bg-primary/80 font-medium shadow-md"
+                    className="w-full cursor-pointer gap-2 bg-primary/90 py-6 font-medium shadow-md hover:bg-primary/80"
                 >
                     <GoogleIcon />
                     Continue with Google
