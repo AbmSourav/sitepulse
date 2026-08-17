@@ -190,7 +190,6 @@ export default function Notifications() {
             availableTypes: ChannelType[];
         } & Record<string, unknown>
     >().props;
-    console.log(channels, availableTypes);
 
     const [view, setView] = useState<SheetView | null>(null);
 

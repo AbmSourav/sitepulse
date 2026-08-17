@@ -33,6 +33,7 @@ declare module '@inertiajs/core' {
             currentTeam: Team | null;
             teams: Team[];
             currentPlan: PlanInfo | null;
+            hasAiKey: boolean;
             siteUrl: string | null;
             websites: Website[];
             [key: string]: unknown;

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\AuditReportController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\DashboardController;
@@ -45,6 +46,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('websites/update', [WebsiteController::class, 'update'])->name('websites.update');
 
     Route::get('incidents', [IncidentController::class, 'index'])->name('incidents.index');
+
+    Route::post('assistant/chat', [AiAssistantController::class, 'chat'])->name('assistant.chat');
 });
 
 Route::middleware(['auth'])->group(function () {

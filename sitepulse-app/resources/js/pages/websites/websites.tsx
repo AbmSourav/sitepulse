@@ -140,7 +140,6 @@ toast.error(first as string);
                                     const stat = uptime[website.id] ?? null;
                                     const isConnected =
                                         website.status === 'connected';
-                                    console.log('stats', stat, website);
 
                                     return (
                                         <tr

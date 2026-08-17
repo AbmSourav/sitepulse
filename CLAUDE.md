@@ -156,6 +156,7 @@ The `api_key` is sent in the **request body** (not URL — avoids leaking in log
 ```
 app/
 ├── Actions/          # Single-purpose action classes
+├── Ai/               # AI assistant (laravel/ai): Agents/, Tools/, Concerns/ResolvesTeamWebsite
 ├── Console/
 │   └── Commands/
 │       └── CheckDueSites.php       # Dispatches heartbeat jobs for sites due for check
@@ -299,6 +300,73 @@ so there is no LLM cost to SitePulse — each user pays Anthropic directly.
   fetch doesn't do it automatically like axios/Inertia). Renders summary + severity
   badges (critical=red, warning=amber, info=gray). A previously-generated
   `report.ai_summary` renders immediately on load.
+
+### AI assistant (tool-calling chatbot, BYOK)
+
+A conversational assistant in the SaaS dashboard. Users open a **Sheet**
+(slide-in panel, floating "✨" trigger in the sidebar layout) and ask
+natural-language questions about their **own** sites — *"How many incidents did
+abc.com have in the last 7 days?"* — and the assistant answers by **calling
+tools** that query the app's data. Built on the **Laravel AI SDK** (`laravel/ai`,
+v0.7.x), reusing each user's stored Claude key (same BYOK `users.ai_settings` as
+the audit summary). **Multi-turn, but stateless server-side**: no DB chat
+history — the client replays the recent transcript on each request.
+
+- **SDK**: `laravel/ai`. Agents implement `Laravel\Ai\Contracts\{Agent, HasTools}`
+  + `use Promptable`; tools implement `Laravel\Ai\Contracts\Tool`
+  (`description()`, `schema(JsonSchema)`, `handle(Tools\Request)`). The SDK runs
+  the tool-call loop automatically (prompt → tool_use → execute → tool_result →
+  repeat until `end_turn`) — no hand-written loop. `->prompt(text, provider:
+  Lab::Anthropic, model:)` returns an `AgentResponse` (cast to string for the text).
+  Kept **separate** from the audit summarizer (which still uses `anthropic-ai/sdk`).
+- **BYOK / key injection**: there is **no global Anthropic key** (`config/ai.php`
+  → `providers.anthropic.key` stays empty). `laravel/ai` reads
+  `config('ai.providers.anthropic.key')` **lazily at prompt time** (the provider
+  is constructed on first `prompt()` and reads `$this->config['key']` at the HTTP
+  call via `providerCredentials()`). So the controller sets it per-request:
+  `config()->set('ai.providers.anthropic.key', $user->aiApiKey())` **before**
+  prompting — plaintext only via `User::aiApiKey()` (the single decrypt site),
+  never `$user->ai_settings['apiKey']` (ciphertext). Config isn't persisted → no
+  cross-request leakage.
+- **Tools** (`app/Ai/Tools/`, each `new Tool($user)`): `ListSites`,
+  `GetSiteStats` (mirrors `ReportController@stats`), `CountIncidents`,
+  `GetLatestAudit`. **Team isolation is the #1 rule** — every tool resolves the
+  site via `App\Ai\Concerns\ResolvesTeamWebsite` (`where('team_id',
+  $user->team_id)`); a site not in the team returns a "not found in your account"
+  string, never data.
+- **No sensitive data to the model**: tool results are built from an **explicit
+  column whitelist** (`get(['reason', 'http_status', ...])`), never `->toArray()`
+  on a full model — so `api_key`, `meta_data` secrets, and user PII never reach
+  Claude. Covered by a feature-test assertion.
+- **Agent**: `app/Ai/Agents/SiteAssistant.php` — instructions constrain it to
+  SitePulse's domain and the user's own data; `tools()` returns the four tools
+  bound to `$this->user`. Instantiate as `SiteAssistant::make(user: $user,
+  history: [...])`.
+- **Conversation history (multi-turn, stateless)**: `SiteAssistant` implements
+  `Laravel\Ai\Contracts\Conversational`; its `messages()` returns the prior turns
+  (`UserMessage`/`AssistantMessage`), which the SDK replays **before** the current
+  prompt (see `GeneratesText` — it splices `$agent->messages()` ahead of the new
+  `UserMessage`). The client sends the recent transcript as a `history` array
+  (validated `role` ∈ {user,assistant} + `content` length-capped) and the
+  controller caps it to the last `MAX_HISTORY_MESSAGES` (10) turns. No server-side
+  persistence — the browser owns the transcript.
+- **Endpoint**: `POST /assistant/chat` (`AiAssistantController@chat`,
+  `auth,verified`). Validates `message` (`max:2000`), guards `hasClaudeAi()` +
+  `aiApiKey() !== null` → `{ needs_setup: true }`, injects the key, prompts,
+  returns `{ reply }`. SDK exceptions map to friendly text via `friendlyError()`:
+  `RateLimitedException` (429), `InsufficientCreditsException` (402),
+  `ProviderOverloadedException` (503), raw `RequestException` 401 (bad key) →
+  `{ error }` HTTP 502.
+- **UI**: `resources/js/components/ai-assistant-sheet.tsx` — mounted once in
+  `app-sidebar-layout.tsx`. Client-side transcript state, raw `fetch` with the
+  `X-XSRF-TOKEN` cookie header (same pattern as "Explain with AI"). Response
+  states: `{ reply }` → assistant bubble; `{ needs_setup }` → link to Profile
+  settings; `{ error }` → error bubble. Enter sends, Shift+Enter newlines.
+- **Config**: `config/ai.php` is a minimal hand-written file (`default =>
+  'anthropic'`, one provider) — **not** the full published stub. All plans (BYOK).
+- **Tests**: `tests/Feature/AiAssistantTest.php` — agent faked via
+  `SiteAssistant::fake([...])` (no real API call); covers needs_setup, happy path,
+  error → 502, **cross-team isolation**, and the no-sensitive-data assertion.
 
 ### Redis & API response caching
 

@@ -50,6 +50,9 @@ class HandleInertiaRequests extends Middleware
                 ]) : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            // Presence check only (no decrypt) — drives the AI assistant's
+            // needs-setup state without ever exposing the key.
+            'hasAiKey'    => fn () => (bool) $user?->hasClaudeAi(),
             'currentTeam' => fn () => $user?->currentTeam ? $user->toUserTeam($user->currentTeam) : null,
             'teams'       => fn () => $user?->toUserTeams(includeCurrent: true) ?? [],
             'currentPlan' => fn () => $user ? [
