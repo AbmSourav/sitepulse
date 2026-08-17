@@ -3,7 +3,6 @@ import { Globe } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import PlanLimitDialog from '@/components/plan-limit-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +19,7 @@ import {
     SheetHeader,
     SheetTitle,
 } from '@/components/ui/sheet';
+import WebsiteCard from '@/components/websites/website-card';
 import WebsiteStats from '@/components/websites/website-stats';
 import type { WebsiteStatsProps } from '@/components/websites/website-stats';
 import websiteRoutes from '@/routes/websites';
@@ -36,28 +36,6 @@ interface UptimeStat {
 interface Team {
     id: number;
     name: string;
-}
-
-function formatRelativeTime(dateStr: string | null): string {
-    if (!dateStr) {
-        return '—';
-    }
-
-    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-
-    if (diff < 60) {
-        return `${diff}s ago`;
-    }
-
-    if (diff < 3600) {
-        return `${Math.floor(diff / 60)}m ago`;
-    }
-
-    if (diff < 86400) {
-        return `${Math.floor(diff / 3600)}h ago`;
-    }
-
-    return `${Math.floor(diff / 86400)}d ago`;
 }
 
 export default function Websites() {
@@ -122,157 +100,27 @@ export default function Websites() {
                     </Button>
                 </div>
 
-                <div className="overflow-hidden rounded-sm">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50 dark:bg-gray-800">
-                            <tr className="h-[55px] border-b border-border bg-muted/40 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                <th className="px-4 py-3">Name</th>
-                                <th className="px-4 py-3">Status</th>
-                                <th className="px-4 py-3">Uptime</th>
-                                <th className="px-4 py-3">Last Check</th>
-                                <th className="px-4 py-3">Domain Expiry</th>
-                                <th className="px-4 py-3">Added by</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {websites?.length > 0 ? (
-                                websites.map((website) => {
-                                    const stat = uptime[website.id] ?? null;
-                                    const isConnected =
-                                        website.status === 'connected';
-
-                                    return (
-                                        <tr
-                                            key={website.id}
-                                            onClick={() =>
-                                                setSelectedWebsite(website)
-                                            }
-                                            className="h-[55px] cursor-pointer border-b border-border transition-colors last:border-0 hover:bg-muted/20"
-                                        >
-                                            <td className="px-4 py-3 font-medium">
-                                                {website.url}
-                                            </td>
-
-                                            <td className="px-4 py-3">
-                                                {!isConnected ? (
-                                                    <Badge variant="secondary">
-                                                        Disabled
-                                                    </Badge>
-                                                ) : website.uptime_status ===
-                                                  'up' ? (
-                                                    <Badge className="border-0 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                                                        Online
-                                                    </Badge>
-                                                ) : website.uptime_status ===
-                                                  'down' ? (
-                                                    <Badge className="border-0 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                                        Down
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="text-muted-foreground"
-                                                    >
-                                                        Pending
-                                                    </Badge>
-                                                )}
-                                            </td>
-
-                                            <td className="relative px-4 py-3">
-                                                {stat &&
-                                                website?.uptime_status !==
-                                                    'unknown' ? (
-                                                    <span
-                                                        className={`absolute top-[10px] left-[10px] text-[22px] font-medium ${stat.uptime_percentage >= 97 ? 'text-green-600 dark:text-green-400' : stat.uptime_percentage >= 90 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}
-                                                    >
-                                                        {stat.uptime_percentage}
-                                                        %
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-muted-foreground">
-                                                        —
-                                                    </span>
-                                                )}
-                                            </td>
-
-                                            <td className="px-4 py-3 text-muted-foreground">
-                                                {formatRelativeTime(
-                                                    website.last_checked_at,
-                                                )}
-                                            </td>
-
-                                            <td className="px-4 py-3 text-muted-foreground">
-                                                {website.domain_expires_at
-                                                    ? (() => {
-                                                          const days =
-                                                              Math.ceil(
-                                                                  (new Date(
-                                                                      website.domain_expires_at!,
-                                                                  ).getTime() -
-                                                                      Date.now()) /
-                                                                      86400000,
-                                                              );
-
-                                                          return (
-                                                              <span
-                                                                  className={
-                                                                      days <= 30
-                                                                          ? 'font-medium text-red-600 dark:text-red-400'
-                                                                          : days <=
-                                                                              60
-                                                                            ? 'text-yellow-600 dark:text-yellow-400'
-                                                                            : ''
-                                                                  }
-                                                              >
-                                                                  {new Date(
-                                                                      website.domain_expires_at!,
-                                                                  ).toLocaleDateString(
-                                                                      undefined,
-                                                                      {
-                                                                          year: 'numeric',
-                                                                          month: 'short',
-                                                                          day: 'numeric',
-                                                                      },
-                                                                  )}
-                                                                  {days <= 30 &&
-                                                                      ` (${days}d)`}
-                                                              </span>
-                                                          );
-                                                      })()
-                                                    : '—'}
-                                            </td>
-
-                                            <td className="px-4 py-3 text-muted-foreground">
-                                                {website.created_by?.name ??
-                                                    '—'}
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            ) : (
-                                <tr>
-                                    <td
-                                        colSpan={6}
-                                        className="px-4 py-10 text-center text-muted-foreground"
-                                    >
-                                        <div className="flex flex-col items-center justify-center pt-5">
-                                            <Globe className="mb-3 size-10 opacity-40" />
-                                            <p className="text-gray-500 dark:text-gray-400">
-                                                <span>No websites yet.</span>
-                                                <br />
-                                                Click{' '}
-                                                <strong>
-                                                    Add Monitoring
-                                                </strong>{' '}
-                                                to get started.
-                                            </p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                {websites?.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-2">
+                        {websites.map((website) => (
+                            <WebsiteCard
+                                key={website.id}
+                                website={website}
+                                uptime={uptime[website.id] ?? null}
+                                onSelect={setSelectedWebsite}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-16 text-center text-muted-foreground">
+                        <Globe className="mb-3 size-10 opacity-40" />
+                        <p className="text-gray-500 dark:text-gray-400">
+                            <span>No websites yet.</span>
+                            <br />
+                            Click <strong>Add Monitoring</strong> to get started.
+                        </p>
+                    </div>
+                )}
             </div>
 
             <WebsiteStats

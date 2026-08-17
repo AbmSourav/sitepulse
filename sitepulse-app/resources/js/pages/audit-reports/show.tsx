@@ -399,7 +399,7 @@ export default function AuditReportShow() {
                                         block: 'start',
                                     })
                             }
-                            className="cursor-pointer rounded-md bg-green-100 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            className="cursor-pointer rounded-md bg-green-100 px-3 py-1.5 text-sm text-black/80 transition-colors hover:bg-muted hover:text-foreground"
                         >
                             {label}
                         </button>
