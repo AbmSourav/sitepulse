@@ -4,6 +4,7 @@ namespace App\Ai\Tools;
 
 use App\Ai\Concerns\ResolvesTeamWebsite;
 use App\Models\User;
+use App\Models\Website;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
@@ -45,9 +46,9 @@ class CountIncidents implements Tool
         $days = (int) ($request['days'] ?? 7);
         $days = max(1, min(90, $days));
 
-        $website = $this->resolveTeamWebsite($site);
-        if (! $website) {
-            return "No monitored site matching \"{$site}\" was found in your account.";
+        $website = $this->resolveTeamWebsiteOrMessage($site);
+        if (! $website instanceof Website) {
+            return $website;
         }
 
         $incidents = $website->incidents()

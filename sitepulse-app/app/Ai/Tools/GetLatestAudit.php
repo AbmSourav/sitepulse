@@ -4,6 +4,7 @@ namespace App\Ai\Tools;
 
 use App\Ai\Concerns\ResolvesTeamWebsite;
 use App\Models\User;
+use App\Models\Website;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
@@ -41,9 +42,9 @@ class GetLatestAudit implements Tool
     {
         $site = (string) $request['site'];
 
-        $website = $this->resolveTeamWebsite($site);
-        if (! $website) {
-            return "No monitored site matching \"{$site}\" was found in your account.";
+        $website = $this->resolveTeamWebsiteOrMessage($site);
+        if (! $website instanceof Website) {
+            return $website;
         }
 
         $audit = $website->latestAudit()->first();

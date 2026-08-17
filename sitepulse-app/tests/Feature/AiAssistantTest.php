@@ -165,6 +165,74 @@ test('CountIncidents counts only incidents within the window for the team site',
         ->and($result['site'])->toBe('https://abc.com');
 });
 
+test('GetSiteStats reports downtime for the AI-chosen window', function () {
+    $user = assistantUser();
+    $site = siteFor($user, ['url' => 'https://abc.com']);
+
+    // One outage 2 days ago (10 min), one 20 days ago (15 min).
+    SiteIncident::create(['website_id' => $site->id, 'started_at' => now()->subDays(2), 'resolved_at' => now()->subDays(2)->addMinutes(10), 'reason' => 'http_500', 'http_status' => 500]);
+    SiteIncident::create(['website_id' => $site->id, 'started_at' => now()->subDays(20), 'resolved_at' => now()->subDays(20)->addMinutes(15), 'reason' => 'http_500', 'http_status' => 500]);
+
+    // 7-day window: only the 10-min outage.
+    $week = json_decode((new GetSiteStats($user))->handle(new ToolRequest(['site' => 'abc.com', 'days' => 7])), true);
+    expect($week['window_days'])->toBe(7)
+        ->and($week['downtime_minutes'])->toBe(10)
+        ->and($week['incident_count'])->toBe(1);
+
+    // 30-day window: both outages, 25 minutes total. This is the case the user
+    // hit — downtime minutes are now available beyond 7 days.
+    $month = json_decode((new GetSiteStats($user))->handle(new ToolRequest(['site' => 'abc.com', 'days' => 30])), true);
+    expect($month['window_days'])->toBe(30)
+        ->and($month['downtime_minutes'])->toBe(25)
+        ->and($month['incident_count'])->toBe(2);
+});
+
+test('GetSiteStats caps the window at 45 days', function () {
+    $user = assistantUser();
+    siteFor($user, ['url' => 'https://abc.com']);
+
+    $result = json_decode((new GetSiteStats($user))->handle(new ToolRequest(['site' => 'abc.com', 'days' => 9999])), true);
+
+    expect($result['window_days'])->toBe(45);
+});
+
+test('an apex domain does not resolve to its subdomain', function () {
+    $user = assistantUser();
+    siteFor($user, ['url' => 'https://abmsourav.com/welcome']);
+    siteFor($user, ['url' => 'http://blog.abmsourav.com/wp-admin']);
+
+    // "abmsourav.com" must hit the apex, not "blog.abmsourav.com".
+    $apex = json_decode((new GetSiteStats($user))->handle(new ToolRequest(['site' => 'abmsourav.com'])), true);
+    expect($apex['site'])->toBe('https://abmsourav.com/welcome');
+
+    // ...and the subdomain still resolves to itself.
+    $sub = json_decode((new GetSiteStats($user))->handle(new ToolRequest(['site' => 'blog.abmsourav.com'])), true);
+    expect($sub['site'])->toBe('http://blog.abmsourav.com/wp-admin');
+});
+
+test('www and scheme/path variants resolve to the same apex site', function () {
+    $user = assistantUser();
+    siteFor($user, ['url' => 'https://abmsourav.com/welcome']);
+    siteFor($user, ['url' => 'http://blog.abmsourav.com/wp-admin']);
+
+    foreach (['www.abmsourav.com', 'https://abmsourav.com/anything', 'ABMSOURAV.COM'] as $term) {
+        $result = json_decode((new GetSiteStats($user))->handle(new ToolRequest(['site' => $term])), true);
+        expect($result['site'])->toBe('https://abmsourav.com/welcome', "term: {$term}");
+    }
+});
+
+test('an ambiguous site name asks the user to disambiguate instead of guessing', function () {
+    $user = assistantUser();
+    // Two sites sharing the same host but different paths → ambiguous by host.
+    siteFor($user, ['url' => 'https://shop.example.com/one']);
+    siteFor($user, ['url' => 'https://shop.example.com/two']);
+
+    $result = (new GetSiteStats($user))->handle(new ToolRequest(['site' => 'shop.example.com']));
+
+    expect($result)->toContain('matches more than one')
+        ->and($result)->toContain('shop.example.com');
+});
+
 /*
 |--------------------------------------------------------------------------
 | No sensitive data leaves via tool results (Round 3 rule)

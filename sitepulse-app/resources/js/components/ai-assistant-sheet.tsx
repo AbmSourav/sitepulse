@@ -26,6 +26,26 @@ type Status = 'idle' | 'loading' | 'needs_setup';
 const HISTORY_LIMIT = 10;
 
 /**
+ * Render the light Markdown the assistant emits (**bold**, *italic*) as real
+ * elements instead of showing the literal asterisks. Built from plain React
+ * nodes — no dangerouslySetInnerHTML — so model output can't inject HTML.
+ */
+function renderMarkdown(text: string): React.ReactNode[] {
+    // Split on **bold** and *italic* while keeping the delimiters' content.
+    const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+
+    return parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={i}>{part.slice(2, -2)}</strong>;
+        }
+        if (part.startsWith('*') && part.endsWith('*')) {
+            return <em key={i}>{part.slice(1, -1)}</em>;
+        }
+        return part;
+    });
+}
+
+/**
  * Read Laravel's XSRF-TOKEN cookie so a raw fetch can send it back as the
  * X-XSRF-TOKEN header (fetch doesn't do this automatically like axios/Inertia).
  */
@@ -187,7 +207,9 @@ export function AiAssistantSheet() {
                                         : 'bg-muted text-foreground',
                                 )}
                             >
-                                {m.content}
+                                {m.role === 'assistant'
+                                    ? renderMarkdown(m.content)
+                                    : m.content}
                             </div>
                         </div>
                     ))}
